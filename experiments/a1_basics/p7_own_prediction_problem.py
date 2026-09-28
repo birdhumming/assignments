@@ -17,7 +17,7 @@ from modal_train import launch_training_jobs
 
 RUNS = dedupe(
     [run("a1-p7", "a1-p7-noqknorm", qk_norm=False, learning_rate=lr) for lr in (1e-3, 3e-3, 9e-3, 3e-2)]
-    + [run("a1-p7", "a1-p7-tiedemb", tie_word_embeddings=True)]
+    + [run("a1-p7", "a1-p7-tiedemb", tie_word_embeddings=True, learning_rate=lr) for lr in (3e-3, 9e-3)]
 )
 
 

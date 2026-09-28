@@ -46,9 +46,10 @@ def depth_of(config):
     return int(config.model_name.lstrip("d"))
 
 
-# Measured from the 21 finished d8 runs in W&B: 24.6-27.6 min wall clock at the
-# 614M-token default, mean 25.2. Depth costs are relative to that anchor.
-D8_MINUTES = 25.2
+# Measured from the finished a1 d8 runs in W&B: 10.3-12.6 min wall clock at the
+# 614M-token default on H100 (the older lr_tuning runs took ~25 min, but those
+# were logged under heavier eval settings). Depth costs are relative to this.
+D8_MINUTES = 11.0
 DEPTH_COST = {4: 0.30, 5: 0.40, 6: 0.50, 7: 0.75, 8: 1.00, 9: 1.40}
 A100_SLOWDOWN = 2.0
 
@@ -121,9 +122,19 @@ def main():
         default=None,
         help="Drop the lowest-priority runs so the estimate stays under this many GPU-hours.",
     )
+    parser.add_argument(
+        "--exclude-manifest",
+        type=Path,
+        default=None,
+        help="Skip run names listed in this earlier manifest CSV (already submitted).",
+    )
     args = parser.parse_args()
 
     unique, rows = build_manifest()
+    if args.exclude_manifest is not None:
+        with args.exclude_manifest.open(newline="") as f:
+            already = {row["run_name"] for row in csv.DictReader(f)}
+        rows = [row for row in rows if row["run_name"] not in already]
     rows, dropped = within_budget(rows, args.budget_hours)
     keep_names = {row["run_name"] for row in rows}
     unique = [c for c in unique if training_run_name(c) in keep_names]

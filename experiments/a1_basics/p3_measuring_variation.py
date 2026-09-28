@@ -24,8 +24,8 @@ PART_A = [run("a1-p3", "a1-p3a-all", model_seed=s, data_seed=s) for s in SEEDS]
 
 # (b) One source at a time.
 PART_B = (
-    [run("a1-p3", "a1-p3b-model-seed", model_seed=s) for s in SEEDS[:2]]
-    + [run("a1-p3", "a1-p3b-data-seed", data_seed=s) for s in SEEDS[:2]]
+    [run("a1-p3", "a1-p3b-model-seed", model_seed=s) for s in SEEDS]
+    + [run("a1-p3", "a1-p3b-data-seed", data_seed=s) for s in SEEDS]
     # Hardware-only: identical seeds, non-deterministic kernels, repeated.
     + [run("a1-p3", "a1-p3b-hardware", run_name_suffix=f"nondeterministic-rep{i}") for i in (1, 2)]
     + DETERMINISTIC_REFERENCES
@@ -41,11 +41,16 @@ A100_RUNS = [
 # (lr 0.009, bs 16) and P2 (d4), giving 3 samples per recipe. The "longer
 # training" axis is deferred: 2x-token d8 runs cost 50 min each.
 PART_C = (
-    [run("a1-p3", "a1-p3c-lr009", learning_rate=9e-3, model_seed=s, data_seed=s) for s in SEEDS[:2]]
-    + [run("a1-p3", "a1-p3c-bs16", batch_size=16, model_seed=s, data_seed=s) for s in SEEDS[:2]]
+    [run("a1-p3", "a1-p3c-lr009", learning_rate=9e-3, model_seed=s, data_seed=s) for s in SEEDS]
+    + [run("a1-p3", "a1-p3c-bs16", batch_size=16, model_seed=s, data_seed=s) for s in SEEDS]
     + [
         run("a1-p3", "a1-p3c-d4", model_config=depth_model_config(4), model_seed=s, data_seed=s)
         for s in SEEDS
+    ]
+    # Longer training (2x tokens) at d8: does more data shrink or grow the spread?
+    + [
+        run("a1-p3", "a1-p3c-long", num_train_sequences=1_200_000, model_seed=s, data_seed=s)
+        for s in (42, 1, 2)
     ]
 )
 

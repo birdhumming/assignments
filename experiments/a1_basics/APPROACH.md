@@ -10,20 +10,29 @@ choices.
 The handout suggests ~150 runs (P1 50, P2 50, P3 25, P4 15, P5 5, P6 0-5,
 P7 5-10). The hard constraints are 48 GPU-hours and 2 concurrent GPUs.
 
-The first thing to do was **measure the unit cost**, not guess it. Your 21
-finished P1 runs in W&B took 24.6-27.6 min each (mean 25.2 min) for the
-standard d8 recipe (600k sequences x 1024 tokens = 614M tokens). So:
+The first thing to do was **measure the unit cost**, not guess it -- and it
+took two rounds to get right, which is itself the lesson:
 
-* one d8 run ~= 0.42 GPU-h, ~115 d8-runs fit in the whole budget;
-* 150 runs at d8 cost would be ~63 h -- the handout's plan only fits if a
-  large share of runs are shallow (P2's d4-d7) and runs are shared across
-  problems;
-* my first estimator assumed 12.5 min/run and was off by 2x. Always calibrate
-  against a real run before committing a budget.
+* My first estimator guessed 12.5 min per d8 run (600k sequences x 1024
+  tokens = 614M tokens).
+* Your 21 older P1 runs in W&B took 24.6-27.6 min each (mean 25.2), so I
+  recalibrated to 25 min and trimmed the suite from 162 to 90 runs to fit the
+  ~37 h left (~11 h were already spent, incl. 6 killed runs).
+* The first 7 d8 runs of *this* suite then finished in 10.3-12.6 min (mean
+  11.0). The older runs were slower for reasons outside the model (heavier
+  eval/logging settings, or a shared GPU); the throughput I actually get is
+  ~2.3x better than the number I planned against.
 
-Ledger at launch time: ~11.0 h already spent (27 runs, 6 killed early), so
-~37 h remained. I targeted **~31 h of new runs** to leave ~6 h for retries,
-container start-up overhead (~1-2 min/run) and estimator error.
+So the anchor is now `D8_MINUTES = 11.0`: one d8 run ~= 0.18 GPU-h. That
+freed ~17 h, and I launched the trimmed runs as a **second wave** (51 runs,
+~8.3 h, `--exclude-manifest wave1_manifest.csv` so nothing already queued is
+resubmitted). Ledger: ~11 h prior + ~13.4 h wave 1 + ~8.3 h wave 2 ~= 33 h of
+48, leaving ~15 h of headroom for retries and container start-up (~1-2 min
+per run, which matters more now that runs are short).
+
+Takeaway: calibrate against runs *from the same code and settings you are
+about to launch*, not against whatever happens to be in the project already,
+and re-check after the first few finish.
 
 Depth cost model (relative to d8; only d8 is measured, the rest is a guess to
 verify from the first d4/d9 runs): d4 0.30, d5 0.40, d6 0.50, d7 0.75, d8 1.0,
@@ -42,8 +51,8 @@ than FLOPs. Token count scales cost linearly.
 2. **Don't repeat what exists.** The 21 finished runs already cover lr in
    {0.001, 0.003, 0.009} x {default, bs32, bs128, wd0.03, wd0.3, warmup0.03,
    warmup0.1}. P1 here only fills gaps: sweep endpoints (lr 3e-4/2.7e-2, bs
-   16/256, wd 1.0), the extreme corners of the paired grids, schedules, betas,
-   clipping. When analysing P1, merge the old runs (tag `a1-basics-p1b-v3`)
+   16/256, wd 0/0.01/1.0, warmup 0/0.003), the corners of the paired grids,
+   schedules, betas, clipping. When analysing P1, merge the old runs (tag `a1-basics-p1b-v3`)
    with the new ones (tag `a1-p1`).
 3. **Priority order + a hard cap.** `--budget-hours` drops runs from the end
    of the list. Order is P3, P4, P2, P1, P5, P6, P7: the noise floor (P3/P4)
@@ -51,11 +60,13 @@ than FLOPs. Token count scales cost linearly.
    most expensive-to-redo, P1 is already half done, P6/P7 are cheapest to
    defer.
 
-Final manifest: 90 runs, ~30.6 GPU-h estimated (`run_manifest.csv`).
+Final manifest: 141 runs in two waves -- `wave1_manifest.csv` (90 runs, the
+budget-trimmed core) + `run_manifest.csv` (51 runs restored once the unit cost
+was re-measured), ~21.7 GPU-h total at the measured rate.
 
 ## 3. Problem by problem: design, hypotheses, what to look at
 
-### P1 -- hyperparameters (18 new runs, 21 existing)
+### P1 -- hyperparameters (42 new runs, 21 existing)
 
 *Design.* Base-3 log sweeps around the default. Pairs chosen from mechanism:
 * **lr x batch size** -- bigger batches give lower-variance gradients, so the
@@ -81,7 +92,7 @@ mild monotone trend for batch size at fixed tokens (smaller batch = more steps
 = usually lower loss at this scale, up to a point), a very weak effect for
 warmup unless lr is high, and a weak effect for wd until it is ~1.0.
 
-### P2 -- scaling-law reliability (39 runs, mostly shallow)
+### P2 -- scaling-law reliability (56 runs, mostly shallow)
 
 *Design.* Four recipes x d4..d8; d9 only for `baseline` and `constant`
 (d9 costs 1.4 d8-runs each). **Pre-register**: fit `L = a*C^-alpha + e` on
@@ -108,7 +119,7 @@ a 75k-sequence subset (same tokens, repeated data).
 "reliable" law is one whose d4-d7 fit predicts d8/d9 within the P3 noise
 floor.
 
-### P3 -- measuring variation (19 runs + 1 A100)
+### P3 -- measuring variation (25 runs + 1 A100)
 
 *Design.* Vary everything (3 paired seeds), then isolate: model seed only
 (2), data seed only (2), hardware only (two identical nondeterministic runs:
@@ -128,7 +139,7 @@ terms.
 *Read.* Compute SD per group; the "significance threshold" for the whole
 assignment is roughly 2x the all-sources SD.
 
-### P4 -- amplification of randomness (7 runs, all deterministic)
+### P4 -- amplification of randomness (11 runs, all deterministic)
 
 *Design.* Deterministic reference (shared with P3), then flip 1, 10 or 1024
 tokens of row 0 to token 17. Then keep the perturbation at 1 token but move it
@@ -153,7 +164,7 @@ constant schedule = no late-stage drop; WSD = sharp drop in the last 20%;
 beta1 low = noisier; beta2 0.99 = slower adaptation, possible instability;
 no clipping = occasional spikes at high lr.
 
-### P6 -- activations and gradient norms (3 runs)
+### P6 -- activations and gradient norms (4 runs)
 
 Module RMS statistics are logged by default (`log_module_rms`). The extra
 `log_activation_rms` logger (handout example) hooks layers 1/3/6 and logs
@@ -164,7 +175,7 @@ training; the crazy run's RMS at layer 6 blows up by orders of magnitude
 (that is the shape in the quiz figure); strong weight decay shrinks parameter
 RMS and, with it, activation RMS late in training.
 
-### P7 -- own prediction problem (4 runs)
+### P7 -- own prediction problem (6 runs)
 
 Question: "Disable QK-norm on d8. At which peak lr does it first lose to the
 default recipe by more than the noise floor, and does it ever diverge?" Runs:
@@ -175,11 +186,14 @@ idea from P2/P6 that normalisation buys lr tolerance rather than raw quality.
 
 ## 4. Operational notes
 
-* All runs are in one detached Modal app with `max_parallel_runs=2`; the A100
-  reference is a separate app with `max_parallel_runs=1`.
+* Runs are in two detached Modal H100 apps (wave 1, wave 2), each with
+  `max_parallel_runs=2`; the A100 reference is a third app with
+  `max_parallel_runs=1`. Modal enforces the course's 2-GPU cap across apps, so
+  wave 2 and the A100 job simply queue behind wave 1 (verified: 2 containers
+  total after the second launch).
 * Re-launching is safe: `launch_training_jobs` skips any config whose final
   model already exists in the user volume.
 * Estimator sanity check: the first H100 jobs reported an ETA of ~52 min at
   step 282; early ETAs are inflated by `torch.compile` warm-up and data
   materialisation, so judge against the wall clock of finished runs in W&B and
-  update `D8_MINUTES` if it drifts from 25 min.
+  update `D8_MINUTES` if it drifts from 11 min.
