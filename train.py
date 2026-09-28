@@ -68,6 +68,8 @@ class TrainConfig:
     tie_word_embeddings: bool = False
     deterministic: bool = False
     perturb_one_token: bool = False
+    perturb_row: int = 0
+    perturb_num_tokens: int = 1
     wandb_tags: tuple[str, ...] = field(default_factory=tuple)
     wandb_online: bool = True
     force_run: bool = False
@@ -159,6 +161,10 @@ def training_run_name(config):
         run_name += "-deterministic"
     if config.perturb_one_token != TrainConfig.perturb_one_token:
         run_name += "-perturb1tok"
+        if config.perturb_row != TrainConfig.perturb_row:
+            run_name += f"-prow{config.perturb_row}"
+        if config.perturb_num_tokens != TrainConfig.perturb_num_tokens:
+            run_name += f"-pntok{config.perturb_num_tokens}"
     if config.data_seed != TrainConfig.data_seed:
         if config.data_seed is None:
             run_name += "-dsnone"
@@ -317,6 +323,12 @@ def checked_train_config(config):
         )
     if config.deterministic and config.model_seed is None:
         raise ValueError("deterministic=True requires model_seed to be set.")
+    if config.perturb_row < 0:
+        raise ValueError(f"perturb_row must be non-negative, got {config.perturb_row}.")
+    if config.perturb_num_tokens < 1:
+        raise ValueError(
+            f"perturb_num_tokens must be positive, got {config.perturb_num_tokens}."
+        )
     if config.model_builder_kwargs is None:
         raise TypeError("model_builder_kwargs must be a dict, got None.")
     if not isinstance(config.model_builder_kwargs, dict):
@@ -401,9 +413,10 @@ def train(config):
     if config.data_seed is not None:
         train_dataset = train_dataset.shuffle(seed=config.data_seed)
     if config.perturb_one_token:
-        first_input_ids = train_dataset[0]["input_ids"]
-        assert int(first_input_ids[100]) != 17
-        first_input_ids[100] = 17
+        perturbed_input_ids = train_dataset[config.perturb_row]["input_ids"]
+        assert int(perturbed_input_ids[100]) != 17
+        perturb_stop = min(100 + config.perturb_num_tokens, len(perturbed_input_ids))
+        perturbed_input_ids[100:perturb_stop] = 17
     effective_train_sequences = len(train_dataset)
     seq_len = len(train_dataset[0]["input_ids"])
     train_tokens = effective_train_sequences * seq_len
