@@ -7,6 +7,7 @@ from pathlib import PurePosixPath
 from typing import TYPE_CHECKING
 
 import modal
+from modal._runtime.container_io_manager import ContainerIOManager
 
 from metric_logging import importable_metric_loggers
 from modal_utils import (
@@ -126,6 +127,11 @@ def _run_training(
             "user_data_dir": str(MODAL_USER_DATASETS_DIR),
             "model_dir": str(MODAL_MODEL_DIR),
         }
+    except BaseException:
+        # A failed run can leave process-global torch state behind (deterministic
+        # mode, cudagraph trees); let the retry land in a fresh container.
+        ContainerIOManager.stop_fetching_inputs()
+        raise
     finally:
         user_volume.commit()
 

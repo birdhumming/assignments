@@ -144,6 +144,7 @@ def build_image(*, include_tests: bool = False) -> modal.Image:
                 "DL_ALCHEMY_MODAL_SECRETS": EXTRA_SECRET_NAMES,
                 "WANDB_ENTITY": WANDB_ENTITY,
                 "WANDB_PROJECT": WANDB_PROJECT,
+                "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
                 "TMPDIR": "/tmp",
                 "TEMP": "/tmp",
                 "TMP": "/tmp",

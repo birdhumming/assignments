@@ -197,3 +197,43 @@ idea from P2/P6 that normalisation buys lr tolerance rather than raw quality.
   step 282; early ETAs are inflated by `torch.compile` warm-up and data
   materialisation, so judge against the wall clock of finished runs in W&B and
   update `D8_MINUTES` if it drifts from 11 min.
+
+
+## Postscript: what actually broke on the first launch, and the fixes
+
+Two things failed on the first submission, and both are worth understanding
+because they are the kind of infrastructure bug that silently corrupts an
+empirical study if you don't check your runs.
+
+1. **Every `deterministic=True` run crashed on H100** (P3 deterministic
+   references, all of P4) with `Deterministic behavior was enabled ... you
+   must set CUBLAS_WORKSPACE_CONFIG`. The code *did* set that env var, in
+   `configure_deterministic_training`, but cuBLAS reads it once, when the
+   CUDA context is first created. Modal reuses one Python process for many
+   jobs, so any deterministic job that ran *after* a nondeterministic one in
+   the same container saw a cuBLAS that had already been initialised
+   without it. The A100 reference worked only because it was the first job
+   in its container. Fix: `CUBLAS_WORKSPACE_CONFIG=:4096:8` is now set in
+   the Modal image env (`modal_utils.py`), i.e. before Python starts. It is
+   harmless for nondeterministic runs.
+
+2. **A crashed job poisons the container.** After (1) raised,
+   `torch.use_deterministic_algorithms(True)` and half-built cudagraph
+   trees were left behind in the process, and the *next* job in that
+   container died inside TorchInductor with an `AssertionError`. Modal then
+   retried the same inputs into the same broken process, burning the retry
+   budget. Fix: `_run_training` now calls
+   `ContainerIOManager.stop_fetching_inputs()` on any exception, so the
+   container drains and the retry lands in a fresh process.
+
+3. Wave 2 was submitted before `utils.py` had the real W&B entity, so every
+   run hung for 90 s in `wandb.init` against `YOUR_WANDB_USERNAME_OR_TEAM`,
+   then retried. Fixed by setting `CONFIG_WANDB_ENTITY`/`CONFIG_MODAL_ENVIRONMENT`.
+   Cost: roughly 5 GPU-hours of two containers spinning on retries.
+
+Relaunch: waves 1+2 were stopped, the 13 runs that had finished (and the
+A100 reference) were excluded via `--exclude-manifest`, and the remaining
+128 runs were submitted as one app
+(https://modal.com/apps/cs312-f26/cs312-aleyang/ap-w3Dcf9TXJkNiGFu8stlGpZ),
+~19 GPU-hours estimated. Ledger: ~11 h prior + ~3 h finished + ~5 h wasted
++ ~19 h remaining ≈ 38 h of 48.
