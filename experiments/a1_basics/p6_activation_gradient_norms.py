@@ -61,7 +61,6 @@ RUNS = dedupe(
         probed("a1-p6", "a1-p6c-unhealthy", learning_rate=0.03, qk_norm=False, grad_norm=None),
         # Shrink parameters / activations via strong decay; grow them by disabling it.
         probed("a1-p6", "a1-p6c-wd", weight_decay=1.0),
-        probed("a1-p6", "a1-p6c-wd", weight_decay=0.0),
     ]
 )
 

@@ -16,7 +16,6 @@ RUNS = dedupe(
         run("a1-p5", batch_size=256),
         run("a1-p5", batch_size=16),
         run("a1-p5", learning_rate=3e-4),
-        run("a1-p5", learning_rate=9e-3),
         run("a1-p5", learning_rate=2.7e-2),
         run("a1-p5", lr_schedule="constant"),
         run("a1-p5", lr_schedule="wsd0.2"),

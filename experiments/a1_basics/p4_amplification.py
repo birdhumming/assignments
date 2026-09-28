@@ -15,11 +15,12 @@ from modal_train import launch_training_jobs
 BATCH_SIZE = 64
 TOTAL_STEPS = 600_000 // BATCH_SIZE  # 9375
 
-REFERENCE = run("a1-p4", "a1-p4a", deterministic=True)
+# Same config/name as P3's deterministic-reference-1, so it trains once.
+REFERENCE = run("a1-p4", "a1-p4a", deterministic=True, run_name_suffix="deterministic-reference-1")
 
 PART_A = [REFERENCE] + [
     run("a1-p4", "a1-p4a", deterministic=True, perturb_one_token=True, perturb_num_tokens=n)
-    for n in (1, 10, 100, 1024)
+    for n in (1, 10, 1024)
 ]
 
 PERTURB_STEPS = {
@@ -39,7 +40,7 @@ PART_B = [
         perturb_num_tokens=n,
     )
     for label, step in PERTURB_STEPS.items()
-    for n in (1, 1024)
+    for n in ((1, 1024) if label == "50pct" else (1,))
 ]
 
 RUNS = dedupe([*PART_A, *PART_B])
