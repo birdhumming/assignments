@@ -554,6 +554,7 @@ def train(config):
             "name": run_name,
             "config": run_config,
             "tags": list(config.wandb_tags),
+            "reinit": True,
         }
         if wandb_run_id is not None:
             wandb_kwargs["id"] = wandb_run_id

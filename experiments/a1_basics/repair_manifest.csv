@@ -1,0 +1,4 @@
+run_name,problems,tags,gpu,est_minutes
+model-d8-lr0.001-tok307M,p2,"a1,a1-p2,a1-p2b-data",H100,5.5
+model-d8-lr0.003-bs256-tok614M,p1+p5,"a1,a1-p1,a1-p1a-bs",H100,11.0
+model-d8-lr0.003-tok614M-warmup0.0,p1,"a1,a1-p1,a1-p1a-warmup",H100,11.0
