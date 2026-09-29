@@ -1,0 +1,2 @@
+run_name,problems,tags,gpu,est_minutes
+model-d6-lr0.003-bs256-tok614M,p2,"a1,a1-p2,a1-p2b-model",H100,5.5

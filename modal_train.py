@@ -7,6 +7,7 @@ from pathlib import PurePosixPath
 from typing import TYPE_CHECKING
 
 import modal
+from modal._runtime.container_io_manager import ContainerIOManager
 
 from metric_logging import importable_metric_loggers
 from modal_utils import (
@@ -126,8 +127,43 @@ def _run_training(
             "user_data_dir": str(MODAL_USER_DATASETS_DIR),
             "model_dir": str(MODAL_MODEL_DIR),
         }
+    except BaseException:
+        # A failed run can leave process-global torch state behind (deterministic
+        # mode, cudagraph trees); let the retry land in a fresh container.
+        ContainerIOManager.stop_fetching_inputs()
+        _finish_orphaned_wandb_run()
+        raise
     finally:
+        _release_gpu_memory()
         user_volume.commit()
+
+
+def _finish_orphaned_wandb_run():
+    # If the run died between wandb.init and wandb.finish, close its W&B run so a
+    # later job in this process cannot attach to it.
+    try:
+        import wandb
+
+        if wandb.run is not None:
+            wandb.finish(exit_code=1)
+    except Exception as exc:
+        print(f"Could not finish orphaned W&B run: {exc}")
+
+
+def _release_gpu_memory():
+    # Modal reuses the process across jobs; compiled graphs and CUDA-graph pools
+    # from the previous job otherwise stay resident and can OOM the next one.
+    try:
+        import gc
+
+        import torch
+
+        torch._dynamo.reset()
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+    except Exception as exc:
+        print(f"Could not release GPU memory: {exc}")
 
 
 def launch_training_jobs(
