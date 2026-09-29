@@ -1,3 +1,5 @@
+> Superseded by `TAKEAWAYS.md` (final, all 7 problems). Kept as a record of what was concluded at the halfway point.
+
 # A1 interim takeaways (73 / 141 runs finished, 2026-09-29 05:40 UTC)
 
 Everything here is from the W&B project `aleyang-stanford-university/assignments`

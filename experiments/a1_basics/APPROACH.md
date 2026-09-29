@@ -237,3 +237,29 @@ A100 reference) were excluded via `--exclude-manifest`, and the remaining
 (https://modal.com/apps/cs312-f26/cs312-aleyang/ap-w3Dcf9TXJkNiGFu8stlGpZ),
 ~19 GPU-hours estimated. Ledger: ~11 h prior + ~3 h finished + ~5 h wasted
 + ~19 h remaining ≈ 38 h of 48.
+
+### Postscript 2 — the bug that only shows up in the data
+
+After every run had "finished" with 0 failures, reconciling W&B configs
+against run names found a fourth container-reuse leak:
+
+4. **An OOM'd job leaves its W&B run open, and the next job inherits it.**
+   Three batch-size-256 jobs hit CUDA OOM (the previous job's compiled graphs
+   and allocator cache were still resident). Modal marked them failed and
+   retried them elsewhere, but the *next* job scheduled into the same process
+   called `wandb.init()` while `wandb.run` was still the dead job's run — so
+   it logged into that record. Result: two W&B runs whose name said
+   `bs256` but whose history (and `config`) belonged to a different config,
+   and one record containing two concatenated histories. Fixes in
+   `modal_train.py`/`train.py`: `wandb.finish(exit_code=1)` on any exception,
+   `reinit=True` in `wandb.init`, and `torch._dynamo.reset()` +
+   `gc.collect()` + `torch.cuda.empty_cache()` after every job. The two
+   unrecoverable records are tagged `a1-corrupted` (kept for the audit
+   trail, excluded from analysis), two were relabeled from their checkpoint
+   `run_state.json`, and the four affected configs were rerun
+   (`repair_manifest.csv`, `repair2_manifest.csv`, ~0.6 GPU-h). Lesson: a
+   green dashboard is not a verified dataset — check that each record's
+   logged `config` matches its name before analysing.
+
+Final ledger (W&B `_runtime`, whole project): 10.2 h prior + 23.9 h for this
+suite = 34.1 h of the 48 h allowance.
