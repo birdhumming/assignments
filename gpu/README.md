@@ -230,15 +230,17 @@ function call string:
 from slurm_launch import launch_job
 from train import TrainConfig, train
 
-launch_job(
-    "train(TrainConfig(num_train_sequences=600_000, run_name_suffix='slurm-gpu', wandb_online=False))",
-    queue="gpu",
-    gpus=1,
-    mem=64,
-    cpus=16,
-)
+if __name__ == "__main__":
+    launch_job(
+        "train(TrainConfig(num_train_sequences=600_000, run_name_suffix='slurm-gpu', wandb_online=False))",
+        queue="gpu",
+        gpus=1,
+        mem=64,
+        cpus=16,
+    )
 ```
 
 The launcher stages a short Python script and submits it with `sbatch`. The
 function call string is evaluated in a script that imports your launch file, so
-keep imports like `from train import TrainConfig, train` at module scope.
+keep imports like `from train import TrainConfig, train` at module scope and
+put submission calls behind the `__main__` guard to avoid resubmitting on import.

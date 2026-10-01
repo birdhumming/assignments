@@ -269,7 +269,12 @@ With `600,000` sequences and batch size `64`, one epoch is:
 floor(600,000 / 64) = 9,375 optimizer steps
 ```
 
-The final partial batch is not used.
+With N selected sequences, microbatch size M,
+and G microbatches per update, one epoch has `ceil(N / M) // G` updates.
+Incomplete accumulation groups are skipped. Included microbatch mean losses
+receive equal weight `1/G`, including a smaller final microbatch. With G=1,
+the final partial batch is included. Thus the selected token budget can exceed
+the number of tokens actually processed when using accumulation.
 
 ## Optimizer
 
@@ -283,7 +288,7 @@ no decay: token embeddings, normalization weights, bias terms
 ```
 
 The AdamW update uses the configured learning rate, betas, masked weight decay,
-and a fixed epsilon:
+and an epsilon that defaults to:
 
 ```text
 1e-8
@@ -300,8 +305,12 @@ warmup_steps = int(total_steps * warmup_percent)
 ```
 
 During warmup, the learning rate increases linearly from 0 to the configured
-learning rate. After warmup, it decays linearly to 0 by the final optimizer
-step.
+learning rate. After warmup, it decays linearly to 0 after the final optimizer
+step has completed. With positive warmup, the first update uses LR zero;
+the last applied LR is usually positive. The scheduler advances after each
+optimizer update. W&B records the pre-update LR, including zero on the first
+warmup update. Do not use the post-scheduler value when reconstructing weight
+decay products.
 
 Other schedules can be useful for experiments, but linear decay is the default
 reference recipe.
@@ -360,3 +369,19 @@ want to branch later from an intermediate model.
 Loading a final model starts from model weights only. Resuming a run from its
 latest training checkpoint restores the optimizer, learning-rate schedule,
 random number generators, and W&B run identity.
+
+
+## A2-specific options
+
+The A2 baseline uses unscaled RoPE and selects a prefix of globally shuffled
+data. AdamW uses epsilon `1e-8` and fused execution on CUDA. Microbatch size
+is `min(batch_size, 64)`; larger batches must be multiples of 64. Batch 128
+accumulates two microbatches and batch 256 accumulates four. Incomplete groups
+are skipped and accumulated runs do not use compilation.
+
+Students can override accumulation or provide an optimizer builder for custom
+parameter-group rules. A2 collects diagnostic measurements when W&B logging
+is enabled. Implement readout scaling in a custom model builder, with settings
+in `model_builder_kwargs` so checkpoint loading reconstructs its behavior.
+See `experiments/a2/RUNTIME.md` for usage details and
+`worksheets/hparam_invariants/data/README.md` for supplied-measurement provenance.

@@ -1,0 +1,86 @@
+\clearpage
+\subunitheader{4.2: Do the scaling rules predict longer training?}
+
+Do the scaling ideas from Problem 4.1 help over longer training? Use the
+default model and training settings at 153.6M tokens.
+
+The course baseline uses the default architecture and initialization.
+For $\mu$P, change only the four settings in the table below, using reference
+width $n_0=512$. Let $n$ be hidden width, $m=n/n_0$, and $\eta$ the peak base LR.
+Let $G$ be a shared matrix of standard Gaussian draws truncated at $\pm3$,
+used for both embedding and readout initialization and shared across prescriptions.
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+Setting & Course baseline (default) & $\mu$P \\
+\midrule
+Embedding initialization & $G/n$ & $G/n_0$ \\
+Readout initialization & $G/\sqrt n$ & $G/\sqrt{n_0}$ \\
+Readout forward multiplier & $1$ & $1/m$ \\
+Hidden-matrix peak LR & $\eta$ & $\eta/m$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+Keep all other training settings fixed, including RMSNorm $\epsilon=10^{-5}$
+and gradient clipping at 1. Normalization and clipping can affect widths
+differently: the baseline embedding scale $1/n$ may be comparable to
+$\sqrt\epsilon$. Use feature logs and \texttt{gradients.jsonl} to report
+pre-clipping gradient norms, the embedding's fraction of squared gradient
+norm, and the clipping coefficient. Account for these effects when interpreting
+transfer. Reuse the supplied width-512 diagnostics; optional normalization or
+clipping ablations must fit within your compute budget.
+
+
+\begin{problem}{From five updates to a longer training budget (recommended: 50 new runs)}
+\begin{parts}
+\item \textbf{Transfer the reference LR (20 initial runs).}
+Predict whether Problem 1's best sampled LR at 153.6M tokens transfers to
+widths 128 and 256 under both prescriptions. Choose an LR sweep for each
+configuration, including the transferred source LR.
+Hold data and other settings fixed across new runs; compare with Problem 1's
+supplied width-512 curve.
+
+At the source LR, plot $\alpha_{\rm upd}^{(t)}$ throughout training for both
+prescriptions and all three widths. Use fixed inputs and each matrix's fan-in
+for every block's attention and feedforward matrices and the readout.
+Also plot $\omega_{\rm move}^{(t)}$ from Problem 4.1. How do update alignment
+and readout--feature-change alignment evolve beyond the first five updates?
+
+\item \textbf{Compare transfer and tuned performance (no new runs).}
+Fit each loss--LR curve. Plot fitted optimal base LR and fitted minimum validation
+loss against width for both prescriptions. Also plot the measured loss at the
+transferred LR. Does the prescription with better LR transfer also achieve lower
+loss after tuning? How does the comparison differ from the five-step test?
+
+\item \textbf{Predict a held-out width (about 12 new runs).}
+Hold out width 1,024. For each prescription, fit a power law to the optimal base
+LRs at widths 128, 256, and 512 from part (b), and predict its optimal LR at 1,024.
+Train at the predicted LR and at the directly transferred source LR. Then run a
+local LR sweep at 1,024. Compare both predicted LRs with the fitted local optimum and
+report their measured loss gaps relative to the best sampled target LR. Does fitting the width dependence improve on
+direct transfer?
+
+\item \textbf{Transfer across depth (18 initial runs).}
+Fix width 512 and compare depths 4, 8, and 16. Test standard $\mu$P,
+Depth-$\mu$P, and CompleteP using the rules from Problem 4.1, now with reference
+depth eight: for layer count $L$, use relative depth $r=L/8$.
+At depths 4 and 16, compare the transferred source LR with an LR sweep of
+your choice. Plot fitted optimal base LR and fitted minimum
+validation loss against depth, alongside the measured losses at the transferred
+LR. Does a depth correction improve transfer, tuned performance, or both?
+
+\item \textbf{Identify the training regime (diagnostics from the same runs).}
+At the directly transferred LR and the best sampled LR for each configuration,
+track logit RMS and normalized hidden-feature movement on fixed inputs during
+the first five updates and at the end of training, as in Problem 4.1. Include both the held-out width and the depth comparison.
+Include $\omega_{\rm move}^{(t)}$ at the same
+checkpoints. Which alignment assumptions are supported at different widths,
+depths, and stages of training?
+Can a configuration with larger early transients still achieve a better final loss?
+Does a shift in optimal LR alone show that the model is outside the stable
+$\mu$P regime? Use your diagnostics to explain what the experiments establish.
+Use the LR--WD coupling from Problem 2 to discuss how holding WD fixed might
+affect the comparison.
+\input{units/muon_optional.tex}
+\end{parts}
+\end{problem}

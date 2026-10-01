@@ -1,0 +1,24 @@
+\clearpage
+\unitheader{}{Example question answer key}{}
+Try the example questions before reading the answers below.
+
+\paragraph{Postponing weight decay (p.~\pageref{ex:a2-wd-timing}).}
+\textbf{Mean loss: $3.21$ for both two-update and four-update delays.}
+Matching cumulative weight retention does not preserve the training trajectory,
+but both delays give similar mean loss to decay at every update.
+
+\paragraph{Widening a Kaiming model by copying (p.~\pageref{ex:a2-copied-width}).}
+\textbf{(a) Option 3; (b) Option 2.}
+For expansion factor $k$, use LR $.001/k$ for hidden matrices and readout,
+and $.001$ for embeddings and normalization parameters.
+With negligible Adam epsilon, scaling a gradient history by a positive constant
+leaves its normalized update unchanged. Hidden and readout weights must stay
+$1/k$ of the original weights, so their LRs scale by $1/k$; embeddings and
+normalization gains remain unscaled copies. Finite precision and nonzero epsilon
+allow small numerical differences.
+
+\paragraph{Doubling batch size halfway through training (p.~\pageref{ex:a2-batch-switch}).}
+\textbf{Policy A: change neither LR nor WD.}
+Its mean loss is $2.93867$, compared with $2.94538$ for the next-best policy B.
+Compensating for fewer weight-decay applications per token does not necessarily
+improve final loss.

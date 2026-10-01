@@ -1,4 +1,9 @@
-# CS312 Deep Learning Alchemy
+# CS312 Deep Learning Alchemy — Assignment 2
+
+Start with the [Assignment 2 handout](worksheets/hparam_invariants/assignment2.pdf)
+and [A2 runtime guide](experiments/a2/README.md). If you completed A1, reuse your
+Modal environment and W&B secret, and copy your personal settings into `utils.py`.
+The 78 supplied source runs are bundled; analyze them before launching new runs.
 
 This repo trains small autoregressive language models on a prepared tokenized
 DCLM dataset using Modal. This README is the setup guide for a student starting
@@ -9,14 +14,6 @@ For the model, data, optimizer, loss, and checkpointing details, read
 
 For running on your own CUDA GPU or a non-course Slurm cluster without Modal, read
 [gpu/README.md](gpu/README.md).
-
-Course handouts are distributed separately.
-
-This release includes only the default-run and LR-tuning examples below. The
-assignment PDF includes code snippets and names problem-specific experiment
-files; those files are not bundled. Create your own experiments using the
-LR-tuning example as a template.
-
 
 ## 0. Setting up Modal
 
@@ -66,8 +63,8 @@ uv --version
 Clone the course repo, then enter it:
 
 ```bash
-git clone https://github.com/deep-learning-alchemy/assignments.git
-cd assignments
+git clone --branch a2_release --single-branch https://github.com/deep-learning-alchemy/assignments.git assignments-a2
+cd assignments-a2
 ```
 
 If your instructor already gave you a checkout, just `cd` into that checkout
@@ -84,8 +81,10 @@ CONFIG_WANDB_ENTITY = "YOUR_WANDB_USERNAME_OR_TEAM"
 CONFIG_WANDB_PROJECT = "assignments"
 ```
 
-Replace the placeholders with your assigned Modal environment and your W&B
-username or team. `CONFIG_WANDB_PROJECT` can stay `assignments`.
+Replace the Modal environment and W&B entity placeholders with your own
+assigned values. Reuse your A1 values if you already configured them.
+`CONFIG_WANDB_PROJECT` defaults to `assignments`, as in A1. You may keep your
+A1 project name if you want to log to the same W&B project.
 
 Non-Modal users only: local GPU runs use `CONFIG_SCRATCH_ROOT`,
 `CONFIG_MODEL_DIR`, and `CONFIG_DATA_DIR`; see [gpu/README.md](gpu/README.md).
@@ -162,7 +161,9 @@ not require W&B setup.
 
 ## 8. Launch One Default Run
 
-Start by launching one default training run:
+To check your setup, launch the default run below. Skip this step if training
+already works. Use the [A2 runtime guide](experiments/a2/README.md) for the
+assignment experiments.
 
 ```text
 experiments/smoke/modal_smoke_train.py
@@ -193,8 +194,8 @@ W&B logging, training, checkpoint writing, and final model saving. The launcher
 prints the timestamped Modal app name plus a `modal_call_id`, then exits after
 submission. The training job continues on Modal.
 
-If everything is working normally, expect this default run to take about ten
-minutes. Open the printed Modal app link to read the live run logs.
+Allow roughly 10--15 minutes for this default run; actual time depends on
+hardware and diagnostics. Open the printed Modal app link to read the live run logs.
 
 The run writes checkpoints and final model artifacts to your Modal Volume under
 `/root/data/ckpts`.
@@ -345,14 +346,10 @@ Normal Modal training uses two Modal Volumes:
 - your writable per-environment storage at `/root/data`
 
 The default training data is already prepared by the instructors in the shared
-data Volume.
-
-Note: Students should NOT modify any aspect of the shared environment by 
-modifying the data or uploading their own volumes. This data is shared between
-all students and should remain consistent. Students do not need to download
-or preprocess it for normal runs.
-
-
+data Volume. Do not modify the shared environment, data, or volumes. A2
+prepares its own prefixes in your private output volume; the shared source
+data stays unchanged. Students do not need to download or preprocess it manually
+for normal Modal runs.
 
 Training outputs, checkpoints, and custom datasets live in your writable
 `/root/data` Volume. They persist after a Modal job finishes.
@@ -386,3 +383,8 @@ uv run python -m download_data
 ```
 
 See [gpu/README.md](gpu/README.md) for the full non-Modal setup.
+
+## Assignment 2
+
+See [the A2 handout](worksheets/hparam_invariants/README.md) and
+[the A2 runtime guide](experiments/a2/README.md).

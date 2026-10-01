@@ -1,0 +1,251 @@
+\clearpage
+\unitheader{D}{Part 4: Initialization, feature learning, and transfer}{}
+
+So far, we have relied on a scaling-law based approach to finding good hyperparameters at large scale. However, even a theory-guided approach of this kind may seem unsatisfying. Why does the optimal hyperparameter have to change at all? If we design the architecture and optimizer right, perhaps we could tune a hyperparameter once, and use that same optimal hyperparameter everywhere. This is the promise of various hyperparameter transfer schemes, and we will go in-depth into a popular kind of transfer scheme known as $\mu P$.
+
+\subunitheader{The goal and the $abc$ parameterization}
+We want to tune hyperparameters on a small model and reuse them as we scale width
+and depth. It will turn out that we can patch up existing architectures and optimizers to have reasonable hyperparameter transfer by adjusting some small details in how we parametrize initialization, output scale, and learning rates.
+
+Following
+\href{https://arxiv.org/abs/2407.05872}{Everett et al.}, consider a one linear
+layer with fan-in $n$, $p$ outputs, and input feature $x\in\mathbb R^n$.
+We adjust the standard form of this layer with three exponents $(a,b,c)$ which modify the forward multiplier, initialization scale,
+and learning rate. Let $\sigma$ and base LR $\eta$ be scale independent constants (i.e. our hyperparameters that are stable with scale),
+\[
+ z=n^{-a}Wx,\qquad W\in\mathbb R^{p\times n},\qquad
+ (W_0)_{ij}\overset{\rm iid}{\sim}\mathcal N(0,\sigma^2n^{-2b}),\qquad
+ \eta_W=\eta n^{-c}.
+\]
+
+\subunitheader{Two principles: stability and feature learning}
+We compare per-coordinate scales using RMS norms:
+\[
+ \|v\|_{\rm RMS}^2=\frac1n\sum_{j=1}^nv_j^2,\qquad
+ \|A\|_{\rm RMS}^2=\frac1{pn}\sum_{i,j}A_{ij}^2
+ \quad(A\in\mathbb R^{p\times n}).
+\]
+For output vectors in $\mathbb R^p$, replace $n$ by $p$ in the vector RMS definition.
+Take width $n\to\infty$ at a fixed training step $t$. For a fixed probe input
+$x$ with $\|x\|_{\rm RMS}=\Theta(1)$, let $z_t=n^{-a}W_tx$.
+Here $O(1)$ means bounded with width and $\Theta(1)$ means bounded and nonvanishing.
+\emph{Stability} requires usable initial hidden features and bounded changes:
+\[
+ \|z_0\|_{\rm RMS}=\Theta(1),\qquad
+ \|z_t-z_0\|_{\rm RMS}=O(1).
+\]
+Initial readout logits may instead vanish, so their initial scale need only be $O(1)$. The $\Theta(1)$ initialization requirement above applies to hidden features.
+\emph{Feature learning} requires a nonvanishing change at some fixed step:
+\[
+ \|z_t-z_0\|_{\rm RMS}
+ =\|n^{-a}(W_t-W_0)x\|_{\rm RMS}=\Theta(1).
+\]
+If this change scales as $n^{-r}$, then $r<0$ is unstable, $r=0$ gives feature
+learning, and $r>0$ gives a vanishing change.
+
+\subunitheader{Deriving Kaiming initialization from stability}
+We first use stability at initialization to derive Kaiming initialization.
+Since $(W_0)_{ij}\overset{\rm iid}{\sim}\mathcal N(0,\sigma^2n^{-2b})$
+and $W_0$ is independent of the input $x$, the cross terms vanish:
+\[
+ \mathbb E[z_{0,i}^2\mid x]
+ =n^{-2a}\sum_{j=1}^n\mathbb E[(W_0)_{ij}^2]x_j^2
+ =\sigma^2n^{-2(a+b)}\|x\|_2^2.
+\]
+For stability, we want all hidden features, including $x$ and $z$, to have
+$\Theta(1)$ RMS norm at initialization. This motivates choosing $a+b=1/2$:
+\[
+ a+b=1/2\quad\Longrightarrow\quad
+ \mathbb E[\|z_0\|_{\rm RMS}^2\mid x]
+ =\sigma^2\|x\|_{\rm RMS}^2.
+\]
+Kaiming initialization for ReLU chooses $a=0$, $b=1/2$, and $\sigma^2=2$.
+See \href{https://openaccess.thecvf.com/content_iccv_2015/html/He_Delving_Deep_into_ICCV_2015_paper.html}{He et al.\ (2015), Section 2.2}
+for the derivation of the constant factor $2$.
+
+Kaiming initialization does not address feature learning during training,
+which motivates $\mu$P theory. To understand it, we introduce notation for
+alignment between the weight update and the input feature.
+
+\subunitheader{Alignment between the weight update and the input feature}
+Let $\Delta W := W_{t}-W_{0}$. The training pair of interest is $(\Delta W,x)$. By definition, a weight update gives $\Delta z=n^{-a}\Delta W x$. For nonzero
+$\Delta W$ and $x$, define
+\[
+ R(\Delta W,x)=\frac{\|\Delta W x\|_{\rm RMS}}
+ {\|\Delta W\|_{\rm RMS}\|x\|_{\rm RMS}},\qquad
+ \|\Delta z\|_{\rm RMS}
+ =n^{-a}R(\Delta W,x)\|\Delta W\|_{\rm RMS}\|x\|_{\rm RMS}.
+\]
+The ratio $R$ represents the alignment between the parameter update and the inputs. Note how the alignment allows us to simplify the change in features in terms of their constituent parts (change in parameters and change in inputs). Now let us get some intuitions for the order of magnitude scale for the feature updates in two special cases.
+
+Assume $\Delta W\in\mathbb R^{p\times n}$, where $n$ is the fan-in.
+
+\paragraph{No alignment: $\Delta W$ has iid centered Gaussian entries and is independent of $x$, so $R(\Delta W,x)\approx\sqrt{n}$.}
+Suppose the update entries $\Delta W_{ij}$ are independent
+$\mathcal N(0,\tau^2)$ variables, independent of $x$.
+For $j\ne r$, $\mathbb E[\Delta W_{ij}\Delta W_{ir}]=0$, so
+\[
+ \mathbb E[(\Delta W x)_i^2\mid x]
+ =\sum_{j,r}x_jx_r\mathbb E[\Delta W_{ij}\Delta W_{ir}]
+ =\tau^2\sum_jx_j^2 =n\tau^2\|x\|_{\rm RMS}^2.
+\]
+Thus the RMS scale of $\Delta W x$ is $\sqrt{n}\,\tau\|x\|_{\rm RMS}$,
+while that of $\Delta W$ is $\tau$. Gaussian rotational symmetry gives
+the exact RMS scale of the ratio:
+\[
+ \bigl(\mathbb E[R(\Delta W,x)^2\mid x]\bigr)^{1/2}=\sqrt{n}.
+\]
+The equality holds in RMS over random updates; an individual update need not
+have exactly this ratio.
+
+\paragraph{Full alignment: $\Delta W$ has rank one and $x$ lies along its right singular vector, so $R(\Delta W,x)=n$.}
+A gradient built from its input has this form. For $t=1$, take one SGD step from $W_0$ on a single-example loss $\ell(z)$,
+where $z=n^{-a}W_0x$ and $\delta=\partial\ell/\partial z$ is the loss gradient
+with respect to the output. With learning rate $\eta_W$, the update is
+\[
+ \Delta W=-\eta_W n^{-a}\delta x^\top,\qquad
+ \Delta W x=-\eta_W n^{-a}\delta\|x\|_2^2.
+\]
+For a nonzero update, $\Delta W$ has rank one and $x/\|x\|_2$ is its
+right singular vector with nonzero singular value. Each row is proportional
+to $x$, so we have
+\[
+ \|\Delta W\|_{\rm RMS}
+ =\eta_W n^{-a}\|\delta\|_{\rm RMS}\|x\|_{\rm RMS},\qquad
+ R(\Delta W,x)=\frac{\|x\|_2^2}{\|x\|_{\rm RMS}^2}=n.
+\]
+This attains the Cauchy--Schwarz bound $R(\Delta W,x)\le n$.
+
+We see that $\sqrt{n}$ and $n$ are both reasonable scalings.
+We will see later which of these is empirically a better fit.
+
+
+\needspace{20\baselineskip}
+\subunitheader{Alignment between the readout head and its input feature change}
+Let $V_0\in\mathbb R^{n\times q}$ be the initial readout matrix in the
+transposed convention, where the number of classes $q$ does not scale with $n$.
+For a last-layer feature change $\Delta x\in\mathbb R^n$, the initial
+readout contributes $\Delta z_{\rm feature}=n^{-a}V_0^\top\Delta x$.
+For nonzero $V_0$ and $\Delta x$, define
+\[
+ S(V_0,\Delta x)=\frac{\|V_0^\top\Delta x\|_{\rm RMS}}
+ {\|V_0\|_{\rm RMS}\|\Delta x\|_{\rm RMS}},\qquad
+ \|\Delta z_{\rm feature}\|_{\rm RMS}
+ =n^{-a}S(V_0,\Delta x)\|V_0\|_{\rm RMS}\|\Delta x\|_{\rm RMS}.
+\]
+There are two reference cases:
+\begin{itemize}
+\item \textbf{No alignment:} iid centered Gaussian $V_0$ independent of $\Delta x$
+gives $\bigl(\mathbb E[S(V_0,\Delta x)^2\mid\Delta x]\bigr)^{1/2}=\sqrt n$.
+\item \textbf{Full alignment:} the columns of $V_0$ are proportional to $\Delta x$,
+giving $S(V_0,\Delta x)=n$.
+\end{itemize}
+
+\subunitheader{Deriving $\mu$P by layer type}
+For this derivation, we assume that both full-alignment conditions hold simultaneously:
+\begin{enumerate}
+\item Full alignment between the weight update and the input feature.
+\item Full alignment between the initial readout head and the input feature change.
+\end{enumerate}
+Problem~4.0 asks you to derive the scaling rules for all four combinations of
+these alignment assumptions.
+
+\needspace{10\baselineskip}
+\paragraph{Hidden and readout share the weight-update constraint.}
+Maximal-update parameterization ($\mu$P) keeps updates nonvanishing and signals bounded.
+Write an Adam update as $\Delta W=-\eta n^{-c}U$, where
+$U=\widehat m/(\sqrt{\widehat v}+\epsilon)$ is the normalized direction.
+For Adam, we can assume $\|U\|_{\rm RMS}=\Theta(1)$.\footnote{Adam can be viewed as signSGD with momentum, using $\operatorname{sign}(\widehat m)$, together with variance adaptation; see \href{https://arxiv.org/pdf/1705.07774}{Balles and Hennig (2018), \emph{Dissecting Adam}}.}
+Define $\alpha$ by $R(U,x)=\Theta(n^\alpha)$. For an order-one input,
+\[
+ \|n^{-a}\Delta W x\|_{\rm RMS}
+ =\eta n^{-a-c}R(U,x)\|U\|_{\rm RMS}\|x\|_{\rm RMS}
+ =\Theta(\eta n^{\alpha-a-c}).
+\]
+For feature learning, we want $\|n^{-a}\Delta W x\|_{\rm RMS}$ to stay
+at a constant, nonzero scale as $n\to\infty$. Under full alignment
+($\alpha=1$), this gives our first equation:
+\[
+ a+c=1.
+\]
+
+\paragraph{The feature-change constraint depends on the layer's shape.}
+After one update from $(W_0,x_0)$, the changes $\Delta W$ and $\Delta x$ give
+\[
+ \Delta z=n^{-a}\bigl(\underbrace{\Delta W x_0}_{\text{weight update}}
+ +\underbrace{W_0\Delta x}_{\text{feature change}}
+ +\underbrace{\Delta W\Delta x}_{\text{interaction}}\bigr).
+\]
+We have already shown that the direct weight-update term satisfies
+$\|n^{-a}\Delta W x_0\|_{\rm RMS}=\Theta(1)$.
+For $\|\Delta x\|_{\rm RMS}=\Theta(1)$, the interaction obeys
+\[
+ \|n^{-a}\Delta W\Delta x\|_{\rm RMS}
+ \le n^{1-a}\|\Delta W\|_{\rm RMS}\|\Delta x\|_{\rm RMS}
+ =O(\eta n^{1-a-c})=O(\eta).
+\]
+It remains to control $W_0\Delta x$. Assume $W_0$ has $p$ output channels.
+
+To express this term's dependence on $n$, we use the Gaussian matrix norm bound.
+Let $\|A\|_{\rm op}=\sup_{u\ne0}\|Au\|_2/\|u\|_2$ be the operator norm.
+The
+\href{https://www.math.uci.edu/~rvershyn/papers/HDP-book/HDP-1.pdf}{Gaussian matrix norm bound}
+ gives $\|W_0\|_{\rm op}=O(n^{-b}(\sqrt p+\sqrt n))$ with high probability.
+Converting to RMS norms bounds every $\Delta x$ with RMS $\Theta(1)$, including
+changes that depend on $W_0$:
+\[
+ \|n^{-a}W_0\Delta x\|_{\rm RMS}
+ \le n^{-a}\sqrt{\frac np}\,\|W_0\|_{\rm op}\|\Delta x\|_{\rm RMS}
+ =O\!\left(n^{-a-b}\left(\sqrt n+\frac n{\sqrt p}\right)\right).
+\]
+
+\paragraph{1. Hidden matrices: both dimensions scale together, $p\propto n$.}
+For $p\propto n$, the feature-change bound is $O(n^{1/2-a-b})$.
+The initialization requirement $a+b=1/2$ already makes this $O(1)$, even when
+$\Delta x$ depends on $W_0$. No stronger initialization scaling is needed.
+
+\paragraph{2. Readout: full readout--feature-change alignment gives $a+b=1$.}
+For the readout, $p=q$ is fixed. Write $V_0=W_0^\top\in\mathbb R^{n\times q}$
+for the initial readout in the transposed convention. Full alignment with
+the learned feature change means $S(V_0,\Delta x)=\Theta(n)$.
+With $\|V_0\|_{\rm RMS}=\Theta(n^{-b})$ and
+$\|\Delta x\|_{\rm RMS}=\Theta(1)$, this gives
+\[
+ \|n^{-a}V_0^\top\Delta x\|_{\rm RMS}
+ =n^{-a}S(V_0,\Delta x)\|V_0\|_{\rm RMS}\|\Delta x\|_{\rm RMS}
+ =\Theta(n^{1-a-b}).
+\]
+Stability requires $a+b\ge1$. Requiring a nonvanishing, order-one response
+to the feature change gives $a+b=1$.
+At initialization, the readout and its input feature are independent, so the
+initial logits have RMS scale $\Theta(n^{1/2-a-b})=\Theta(n^{-1/2})$.
+
+\paragraph{3. Input matrices: fan-in stays fixed.}
+With fixed fan-in $d$ and unchanged external inputs, initialization and direct
+update scales are $n^{-a-b}$ and $\eta n^{-a-c}$, assuming nonvanishing update
+alignment. Keeping both order one gives $a+b=a+c=0$.
+
+Our derivations show that different layers require different choices of
+$(a,b,c)$ for stable, nonvanishing feature updates. We summarize one such
+choice below. Here $m=n/n_0$, $n_0$ is the reference width, and $k$ is each
+matrix's actual fan-in; the scalings match the baseline at $n_0$.
+\[
+ \begin{array}{c|ccc}
+ &\text{input}&\text{hidden}&\text{readout}\\\hline
+ (a,b,c)&(0,0,0)&(0,1/2,1)&(1,0,0)\\
+ \text{forward multiplier}&1&1&1/m\\
+ \text{initialization variance}&1/d&1/k&1/n_0\\
+ \text{LR}&\eta&\eta/m&\eta
+ \end{array}
+\]
+\begingroup
+\setcounter{question}{-1}
+\renewcommand{\aTwoProblemNumber}{4.\arabic{question}}
+\needspace{20\baselineskip}
+\input{units/mup_no_alignment.tex}
+\input{units/mup_stress.tex}
+\input{units/mup_empirical.tex}
+\endgroup
+\setcounter{question}{4}
+
+\input{units/copied_width_example.tex}
