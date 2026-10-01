@@ -1,0 +1,15 @@
+run_name,tags,tokens,batch,lr,wd,beta1,optimizer,est_minutes
+model-a2-d8-lr0.003-tok4.92B-a2-a2-p1-D4915m,"a2,a2-p1c",4915200000,64,0.003,0.1,0.9,adamw,120.0
+model-a2-d8-lr0.0015-tok4.92B-a2-a2-p1-D4915m,"a2,a2-p1c",4915200000,64,0.0015,0.1,0.9,adamw,120.0
+model-a2-d8-lr0.006-tok4.92B-a2-a2-p1-D4915m,"a2,a2-p1c",4915200000,64,0.006,0.1,0.9,adamw,120.0
+model-a2-d8-lr0.00373-tok4.92B-a2-a2-p1-D4915m,"a2,a2-p1c",4915200000,64,0.00373,0.1,0.9,adamw,120.0
+model-a2-d8-lr0.00223-tok4.92B-a2-a2-p1-D4915m,"a2,a2-p1c",4915200000,64,0.00223,0.1,0.9,adamw,120.0
+model-a2-d8-lr0.00839-tok1.23B-wd0.0-a2-adamh-a2-p1d-hyperball,"a2,a2-p1d",1228800000,64,0.00839,0.0,0.9,adamh,30.0
+model-a2-d8-lr0.006-tok1.23B-wd0.0-a2-adamh-a2-p1d-hyperball,"a2,a2-p1d",1228800000,64,0.006,0.0,0.9,adamh,30.0
+model-a2-d8-lr0.01-tok1.23B-wd0.0-a2-adamh-a2-p1d-hyperball,"a2,a2-p1d",1228800000,64,0.01,0.0,0.9,adamh,30.0
+model-a2-d8-lr0.015-tok1.23B-wd0.0-a2-adamh-a2-p1d-hyperball,"a2,a2-p1d",1228800000,64,0.015,0.0,0.9,adamh,30.0
+model-a2-d8-lr0.003-tok2.46B-wd0.0927-a2-a2-p2c,"a2,a2-p2c",2457600000,64,0.003,0.0927,0.9,adamw,60.0
+model-a2-d8-lr0.0015-tok2.46B-wd1.6-a2-a2-p2c,"a2,a2-p2c",2457600000,64,0.0015,1.6,0.9,adamw,60.0
+model-a2-d8-lr0.003-tok2.46B-wd0.05-a2-a2-p2c,"a2,a2-p2c",2457600000,64,0.003,0.05,0.9,adamw,60.0
+model-a2-d8-lr0.003-tok2.46B-a2-a2-p2c,"a2,a2-p2c",2457600000,64,0.003,0.1,0.9,adamw,60.0
+model-a2-d8-lr0.003-tok2.46B-wd0.2-a2-a2-p2c,"a2,a2-p2c",2457600000,64,0.003,0.2,0.9,adamw,60.0
