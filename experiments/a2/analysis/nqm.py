@@ -4,6 +4,8 @@ import os
 from pathlib import Path
 
 import numpy as np
+import warnings
+warnings.filterwarnings('ignore', category=RuntimeWarning)
 
 OUT = Path(os.environ.get('A2_DATA_DIR', Path.home() / 'a2'))
 N = 8192
@@ -53,7 +55,8 @@ def fit_opt(lrs, losses):
     if a <= 0:
         return float(lrs[i]), float(losses[i])
     xs = float(np.clip(-b / (2 * a), x.min(), x.max()))
-    return float(np.exp(xs)), float(np.polyval([a, b, c], xs))
+    # The fitted minimum can undershoot the sampled floor; report the best sampled loss instead.
+    return float(np.exp(xs)), float(losses[i])
 
 
 def powerlaw(xs, ys):
