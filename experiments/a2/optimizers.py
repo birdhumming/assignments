@@ -1,9 +1,11 @@
 """A2 optimizer factories for the shared trainer's optimizer_builder hook."""
 import math
+
 import torch
-from optimizers import should_apply_weight_decay
+
 from experiments.a2.hyperball import AdamH, build_adamh_parameter_groups
 from experiments.a2.muon import SingleDeviceMuonWithAuxAdam
+from optimizers import should_apply_weight_decay
 
 
 def build_muon_parameter_groups(model, learning_rate, weight_decay, beta1, beta2,
@@ -36,12 +38,12 @@ def build_muon_parameter_groups(model, learning_rate, weight_decay, beta1, beta2
                 unscaled.append(p)
     if not hidden:
         raise ValueError('Muon requires at least one hidden Linear weight')
-    groups = [dict(params=hidden, use_muon=True, lr=learning_rate,
-                   momentum=momentum, weight_decay=weight_decay)]
+    groups = [{'params': hidden, 'use_muon': True, 'lr': learning_rate,
+                   'momentum': momentum, 'weight_decay': weight_decay}]
     for params, wd in ((decayed, weight_decay), (unscaled, 0.)):
         if params:
-            groups.append(dict(params=params, use_muon=False, lr=adam_learning_rate,
-                               betas=(beta1, beta2), eps=eps, weight_decay=wd))
+            groups.append({'params': params, 'use_muon': False, 'lr': adam_learning_rate,
+                               'betas': (beta1, beta2), 'eps': eps, 'weight_decay': wd})
     return groups
 
 

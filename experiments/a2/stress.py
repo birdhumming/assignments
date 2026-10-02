@@ -2,25 +2,25 @@
 
 No parameterization recipe, fitted optimum, or sweep result is included.
 """
-from contextlib import contextmanager, nullcontext
-from dataclasses import asdict, dataclass
 import hashlib
 import json
 import math
+from contextlib import contextmanager, nullcontext
+from dataclasses import asdict, dataclass
 from pathlib import Path
 
 import numpy as np
 import torch
 from torch import nn
 from torch.nn import functional as F
-from torch.nn.attention import sdpa_kernel, SDPBackend
+from torch.nn.attention import SDPBackend, sdpa_kernel
 from torch.utils.checkpoint import checkpoint
 
 from data import PreprocessedTokenDataset
-from model_config import LMConfig
-from modeling import LlamaRMSNorm, LlamaRotaryEmbedding, apply_rotary_pos_emb
 from experiments.a2.probe_math import measure_delta
 from experiments.a2.readout import readout_alignment
+from model_config import LMConfig
+from modeling import LlamaRMSNorm, LlamaRotaryEmbedding, apply_rotary_pos_emb
 
 
 @dataclass(frozen=True)
@@ -186,8 +186,8 @@ class StressProbe:
                                    self.initial_readout, self.initial[name]))
                 initial = _rms(self.initial[name])
                 movement = _rms(h - self.initial[name])
-                features[name] = dict(rms=_rms(h), movement=movement, initial_rms=initial,
-                    relative_movement=movement / initial if initial else None)
+                features[name] = {'rms': _rms(h), 'movement': movement, 'initial_rms': initial,
+                    'relative_movement': movement / initial if initial else None}
                 residual[name] = _rms(args[0])
             return hook
         for i in self.positions:
@@ -207,9 +207,9 @@ class StressProbe:
         try:
             self.model.eval()
             logits = self.model(self.tokens)
-            row = dict(logit_rms=_rms(logits), features=features,
-                       residual_rms=residual, unscaled_branch_rms=branches,
-                       readout_alignment=readout)
+            row = {'logit_rms': _rms(logits), 'features': features,
+                       'residual_rms': residual, 'unscaled_branch_rms': branches,
+                       'readout_alignment': readout}
         finally:
             for h in handles:
                 h.remove()
@@ -315,15 +315,15 @@ def run(config, train_tokens, val_tokens, *, base_lr, initialize_fn=None,
             history.append(dict(step=step, train_loss=total, val_loss=evaluate(), **row))
         def digest(t):
             return hashlib.sha256(t.detach().cpu().contiguous().numpy().tobytes()).hexdigest()
-        result = dict(config=asdict(config), base_lr=base_lr,
-            precision='float32' if config.precision == 'fp32' else 'bfloat16_autocast_fp32_residual',
-            history=history, alignment=alignments,
-            data_sha256=dict(train=digest(train_tokens), validation=digest(val_tokens)),
-            parameter_groups=[dict(names=[n for n, p in model.named_parameters()
-                if any(p is q for q in g['params'])], lr=g['lr'], eps=g['eps']) for g in groups],
-            output_multiplier=model.output_multiplier,
-            residual_multipliers=[b.residual_multiplier for b in model.blocks],
-            probe_block_indices=probe.positions)
+        result = {'config': asdict(config), 'base_lr': base_lr,
+            'precision': 'float32' if config.precision == 'fp32' else 'bfloat16_autocast_fp32_residual',
+            'history': history, 'alignment': alignments,
+            'data_sha256': {'train': digest(train_tokens), 'validation': digest(val_tokens)},
+            'parameter_groups': [{'names': [n for n, p in model.named_parameters()
+                if any(p is q for q in g['params'])], 'lr': g['lr'], 'eps': g['eps']} for g in groups],
+            'output_multiplier': model.output_multiplier,
+            'residual_multipliers': [b.residual_multiplier for b in model.blocks],
+            'probe_block_indices': probe.positions}
         encoded = json.dumps(result, indent=2, allow_nan=False) + '\n'
         if output is not None:
             path = Path(output)

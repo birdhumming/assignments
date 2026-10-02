@@ -1,6 +1,6 @@
 """W&B curves and plots for saved A2 alignment measurements."""
-from collections import defaultdict
 import math
+from collections import defaultdict
 
 
 def configure(wandb):

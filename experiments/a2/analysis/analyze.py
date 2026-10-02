@@ -28,14 +28,14 @@ def load_runs():
         r = json.loads(f.read_text())
         c = r['config']
         mc = c.get('model_config') or {}
-        runs.append(dict(
-            name=r['name'], id=r['id'], tags=set(r['tags']), state=r['state'],
-            lr=c.get('learning_rate'), wd=c.get('weight_decay'), batch=c.get('batch_size'), beta1=c.get('beta1'),
-            tokens=(c.get('num_train_sequences') or 0) * 1024, optimizer=c.get('optimizer_name'),
-            width=mc.get('hidden_size'), depth=mc.get('num_hidden_layers'),
-            policy=((c.get('model_builder_kwargs') or {}).get('policy')),
-            final=r['summary'].get('val_loss'), runtime_min=(r['summary'].get('_runtime') or 0) / 60,
-            history=r['history']))
+        runs.append({
+            'name': r['name'], 'id': r['id'], 'tags': set(r['tags']), 'state': r['state'],
+            'lr': c.get('learning_rate'), 'wd': c.get('weight_decay'), 'batch': c.get('batch_size'), 'beta1': c.get('beta1'),
+            'tokens': (c.get('num_train_sequences') or 0) * 1024, 'optimizer': c.get('optimizer_name'),
+            'width': mc.get('hidden_size'), 'depth': mc.get('num_hidden_layers'),
+            'policy': ((c.get('model_builder_kwargs') or {}).get('policy')),
+            'final': r['summary'].get('val_loss'), 'runtime_min': (r['summary'].get('_runtime') or 0) / 60,
+            'history': r['history']})
     return runs
 
 
@@ -113,7 +113,7 @@ def p2c(runs, out):
     rs = with_tag(runs, 'a2-p2c')
     out.append('\n# P2(c): LR-WD at 2.4576B tokens\n\nProduct-law prediction: lr*wd = 2.78e-4 so wd 0.0927 at lr 0.003; untuned baseline (153.6M best) lr 0.0015 wd 1.6.\n\n')
     rows = sorted(rs, key=lambda r: (r['lr'], r['wd']))
-    out.append(md([dict(lr=r['lr'], wd=r['wd'], product=r['lr'] * r['wd'], val_loss=r['final'], minutes=r['runtime_min']) for r in rows],
+    out.append(md([{'lr': r['lr'], 'wd': r['wd'], 'product': r['lr'] * r['wd'], 'val_loss': r['final'], 'minutes': r['runtime_min']} for r in rows],
                   ['lr', 'wd', 'product', 'val_loss', 'minutes']))
     sweep = [(r['wd'], r['final']) for r in rs if abs(r['lr'] - .003) < 1e-9]
     if len(sweep) >= 3:
@@ -125,10 +125,10 @@ def p32(runs, out):
     rs = with_tag(runs, 'a2-p32')
     prov = [r for r in provided() if r['tokens'] == 614400000 and r['batch_size'] == 64 and r['optimizer'] == 'adamw'
             and set(r['parts'].split('|')) & {'P1a', 'P2a'}]
-    rows = [dict(batch=r['batch'], lr=r['lr'], wd=r['wd'], beta1=r['beta1'], val_loss=r['final'], minutes=r['runtime_min'],
-                 src='ours') for r in rs]
-    rows += [dict(batch=64, lr=r['learning_rate'], wd=r['weight_decay'], beta1=r['beta1'], val_loss=r['final_val_loss'],
-                  minutes=None, src='supplied') for r in prov]
+    rows = [{'batch': r['batch'], 'lr': r['lr'], 'wd': r['wd'], 'beta1': r['beta1'], 'val_loss': r['final'], 'minutes': r['runtime_min'],
+                 'src': 'ours'} for r in rs]
+    rows += [{'batch': 64, 'lr': r['learning_rate'], 'wd': r['weight_decay'], 'beta1': r['beta1'], 'val_loss': r['final_val_loss'],
+                  'minutes': None, 'src': 'supplied'} for r in prov]
     rows.sort(key=lambda r: (r['batch'], r['wd'], r['lr'], r['beta1']))
     out.append('\n# P3.2: batch-size sources and targets (614.4M tokens)\n\n' + md(rows, ['batch', 'lr', 'wd', 'beta1', 'val_loss', 'minutes', 'src']))
     # (a) LR optimum per batch at wd .1, beta1 .9
@@ -137,7 +137,7 @@ def p32(runs, out):
         pairs = [(r['lr'], r['val_loss']) for r in rows if r['batch'] == B and abs(r['wd'] - .1) < 1e-9 and abs(r['beta1'] - .9) < 1e-9]
         if len(pairs) >= 3:
             x, L, bx, bL = fit_lr_curve(pairs)
-            res.append(dict(batch=B, n=len(pairs), lr_star=x, loss_star=L, best_lr=bx, best_loss=bL))
+            res.append({'batch': B, 'n': len(pairs), 'lr_star': x, 'loss_star': L, 'best_lr': bx, 'best_loss': bL})
     if res:
         out.append('\n## (a) optimal LR vs batch size at wd 0.1\n\n' + md(res, ['batch', 'n', 'lr_star', 'loss_star', 'best_lr', 'best_loss']))
         Bs = np.array([r['batch'] for r in res]); ls = np.array([r['lr_star'] for r in res])
@@ -154,8 +154,8 @@ def p32(runs, out):
             x, L, a = quad_opt(pairs)
             best_wd, best_L = min(pairs, key=lambda p: p[1])
             inside = a > 0 and pairs[0][0] <= x <= pairs[-1][0]
-            res.append(dict(batch=B, n=len(pairs), wd_star=x if inside else best_wd, loss_star=L if inside else best_L,
-                            best_wd=best_wd, edge='' if inside else 'grid edge (lower bound)'))
+            res.append({'batch': B, 'n': len(pairs), 'wd_star': x if inside else best_wd, 'loss_star': L if inside else best_L,
+                            'best_wd': best_wd, 'edge': '' if inside else 'grid edge (lower bound)'})
     if res:
         out.append('\n## (b) optimal WD vs batch size at lr 0.0015 (quadratic in log wd)\n\n'
                    + md(res, ['batch', 'n', 'wd_star', 'loss_star', 'best_wd', 'edge']))
@@ -175,9 +175,9 @@ def p32(runs, out):
 def p42(runs, out):
     rs = with_tag(runs, 'a2-p42a') + with_tag(runs, 'a2-p42c') + with_tag(runs, 'a2-p42d')
     ref = [r for r in provided() if r['parts'] == 'P1a' and r['tokens'] == 153600000]
-    rows = [dict(part=next(t for t in r['tags'] if t.startswith('a2-p42') and len(t) == 7)[-1], policy=r['policy'], width=r['width'], depth=r['depth'],
-                 lr=r['lr'], val_loss=r['final'], minutes=r['runtime_min']) for r in rs]
-    rows += [dict(part='src', policy='supplied', width=512, depth=8, lr=r['learning_rate'], val_loss=r['final_val_loss'], minutes=None) for r in ref]
+    rows = [{'part': next(t for t in r['tags'] if t.startswith('a2-p42') and len(t) == 7)[-1], 'policy': r['policy'], 'width': r['width'], 'depth': r['depth'],
+                 'lr': r['lr'], 'val_loss': r['final'], 'minutes': r['runtime_min']} for r in rs]
+    rows += [{'part': 'src', 'policy': 'supplied', 'width': 512, 'depth': 8, 'lr': r['learning_rate'], 'val_loss': r['final_val_loss'], 'minutes': None} for r in ref]
     rows.sort(key=lambda r: (r['part'], r['policy'], r['width'], r['depth'], r['lr']))
     out.append('\n# P4.2: width/depth transfer at 153.6M tokens\n\n' + md(rows, ['part', 'policy', 'width', 'depth', 'lr', 'val_loss', 'minutes']))
     fits = []
@@ -188,8 +188,8 @@ def p42(runs, out):
         if len(pairs) >= 3:
             x, L, bx, bL = fit_lr_curve(pairs)
             at_src = dict(pairs).get(.003)
-            fits.append(dict(policy=pol, width=w, depth=d, n=len(pairs), lr_star=x, loss_star=L, best_lr=bx, best_loss=bL,
-                             loss_at_source_lr=at_src, gap=(at_src - bL) if at_src is not None else None))
+            fits.append({'policy': pol, 'width': w, 'depth': d, 'n': len(pairs), 'lr_star': x, 'loss_star': L, 'best_lr': bx, 'best_loss': bL,
+                             'loss_at_source_lr': at_src, 'gap': (at_src - bL) if at_src is not None else None})
     if fits:
         out.append('\n## Fitted optima per configuration (source LR 0.003)\n\n' +
                    md(fits, ['policy', 'width', 'depth', 'n', 'lr_star', 'loss_star', 'best_lr', 'best_loss', 'loss_at_source_lr', 'gap']))

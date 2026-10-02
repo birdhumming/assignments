@@ -30,8 +30,8 @@ def pull(r):
         return r.name, 'cached'
     t = time.time()
     rows = list(r.scan_history(page_size=20000))
-    record = dict(name=r.name, id=r.id, state=r.state, tags=r.tags, config=dict(r.config),
-                  summary=dict(r.summary.items()), history=rows, created_at=r.created_at)
+    record = {'name': r.name, 'id': r.id, 'state': r.state, 'tags': r.tags, 'config': dict(r.config),
+                  'summary': dict(r.summary.items()), 'history': rows, 'created_at': r.created_at}
     with open(path, 'w') as fh:
         json.dump(record, fh, default=_plain)
     return r.name, f'{len(rows)} rows {time.time() - t:.0f}s'

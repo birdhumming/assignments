@@ -5,12 +5,19 @@ import tempfile
 from dataclasses import replace
 from pathlib import Path, PurePosixPath
 
-from data import DEFAULT_DATASET_DIR_NAME, DEFAULT_DATA_SEED, PreprocessedTokenDataset
+from data import DEFAULT_DATA_SEED, DEFAULT_DATASET_DIR_NAME, PreprocessedTokenDataset
 from experiments.a2.baseline import config as baseline_config
 from experiments.a2.data import stage_prefix
-from modal_utils import (app, build_image, user_volume, VOLUME_MOUNTS,
-                        MODAL_ENVIRONMENT, MODAL_SHARED_DATASETS_DIR,
-                        MODAL_USER_DATASETS_DIR, timestamped_modal_app_name)
+from modal_utils import (
+    MODAL_ENVIRONMENT,
+    MODAL_SHARED_DATASETS_DIR,
+    MODAL_USER_DATASETS_DIR,
+    VOLUME_MOUNTS,
+    app,
+    build_image,
+    timestamped_modal_app_name,
+    user_volume,
+)
 
 
 # Container paths come from the same mounts used by A1; no student-specific paths.
@@ -37,10 +44,10 @@ def _validate_prefix(destination, source, n):
         cached = PreprocessedTokenDataset(destination)
     except (OSError, ValueError, KeyError) as error:
         raise ValueError(f'Incomplete A2 prefix at {destination}; remove this cache directory and retry') from error
-    expected = dict(num_sequences=n, seq_len=1024, data_seed=42,
-                    shuffle='global_shuffle_then_prefix', prefix_sequences=n,
-                    shuffle_source_num_sequences=len(PreprocessedTokenDataset(source)),
-                    source_path=str(source))
+    expected = {'num_sequences': n, 'seq_len': 1024, 'data_seed': 42,
+                    'shuffle': 'global_shuffle_then_prefix', 'prefix_sequences': n,
+                    'shuffle_source_num_sequences': len(PreprocessedTokenDataset(source)),
+                    'source_path': str(source)}
     meta = cached.metadata
     if any(meta.get(k) != v for k, v in expected.items()) or not meta.get('tokens_sha256'):
         raise ValueError(f'Existing A2 prefix does not match the requested data: {destination}')
@@ -92,7 +99,6 @@ def launch_training_jobs(configs, *, max_parallel_runs=None):
             raise ValueError('Use this module\'s config() for automatic data preparation')
 
     import modal
-    with modal.enable_output():
-        with app.run(name=timestamped_modal_app_name('a2-data'), environment_name=MODAL_ENVIRONMENT):
-            _prepare_prefixes.remote([c.num_train_sequences for c in configs])
+    with modal.enable_output(), app.run(name=timestamped_modal_app_name('a2-data'), environment_name=MODAL_ENVIRONMENT):
+        _prepare_prefixes.remote([c.num_train_sequences for c in configs])
     return shared_launch(configs, max_parallel_runs=max_parallel_runs)

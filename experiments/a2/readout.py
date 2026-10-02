@@ -36,17 +36,17 @@ def measure_readout(weight, features, tile_rows=256):
     denominator = wrms * xrms
     ratio = yrms / denominator if denominator else None
     omega = math.log(ratio, n) if ratio is not None and ratio > 0 else None
-    return dict(omega=omega, ratio=ratio,
-                status='undefined_denominator' if denominator == 0 else
+    return {'omega': omega, 'ratio': ratio,
+                'status': 'undefined_denominator' if denominator == 0 else
                        'zero_action' if yrms == 0 else 'finite',
-                weight_rms=wrms, feature_rms=xrms, action_rms=yrms,
-                fan_in=n, output_coordinates=weight.shape[0], probe_positions=len(x))
+                'weight_rms': wrms, 'feature_rms': xrms, 'action_rms': yrms,
+                'fan_in': n, 'output_coordinates': weight.shape[0], 'probe_positions': len(x)}
 
 
 @torch.no_grad()
 def readout_alignment(weight, features, initial_weight, initial_features):
     """Current S(V_t,h_t) and initial-readout S(V_0,h_t-h_0)."""
     h = features.detach().float()
-    return dict(current=measure_readout(weight, h),
-                movement=measure_readout(initial_weight,
-                    h - initial_features.to(device=h.device, dtype=torch.float32)))
+    return {'current': measure_readout(weight, h),
+                'movement': measure_readout(initial_weight,
+                    h - initial_features.to(device=h.device, dtype=torch.float32))}

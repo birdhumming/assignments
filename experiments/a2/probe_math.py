@@ -1,5 +1,6 @@
 """Numerical measurements for the handout-defined update-alignment ratio."""
 import math
+
 import torch
 
 
@@ -13,14 +14,14 @@ def training_steps(config):
 def alignment(numerator_rms, update_rms, input_rms, fan_in):
     denominator = update_rms * input_rms
     if denominator == 0:
-        return dict(alpha=None, status='undefined_denominator', numerator_rms=numerator_rms,
-                    update_rms=update_rms, input_rms=input_rms, fan_in=fan_in)
+        return {'alpha': None, 'status': 'undefined_denominator', 'numerator_rms': numerator_rms,
+                    'update_rms': update_rms, 'input_rms': input_rms, 'fan_in': fan_in}
     if numerator_rms == 0:
-        return dict(alpha=None, status='zero_action', numerator_rms=0.,
-                    update_rms=update_rms, input_rms=input_rms, fan_in=fan_in)
-    return dict(alpha=math.log(numerator_rms / denominator, fan_in), status='finite',
-                numerator_rms=numerator_rms, update_rms=update_rms,
-                input_rms=input_rms, fan_in=fan_in)
+        return {'alpha': None, 'status': 'zero_action', 'numerator_rms': 0.,
+                    'update_rms': update_rms, 'input_rms': input_rms, 'fan_in': fan_in}
+    return {'alpha': math.log(numerator_rms / denominator, fan_in), 'status': 'finite',
+                'numerator_rms': numerator_rms, 'update_rms': update_rms,
+                'input_rms': input_rms, 'fan_in': fan_in}
 
 
 @torch.no_grad()

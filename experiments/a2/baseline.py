@@ -1,9 +1,8 @@
 """The shared language-model baseline for Problems 1, 2, 3.2, and 4.2."""
 from data import TokenDatasetConfig
+from metric_logging import AFTER_BACKWARD, AFTER_TRAIN_STEP, MetricLogger
 from model_config import LMConfig
 from train import TrainConfig
-from metric_logging import MetricLogger, AFTER_BACKWARD, AFTER_TRAIN_STEP
-
 
 # A1's supplied baseline uses 64 sequences in one microbatch.
 A1_BATCH_SIZE = TrainConfig.batch_size

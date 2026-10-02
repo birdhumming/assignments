@@ -71,8 +71,8 @@ def optimum_curve(batches, **kw):
     out = {}
     for B in batches:
         lrs, losses = sweep(B, **kw)
-        out[B] = dict(lr_star=fit_opt(lrs, losses)[0], loss_star=fit_opt(lrs, losses)[1],
-                      lrs=lrs.tolist(), losses=losses.tolist())
+        out[B] = {'lr_star': fit_opt(lrs, losses)[0], 'loss_star': fit_opt(lrs, losses)[1],
+                      'lrs': lrs.tolist(), 'losses': losses.tolist()}
     return out
 
 
@@ -82,8 +82,8 @@ def source_target(label, **kw):
     pred = c * 256 ** p
     tgt = optimum_curve([128, 256, 512], **kw)
     loss_at_pred = simulate(256, pred, **kw)
-    r = dict(label=label, source=src, exponent=p, coeff=c, pred_lr_256=pred, loss_at_pred_256=loss_at_pred,
-             target=tgt, gap_256=loss_at_pred - tgt[256]['loss_star'])
+    r = {'label': label, 'source': src, 'exponent': p, 'coeff': c, 'pred_lr_256': pred, 'loss_at_pred_256': loss_at_pred,
+             'target': tgt, 'gap_256': loss_at_pred - tgt[256]['loss_star']}
     print(f"{label}: p={p:+.3f} pred lr*(256)={pred:.4g} tuned lr*(256)={tgt[256]['lr_star']:.4g} "
           f"loss pred={loss_at_pred:.4g} tuned={tgt[256]['loss_star']:.4g} gap={r['gap_256']:+.4g}")
     return r
@@ -111,12 +111,12 @@ def main():
         for mu in (0., .9):
             lrs, losses = sweep(B, opt='sgd', mu=mu)
             lr_s, L_s = fit_opt(lrs, losses)
-            res['momentum'][f'sgd_B{B}_mu{mu}'] = dict(lr_star=lr_s, loss_star=L_s)
+            res['momentum'][f'sgd_B{B}_mu{mu}'] = {'lr_star': lr_s, 'loss_star': L_s}
             print(f'SGD B={B} mu={mu}: lr*={lr_s:.4g} loss*={L_s:.4g}')
         for b1 in (0., .5, .9, .95, .98, .99):
             lrs, losses = sweep(B, opt='adam', beta1=b1)
             lr_s, L_s = fit_opt(lrs, losses)
-            res['momentum'][f'adam_B{B}_beta1_{b1}'] = dict(lr_star=lr_s, loss_star=L_s)
+            res['momentum'][f'adam_B{B}_beta1_{b1}'] = {'lr_star': lr_s, 'loss_star': L_s}
             print(f'Adam B={B} beta1={b1}: lr*={lr_s:.4g} loss*={L_s:.4g}')
     (OUT / 'nqm_results.json').write_text(json.dumps(res, indent=1, default=float))
     print('saved', OUT / 'nqm_results.json')

@@ -23,7 +23,7 @@ def lm_config(width, depth):
 def transfer_run(part, policy, width, depth, lr, **overrides):
     return run(f'a2-p42{part}', f'a2-p42-{policy}', tokens=TOKENS, suffix=f'a2-p42{part}-{policy}',
                model_config=lm_config(width, depth), learning_rate=lr,
-               model_builder=BUILDER, model_builder_kwargs=dict(policy=policy, reference_width=512, reference_depth=8),
+               model_builder=BUILDER, model_builder_kwargs={'policy': policy, 'reference_width': 512, 'reference_depth': 8},
                optimizer_builder=OPTIMIZER, **overrides)
 
 

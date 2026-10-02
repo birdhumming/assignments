@@ -29,11 +29,11 @@ def _is_hidden_matrix(name):
 def depth_multipliers(policy, depth, reference_depth):
     r = depth / reference_depth
     if policy in ('kaiming', 'mup'):
-        return dict(residual=1., block_lr=1., block_eps=1.)
+        return {'residual': 1., 'block_lr': 1., 'block_eps': 1.}
     if policy == 'depth_mup':
-        return dict(residual=r ** -.5, block_lr=r ** -.5, block_eps=r ** -.5)
+        return {'residual': r ** -.5, 'block_lr': r ** -.5, 'block_eps': r ** -.5}
     if policy == 'completep':
-        return dict(residual=1. / r, block_lr=1., block_eps=1. / r)
+        return {'residual': 1. / r, 'block_lr': 1., 'block_eps': 1. / r}
     raise ValueError(policy)
 
 
@@ -76,7 +76,7 @@ def make_policy(policy, *, reference_width=512, reference_depth=2):
             else:  # embedding, readout, final norm
                 key = (base_lr, EPS)
             groups.setdefault(key, []).append(p)
-        return [dict(params=ps, lr=lr, eps=eps) for (lr, eps), ps in groups.items()]
+        return [{'params': ps, 'lr': lr, 'eps': eps} for (lr, eps), ps in groups.items()]
 
     return initialize, parameter_groups
 

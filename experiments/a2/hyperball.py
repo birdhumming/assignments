@@ -1,6 +1,8 @@
 """Hyperball Adam for linear weights, with ordinary Adam for other parameters."""
 import torch
+
 from optimizers import is_norm_module
+
 ADAMH_DEFAULT_ADAM_LR_RATIO = 0.000656 / 0.00630
 
 def should_use_adamh(module, parameter_name, parameter):

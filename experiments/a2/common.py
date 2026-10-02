@@ -44,10 +44,10 @@ def manifest_rows(configs):
     rows = []
     for c in configs:
         checked_train_config(c)
-        rows.append(dict(run_name=training_run_name(c), tags=','.join(c.wandb_tags),
-                         tokens=c.num_train_sequences * 1024, batch=c.batch_size,
-                         lr=c.learning_rate, wd=c.weight_decay, beta1=c.beta1, optimizer=c.optimizer_name,
-                         est_minutes=f'{estimated_minutes(c):.1f}'))
+        rows.append({'run_name': training_run_name(c), 'tags': ','.join(c.wandb_tags),
+                         'tokens': c.num_train_sequences * 1024, 'batch': c.batch_size,
+                         'lr': c.learning_rate, 'wd': c.weight_decay, 'beta1': c.beta1, 'optimizer': c.optimizer_name,
+                         'est_minutes': f'{estimated_minutes(c):.1f}'})
     return rows
 
 

@@ -38,14 +38,14 @@ def specs(points=None):
     for policy in ('kaiming', 'mup'):
         for w in WIDTHS:
             for lr in width_lrs:
-                out.append(dict(test='width', policy=policy, width=w, depth=2, head_dim=64, precision='fp32',
-                                lr=lr, reference_width=512, reference_depth=2))
+                out.append({'test': 'width', 'policy': policy, 'width': w, 'depth': 2, 'head_dim': 64, 'precision': 'fp32',
+                                'lr': lr, 'reference_width': 512, 'reference_depth': 2})
     for policy in ('mup', 'depth_mup', 'completep'):
         for d in DEPTHS:
             for lr in depth_lrs:
                 pol = 'mup' if d == 2 else policy  # all depth policies coincide at the reference depth
-                s = dict(test='depth', policy=pol, width=64, depth=d, head_dim=64, precision='mp',
-                         lr=lr, reference_width=64, reference_depth=2)
+                s = {'test': 'depth', 'policy': pol, 'width': 64, 'depth': d, 'head_dim': 64, 'precision': 'mp',
+                         'lr': lr, 'reference_width': 64, 'reference_depth': 2}
                 if name_of(s) not in seen:
                     seen.add(name_of(s)); out.append(s)
     return out
@@ -53,10 +53,10 @@ def specs(points=None):
 
 def extra_spec(test, policy, size, lr):
     if test == 'width':
-        return dict(test='width', policy=policy, width=int(size), depth=2, head_dim=64, precision='fp32',
-                    lr=float(lr), reference_width=512, reference_depth=2)
-    return dict(test='depth', policy=policy, width=64, depth=int(size), head_dim=64, precision='mp',
-                lr=float(lr), reference_width=64, reference_depth=2)
+        return {'test': 'width', 'policy': policy, 'width': int(size), 'depth': 2, 'head_dim': 64, 'precision': 'fp32',
+                    'lr': float(lr), 'reference_width': 512, 'reference_depth': 2}
+    return {'test': 'depth', 'policy': policy, 'width': 64, 'depth': int(size), 'head_dim': 64, 'precision': 'mp',
+                'lr': float(lr), 'reference_width': 64, 'reference_depth': 2}
 
 
 @app.function(image=build_image(), volumes=VOLUME_MOUNTS, gpu='H100', retries=0,

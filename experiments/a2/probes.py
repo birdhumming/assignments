@@ -1,12 +1,14 @@
 """P4.2 fixed-input probes via the shared metric-logger interface."""
 import json
 from pathlib import Path
+
 import torch
-from train import training_run_name, causal_lm_loss
-from utils import autocast_context
-from experiments.a2.readout import readout_alignment
+
 from experiments.a2.probe_math import training_steps
-from experiments.a2.wandb_diagnostics import configure, readout_metrics, log_plots
+from experiments.a2.readout import readout_alignment
+from experiments.a2.wandb_diagnostics import configure, log_plots, readout_metrics
+from train import causal_lm_loss, training_run_name
+from utils import autocast_context
 
 
 class FeatureLogger:
@@ -38,7 +40,7 @@ class FeatureLogger:
     def sample(self, ctx, step):
         if step not in self.steps:
             return {}
-        row = dict(step=step, features={}, residual_rms={}, branch_rms={})
+        row = {'step': step, 'features': {}, 'residual_rms': {}, 'branch_rms': {}}
         handles = []
         def feature(name):
             def hook(module, inputs, output):
@@ -49,8 +51,8 @@ class FeatureLogger:
                     row['readout_alignment'] = readout_alignment(
                         self.model.lm_head.weight, output,
                         self.initial['readout_weight'], self.initial[name])
-                row['features'][name] = dict(rms=h.square().mean().sqrt().item(),
-                    movement=(h-self.initial[name]).square().mean().sqrt().item())
+                row['features'][name] = {'rms': h.square().mean().sqrt().item(),
+                    'movement': (h-self.initial[name]).square().mean().sqrt().item()}
                 row['residual_rms'][name] = inputs[0].float().square().mean().sqrt().item()
             return hook
         def branch(name):
@@ -113,9 +115,9 @@ class GradientLogger:
         norm = total ** .5
         embedding = sum(v for name, v in squares.items() if 'embed_tokens' in name)
         coefficient = 1. if ctx.config.grad_norm is None else min(1., ctx.config.grad_norm / (norm + 1e-6))
-        row = dict(step=ctx.step + 1, pre_clip_norm=norm,
-                   embedding_fraction_squared_norm=embedding / total if total else 0.,
-                   clip_coefficient=coefficient)
+        row = {'step': ctx.step + 1, 'pre_clip_norm': norm,
+                   'embedding_fraction_squared_norm': embedding / total if total else 0.,
+                   'clip_coefficient': coefficient}
         with self.path.open('a') as f:
             f.write(json.dumps(row, allow_nan=False) + '\n')
         return {'gradient/pre_clip_norm': norm, 'gradient/clip_coefficient': coefficient}

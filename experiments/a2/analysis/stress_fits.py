@@ -54,8 +54,8 @@ def curves(rows):
     table = []
     for (test, policy, size), rs in sorted(groups.items()):
         lr_s, L_s, best = fit_curve([r['lr'] for r in rs], [r['final'] for r in rs])
-        table.append(dict(test=test, policy=policy, size=size, n=len(rs), lr_star=lr_s, loss_star=L_s, best_lr=best,
-                          losses={r['lr']: r['final'] for r in sorted(rs, key=lambda r: r['lr'])}))
+        table.append({'test': test, 'policy': policy, 'size': size, 'n': len(rs), 'lr_star': lr_s, 'loss_star': L_s, 'best_lr': best,
+                          'losses': {r['lr']: r['final'] for r in sorted(rs, key=lambda r: r['lr'])}})
     return table
 
 
@@ -65,12 +65,12 @@ def probes(r):
     for h in r['history']:
         fn = h['features'].get('final_norm', {})
         ra = h.get('readout_alignment', {})
-        out.append(dict(step=h['step'], val_loss=h['val_loss'], logit_rms=h['logit_rms'],
-                        final_rms=fn.get('rms'), final_move=fn.get('movement'), final_rel_move=fn.get('relative_movement'),
-                        omega_move=(ra.get('movement') or {}).get('omega'),
-                        residual_rms={k: v for k, v in h['residual_rms'].items()},
-                        branch_rms={k: v for k, v in h['unscaled_branch_rms'].items()},
-                        features={k: v for k, v in h['features'].items()}))
+        out.append({'step': h['step'], 'val_loss': h['val_loss'], 'logit_rms': h['logit_rms'],
+                        'final_rms': fn.get('rms'), 'final_move': fn.get('movement'), 'final_rel_move': fn.get('relative_movement'),
+                        'omega_move': (ra.get('movement') or {}).get('omega'),
+                        'residual_rms': {k: v for k, v in h['residual_rms'].items()},
+                        'branch_rms': {k: v for k, v in h['unscaled_branch_rms'].items()},
+                        'features': {k: v for k, v in h['features'].items()}})
     alpha = defaultdict(dict)
     for a in r['alignment']:
         alpha[a['step']][a['parameter']] = a.get('alpha')
@@ -93,7 +93,7 @@ def main():
     table = curves(rows)
     g = lambda v: f'{v:.4g}'
     md = '# P4.1 loss-vs-LR fits (val loss after update 5)\n\n'
-    md += md_table(table, ['test', 'policy', 'size', 'n', 'best_lr', 'lr_star', 'loss_star'], dict(best_lr=g, lr_star=g, loss_star=g))
+    md += md_table(table, ['test', 'policy', 'size', 'n', 'best_lr', 'lr_star', 'loss_star'], {'best_lr': g, 'lr_star': g, 'loss_star': g})
     md += '\n## Sampled losses\n\n'
     for t in table:
         md += f"- {t['test']} {t['policy']} {t['size']}: " + ', '.join(f'{lr:g}: {L:.4f}' for lr, L in t['losses'].items()) + '\n'
@@ -110,9 +110,9 @@ def main():
                        {k: g for k in ('val_loss', 'logit_rms', 'final_rms', 'final_move', 'omega_move')})
         md += '\nupdate alignment alpha (step 1 / step 5):\n\n'
         names = sorted(alpha[1]) if 1 in alpha else []
-        arows = [dict(parameter=n, a1=alpha[1].get(n), a5=alpha.get(5, {}).get(n)) for n in names
+        arows = [{'parameter': n, 'a1': alpha[1].get(n), 'a5': alpha.get(5, {}).get(n)} for n in names
                  if n == 'head.weight' or n.startswith(('blocks.0.', f"blocks.{(r['depth'] - 1)}."))]
-        md += md_table(arows, ['parameter', 'a1', 'a5'], dict(a1=g, a5=g))
+        md += md_table(arows, ['parameter', 'a1', 'a5'], {'a1': g, 'a5': g})
         md += '\nresidual RMS before norm / unscaled branch RMS at step 5:\n\n'
         last = p[-1]
         md += ', '.join(f'{k}: {v:.3g}' for k, v in last['residual_rms'].items()) + '\n\n'

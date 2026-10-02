@@ -24,11 +24,11 @@ HIDDEN_SUFFIXES = ('q_proj', 'k_proj', 'v_proj', 'o_proj', 'gate_proj', 'up_proj
 def depth_multipliers(policy, depth, reference_depth):
     r = depth / reference_depth
     if policy in ('baseline', 'mup'):
-        return dict(residual=1., block_lr=1., block_eps=1.)
+        return {'residual': 1., 'block_lr': 1., 'block_eps': 1.}
     if policy == 'depth_mup':
-        return dict(residual=r ** -.5, block_lr=r ** -.5, block_eps=r ** -.5)
+        return {'residual': r ** -.5, 'block_lr': r ** -.5, 'block_eps': r ** -.5}
     if policy == 'completep':
-        return dict(residual=1. / r, block_lr=1., block_eps=1. / r)
+        return {'residual': 1. / r, 'block_lr': 1., 'block_eps': 1. / r}
     raise ValueError(policy)
 
 
@@ -100,11 +100,11 @@ def parameter_groups(model, learning_rate, weight_decay, eps=ADAMW_EPSILON):
     mult = depth_multipliers(policy, model.config.num_hidden_layers, getattr(model, 'reference_depth', 8))
     hidden_lr = learning_rate if policy == 'baseline' else learning_rate / m
     spec = {
-        'embed': dict(lr=learning_rate, eps=eps, weight_decay=0.),
-        'head': dict(lr=learning_rate, eps=eps, weight_decay=weight_decay),
-        'final_norm': dict(lr=learning_rate, eps=eps, weight_decay=0.),
-        'hidden': dict(lr=hidden_lr * mult['block_lr'], eps=eps * mult['block_eps'], weight_decay=weight_decay),
-        'block_norm': dict(lr=learning_rate * mult['block_lr'], eps=eps * mult['block_eps'], weight_decay=0.),
+        'embed': {'lr': learning_rate, 'eps': eps, 'weight_decay': 0.},
+        'head': {'lr': learning_rate, 'eps': eps, 'weight_decay': weight_decay},
+        'final_norm': {'lr': learning_rate, 'eps': eps, 'weight_decay': 0.},
+        'hidden': {'lr': hidden_lr * mult['block_lr'], 'eps': eps * mult['block_eps'], 'weight_decay': weight_decay},
+        'block_norm': {'lr': learning_rate * mult['block_lr'], 'eps': eps * mult['block_eps'], 'weight_decay': 0.},
     }
     buckets = {k: [] for k in spec}
     for name, p in model.named_parameters():

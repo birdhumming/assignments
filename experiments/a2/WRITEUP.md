@@ -515,3 +515,113 @@ by 1/m (µP does it with the 1/m forward multiplier instead), embedding untouche
 sweep agrees to within the grid spacing: at width 2560 the fitted Kaiming optimum is 0.00015,
 versus 0.001/4 = 0.00025 (the sweep's points are a factor of 2 apart, so 0.00025 and 0.000125 are
 both within one grid step).
+
+## Problem 4.2 — Do the five-step rules survive a real training budget?
+
+**Question.** Take the width-512, depth-8 model that Problem 1 tuned at 153.6M tokens (best sampled
+learning rate 0.003, weight decay 0.1 held fixed). Shrink it to width 128 and 256, or change its
+depth to 4 and 16, under each prescription. Does the tuned learning rate still transfer, does the
+prescription that transfers better also *perform* better, and do the alignment measurements from
+the five-step test still hold after 2,444 updates?
+
+Setup that is the same for every new run: 153.6M tokens, batch 64, AdamW with β = (0.9, 0.95),
+weight decay 0.1, cosine-to-zero schedule, seed 42, same data order. "Baseline" is the course's
+standard parameterization (Kaiming-style; identical to µP at the reference width 512). The
+supplied width-512 curve is the source.
+
+### (a)–(b) Width transfer (20 new runs, five learning rates per cell)
+
+| policy | width | best sampled lr | fitted lr* | tuned loss (fit) | loss at transferred lr 0.003 | gap to best sampled |
+|---|---|---|---|---|---|---|
+| baseline | 128 | 0.006 | 0.0074 | 3.613 | 3.693 | 0.067 |
+| baseline | 256 | 0.003 | 0.0048 | 3.388 | 3.405 | 0 |
+| µP | 128 | 0.003 | 0.0037 | 3.628 | 3.628 | 0 |
+| µP | 256 | 0.0015 | 0.0025 | 3.406 | 3.419 | 0.006 |
+| source (both) | 512 | 0.003 | 0.0024 | 3.224 | 3.229 | 0 |
+
+Power laws through the three fitted optima (used for the held-out prediction in part (c)):
+baseline lr* ∝ width^-0.82 → 0.0014 at width 1024; µP lr* ∝ width^-0.31 → 0.0018 at width 1024.
+
+What this says:
+
+1. **Transfer: µP still wins, but less cleanly than in five steps.** Going from 512 down to 128,
+   the baseline optimum moves 3× (0.0024 → 0.0074) and µP's moves 1.5× (0.0024 → 0.0037). At the
+   transferred learning rate the baseline loses 0.067 at width 128; µP loses nothing measurable.
+   But µP's optimum is not flat either (exponent −0.31), so at a 4× width change the "tune once"
+   promise is only approximately kept over a full training run.
+2. **Performance: the tuned baseline is slightly better.** After fitting each curve, the baseline
+   reaches 3.613 / 3.388 versus µP's 3.628 / 3.406 — the baseline is ahead by 0.015–0.018 at both
+   widths. That is the opposite of the five-step result, where µP was ahead by 0.2–0.7.
+3. **Why the comparison flips.** In the five-step test the only thing that mattered was whether
+   the first updates were the right size; µP's were, Kaiming's were not. Over 2,444 updates with a
+   warmup and a decaying schedule, a 3× mis-sized learning rate is survivable (the baseline at 0.003
+   is only 0.067 behind its own optimum) and other effects take over. Two of them push against µP
+   at *narrow* widths: the 1/m readout multiplier becomes a ×4 boost at width 128 (initial logit RMS
+   1.96 versus 0.98 — see the probes), and the hidden learning rate is multiplied by 4 while weight
+   decay stays at 0.1, so the learning-rate × weight-decay product that Problem 2 showed controls
+   the effective averaging window is 4× larger than in the source run. µP transfers the step size
+   but not the regularization timescale; holding weight decay fixed is a hidden mis-tuning that
+   grows with the width ratio.
+
+### (d) Depth transfer at width 512 (18 new runs, reference depth 8, r = depth/8)
+
+| prescription | depth | best sampled lr | fitted lr* | tuned loss (fit) | loss at transferred lr 0.003 | gap |
+|---|---|---|---|---|---|---|
+| µP (no depth rule) | 4 | 0.003 | 0.0025 | 3.312 | 3.314 | 0 |
+| Depth-µP | 4 | 0.0015 | 0.0016 | 3.326 | 3.344 | 0.018 |
+| CompleteP | 4 | 0.003 | 0.0025 | 3.313 | 3.316 | 0 |
+| source | 8 | 0.003 | 0.0024 | 3.224 | 3.229 | 0 |
+| µP (no depth rule) | 16 | 0.0015 | 0.0021 | 3.167 | 3.175 | 0.002 |
+| Depth-µP | 16 | 0.003 | 0.0028 | 3.169 | 3.169 | 0 |
+| CompleteP | 16 | 0.0015 | 0.0017 | 3.169 | 3.193 | 0.023 |
+
+**Answer.** Over a 4× depth range, the depth corrections change nothing that the data can resolve.
+Tuned losses agree to within 0.003 at depth 16 (3.167 / 3.169 / 3.169) and within 0.014 at depth 4;
+Assignment 1 measured a seed-to-seed standard deviation of 0.002–0.005 for this model, so these
+are ties. Transfer is also a wash: the fitted optima wander between 0.0016 and 0.0028 with no
+consistent ordering (Depth-µP is the one that misses at depth 4, CompleteP the one that misses at
+depth 16). Contrast with the five-step test at depths 100–1000, where plain µP's residual stream
+grew to RMS 6,000 and lost 0.2 in loss: with r between ½ and 2 the residual stream grows by at most
+a factor ~1.4, well inside what the final RMSNorm and a warmup absorb. The depth rules are
+insurance for extreme depth, not a tuning knob at ordinary depth.
+
+### (a)/(e) Alignment and probes through training (fixed inputs, source learning rate 0.003)
+
+| configuration | α_upd hidden (median), step 5 → 100 → end | α_upd readout, step 5 → end | ω_move (all steps) | logit RMS, init → end | final-norm feature movement, step 5 → end |
+|---|---|---|---|---|---|
+| baseline w128 d8 | 0.79 → 0.73 → 0.61 | 0.87 → 0.64 | 0.50 | 0.98 → 4.4 | 1.29 → 2.02 |
+| baseline w256 d8 | 0.90 → 0.73 → 0.61 | 0.95 → 0.63 | 0.50 | 0.99 → 4.2 | 1.20 → 1.63 |
+| µP w128 d8 | 0.88 → 0.71 → 0.60 | 0.92 → 0.60 | 0.50 | 1.96 → 4.4 | 1.37 → 1.26 |
+| µP w256 d8 | 0.91 → 0.74 → 0.61 | 0.94 → 0.62 | 0.50 | 1.40 → 4.2 | 1.25 → 1.22 |
+| µP / Depth-µP / CompleteP w512 d16 | 0.91 → 0.77–0.78 → 0.63–0.64 | 0.96 → 0.63 | 0.50 | 0.98 → 4.1–4.3 | 1.30 → 1.34–1.35 |
+
+Reading it:
+
+1. **Update alignment decays during training.** At step 5 Adam's updates are almost fully
+   aligned with their inputs (α ≈ 0.9, close to the derivation's α = 1); by step 100 they are at
+   0.73–0.78 and by the end of training at 0.60–0.64, only a little above the random-direction
+   value of ½. Early training is a coherent, nearly rank-one push; late training is closer to noise
+   averaging. The µP learning-rate rule (η/m) is derived for the α = 1 regime, so it is most exact
+   in exactly the phase the five-step test measured, and progressively over-conservative later.
+   This is consistent with µP's optimum drifting *up* at narrow widths over a full run.
+2. **Readout–feature-change alignment never appears.** ω_move = 0.50 at every width, depth,
+   prescription and step, as in the five-step test. The initial readout stays a random direction
+   relative to how the features move throughout training.
+3. **Which assumptions hold where.** α = 1 holds early at every width and depth and fails late;
+   ω = 1 holds nowhere. The scaling rules that matter in practice are the ones that depend on α
+   (hidden learning rate, readout multiplier), which is why they still work approximately.
+4. **Transients versus final loss.** µP at width 128 starts with logits twice as large as the
+   baseline (RMS 1.96 versus 0.98) and its features move further in the first five steps (1.37
+   versus 1.29), yet its final loss at the transferred learning rate is *better* (3.628 versus
+   3.693), while the baseline's features end up having moved the most (2.02) and it is the worst of
+   the four. Larger early transients did not decide the outcome; the step size did.
+5. **Does a shifted optimum prove we are outside the µP regime?** No. µP's fitted optimum moved
+   1.5× between widths 512 and 128 while every stability signal stayed bounded: logit RMS grows the
+   same way for all configurations (to ~4), normalised feature movement stays at 1.2–1.4, and the
+   loss–learning-rate curves are smooth and flat near the top. A drifting optimum with bounded
+   diagnostics points to a mis-scaled *secondary* quantity — here the fixed weight decay (the
+   Problem 2 coupling) and the decaying α — not to a breakdown of feature learning.
+
+### (c) Held-out width 1024 (8 new runs)
+
+Running now; results and the direct-transfer versus power-law comparison will be filled in below.

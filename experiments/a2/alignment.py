@@ -1,12 +1,14 @@
 """P4.2 actual-update alignment through the shared metric logger interface."""
 import json
 from pathlib import Path
+
 import numpy as np
 import torch
+
+from experiments.a2.probe_math import measure_delta, training_steps
+from experiments.a2.wandb_diagnostics import configure, log_plots, update_metrics
 from train import training_run_name
 from utils import autocast_context
-from experiments.a2.probe_math import measure_delta, training_steps
-from experiments.a2.wandb_diagnostics import configure, update_metrics, log_plots
 
 
 class AlignmentLogger:

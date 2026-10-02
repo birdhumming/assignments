@@ -3,9 +3,16 @@ import argparse
 from pathlib import PurePosixPath
 
 from data import DEFAULT_DATASET_DIR_NAME
-from modal_utils import (app, build_image, user_volume, VOLUME_MOUNTS,
-                         MODAL_ENVIRONMENT, MODAL_SHARED_DATASETS_DIR,
-                         timestamped_modal_app_name, secrets)
+from modal_utils import (
+    MODAL_ENVIRONMENT,
+    MODAL_SHARED_DATASETS_DIR,
+    VOLUME_MOUNTS,
+    app,
+    build_image,
+    secrets,
+    timestamped_modal_app_name,
+    user_volume,
+)
 
 
 @app.function(image=build_image(), volumes=VOLUME_MOUNTS, gpu='H100',
@@ -32,8 +39,9 @@ def main(argv=None):
     a = p.parse_args(argv)
     if PurePosixPath(a.output).name != a.output or not a.output.endswith('.json'):
         p.error('--output must be a JSON filename, without directory components')
-    from experiments.a2.stress import StressConfig
     import math
+
+    from experiments.a2.stress import StressConfig
     StressConfig(width=a.width, depth=a.depth, head_dim=a.head_dim,
                  microbatch=a.microbatch, seed=a.seed, precision=a.precision).validate()
     if not math.isfinite(a.lr) or a.lr <= 0:
@@ -46,9 +54,8 @@ def main(argv=None):
     if a.no_wandb:
         arguments.append('--no-wandb')
     import modal
-    with modal.enable_output():
-        with app.run(name=timestamped_modal_app_name('a2-stress'), environment_name=MODAL_ENVIRONMENT):
-            _run.with_options(secrets=secrets(include_wandb=not a.no_wandb)).remote(arguments)
+    with modal.enable_output(), app.run(name=timestamped_modal_app_name('a2-stress'), environment_name=MODAL_ENVIRONMENT):
+        _run.with_options(secrets=secrets(include_wandb=not a.no_wandb)).remote(arguments)
     print('Saved to your Modal volume: /a2-stress/' + a.output)
 
 

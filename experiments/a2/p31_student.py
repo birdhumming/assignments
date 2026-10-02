@@ -1,5 +1,6 @@
 """Student entry point for P4.1. Complete the two functions below."""
 import argparse
+
 from experiments.a2.stress import StressConfig, load_tokens, run
 
 
@@ -47,10 +48,12 @@ def main(argv=None):
                  groups_fn=parameter_groups, device=a.device,
                  alignment=not a.no_alignment, output=a.output)
     if not a.no_wandb:
-        import wandb
         from pathlib import Path
-        from utils import WANDB_ENTITY, WANDB_PROJECT
+
+        import wandb
+
         from experiments.a2.wandb_diagnostics import log_records
+        from utils import WANDB_ENTITY, WANDB_PROJECT
         with wandb.init(entity=WANDB_ENTITY, project=WANDB_PROJECT,
                         name=Path(a.output).stem, tags=['a2', 'p4.1'],
                         config={**result['config'], 'base_lr': a.lr,

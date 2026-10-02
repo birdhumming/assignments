@@ -9,7 +9,7 @@ import argparse
 
 from experiments.a2.common import dedupe, preview, run
 
-P1C_PREDICTED = dict(all_six=.00373, larger_three=.00223)
+P1C_PREDICTED = {'all_six': .00373, 'larger_three': .00223}
 P1D_PREDICTED = .00839
 P2C_PREDICTED_WD = .0927
 
