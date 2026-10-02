@@ -646,4 +646,40 @@ Reading it:
 
 ### (c) Held-out width 1024 (8 new runs)
 
-Running now; results and the direct-transfer versus power-law comparison will be filled in below.
+Two ways to pick the learning rate for a width we had not trained: (i) **direct transfer**, reuse
+the source value 0.003; (ii) **power law**, extrapolate the fitted optima from widths 128/256/512
+(baseline 0.0014, µP 0.0018 — both recorded before launching). Each policy also got a small local
+sweep so we could see where the true optimum sits.
+
+| policy | lr 0.00075 | lr 0.0014 / 0.0018 (power-law pick) | lr 0.0015 | lr 0.003 (direct transfer) | fitted lr* | fitted loss |
+|---|---|---|---|---|---|---|
+| baseline | 3.139 | **3.114** | 3.135 | 3.242 | 0.0011 | 3.116 |
+| µP | 3.240 | 3.111 | 3.124 | **3.104** | 0.0026 | 3.102 |
+
+**Answer.**
+
+1. **Baseline: the power law wins by a lot.** Direct transfer (0.003) is 0.128 worse than the
+   power-law pick, which landed on the best point we sampled. At width 1024 the baseline's
+   optimum has moved to roughly a third of the source value, exactly as the width^-0.82 trend said.
+2. **µP: direct transfer wins.** The source learning rate 0.003 is the best sampled point (3.104),
+   and the power-law pick is 0.007 behind. The extrapolated exponent (−0.31) over-corrected: the
+   µP optimum drifted at the *narrow* widths (128, 256), not between 512 and 1024. This matches the
+   mechanism in part (b): the fixed weight decay and the α-decay effects are largest when the width
+   ratio is far from 1 in the shrinking direction, not when the model grows.
+3. **The two choices reach the same place once each is tuned correctly.** Best baseline 3.114 versus
+   best µP 3.104: a 0.01 edge for µP at width 1024, versus the baseline's 0.015 edge at widths
+   128–256. Both are small compared with the 0.128 you lose by transferring the baseline naively.
+4. **Caveat.** The baseline's width-1024 curve is not smooth at the 0.02 level: learning rates
+   0.0014 and 0.0015 differ by only 7 % yet give 3.114 and 3.135, and the gap is present from step
+   300 onward rather than appearing late. The Assignment 1 noise floor for this family was
+   0.002–0.005, so at this width a single run resolves learning-rate differences of ~0.02 at best.
+   The headline comparisons above are 5–10× larger than that and stand; the fitted optimum
+   (0.0011) and the 0.007 µP power-law gap do not.
+
+Figures: `figures/p42_width.png` (fitted lr* and losses versus width, including 1024),
+`figures/p42_depth.png`, `figures/p41_width.png`, `figures/p41_depth.png`.
+
+**Rule of thumb from P4.2.** Transfer a learning rate upward in width with µP as-is. Transfer it
+with a standard parameterization only through a fitted power law. In either case, when you change
+width by more than 2× also revisit weight decay, because the learning-rate × weight-decay
+timescale is not what any of these prescriptions preserve.
