@@ -6,7 +6,7 @@ import matplotlib
 import numpy as np
 
 matplotlib.use('Agg')
-import matplotlib.pyplot as plt  # noqa: E402
+import matplotlib.pyplot as plt
 
 TABLES = Path('/home/ubuntu/a2/tables')
 FIG = Path(__file__).resolve().parents[1] / 'figures'
