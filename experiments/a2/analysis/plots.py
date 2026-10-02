@@ -69,6 +69,37 @@ def p42():
     fig.tight_layout(); fig.savefig(FIG / 'p42_depth.png', dpi=130); plt.close(fig)
 
 
+def p32():
+    d = json.loads((TABLES / 'p32_fits.json').read_text())
+    rows = d['rows']
+    fig, axes = plt.subplots(1, 4, figsize=(19, 4.2))
+    for B in sorted({r['batch'] for r in rows}):
+        pts = sorted((r['lr'], r['val_loss']) for r in rows if r['batch'] == B and abs(r['wd'] - .1) < 1e-9 and abs(r['beta1'] - .9) < 1e-9)
+        if pts:
+            axes[0].plot(*zip(*pts), 'o-', label=f'B={B}')
+        pts = sorted((r['wd'], r['val_loss']) for r in rows if r['batch'] == B and abs(r['lr'] - .0015) < 1e-9 and abs(r['beta1'] - .9) < 1e-9)
+        if pts:
+            axes[3].plot(*zip(*pts), 'o-', label=f'B={B}')
+    axes[0].set(xscale='log', xlabel='peak LR (WD 0.1)', ylabel='val loss at 614.4M tokens', title='P3.2(a) loss-LR curves')
+    axes[3].set(xscale='log', xlabel='WD (LR 0.0015)', ylabel='val loss', title='P3.2(b) loss-WD curves')
+    f = d['lr_fits']
+    Bs = [r['batch'] for r in f]
+    axes[1].plot(Bs, [r['lr_star'] for r in f], 'o-', label='fitted lr*')
+    axes[1].plot(Bs, [r['best_lr'] for r in f], 'x--', label='best sampled lr')
+    src = [r for r in f if r['batch'] <= 64]
+    if len(src) >= 2:
+        p_, lc = np.polyfit(np.log([r['batch'] for r in src]), np.log([r['lr_star'] for r in src]), 1)
+        xs = np.array([8, 256])
+        axes[1].plot(xs, np.exp(lc) * xs ** p_, ':', color='gray', label=f'source fit B^{p_:.2f}')
+    axes[1].set(xscale='log', yscale='log', xlabel='batch size', ylabel='optimal LR', title='P3.2(a) lr* vs batch')
+    axes[2].plot(Bs, [r['loss_star'] for r in f], 'o-', label='fitted loss at lr* (WD 0.1)')
+    axes[2].plot(Bs, [r['best_loss'] for r in f], 'x--', label='best measured (WD 0.1)')
+    axes[2].set(xscale='log', xlabel='batch size', ylabel='val loss', title='P3.2(a) best loss vs batch')
+    for a in axes:
+        a.legend(fontsize=7)
+    fig.tight_layout(); fig.savefig(FIG / 'p32_batch.png', dpi=130); plt.close(fig)
+
+
 if __name__ == '__main__':
-    p41(); p42()
-    print('wrote', sorted(p.name for p in FIG.glob('p4*.png')))
+    p41(); p42(); p32()
+    print('wrote', sorted(p.name for p in FIG.glob('p[34]*.png')))

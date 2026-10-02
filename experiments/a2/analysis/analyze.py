@@ -132,7 +132,7 @@ def p32(runs, out):
     rows.sort(key=lambda r: (r['batch'], r['wd'], r['lr'], r['beta1']))
     out.append('\n# P3.2: batch-size sources and targets (614.4M tokens)\n\n' + md(rows, ['batch', 'lr', 'wd', 'beta1', 'val_loss', 'minutes', 'src']))
     # (a) LR optimum per batch at wd .1, beta1 .9
-    res = []
+    res = lr_res = []
     for B in sorted({r['batch'] for r in rows}):
         pairs = [(r['lr'], r['val_loss']) for r in rows if r['batch'] == B and abs(r['wd'] - .1) < 1e-9 and abs(r['beta1'] - .9) < 1e-9]
         if len(pairs) >= 3:
@@ -146,7 +146,7 @@ def p32(runs, out):
             p, lc = np.polyfit(np.log(Bs[src]), np.log(ls[src]), 1)
             out.append(f'Power law on sources (B<=64): lr* = {np.exp(lc):.4g} * B^{p:.3f}; predicts B=128: {np.exp(lc) * 128 ** p:.4g}, B=256: {np.exp(lc) * 256 ** p:.4g}\n')
     # (b) WD optimum per batch at lr .0015
-    res = []
+    res = wd_res = []
     for B in sorted({r['batch'] for r in rows}):
         pairs = [(r['wd'], r['val_loss']) for r in rows if r['batch'] == B and abs(r['lr'] - .0015) < 1e-9 and abs(r['beta1'] - .9) < 1e-9]
         if len(pairs) >= 3:
@@ -170,6 +170,7 @@ def p32(runs, out):
     mom = [r for r in rows if r['src'] == 'ours' and abs(r['beta1'] - .9) > 1e-9]
     if mom:
         out.append('\n## (c) beta1 ablation\n\n' + md(sorted(mom, key=lambda r: (r['batch'], r['beta1'])), ['batch', 'lr', 'wd', 'beta1', 'val_loss']))
+    (TABLES / 'p32_fits.json').write_text(json.dumps({'rows': rows, 'lr_fits': lr_res, 'wd_fits': wd_res}, indent=1))
 
 
 def p42(runs, out):

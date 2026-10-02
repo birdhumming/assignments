@@ -342,6 +342,75 @@ momentum with β₁ = 0.9 spends 10 of them just winding up, and the stiff direc
 
 ---
 
+## Problem 3.2 — What should scale when batch size changes? (language model)
+
+**Question.** Same d8 model, 614.4M tokens, AdamW, linear schedule with 1 % warmup. Change the
+number of sequences per update from 8 up to 256. (a) How do the optimal learning rate and the
+best loss move with batch size when weight decay is held at 0.1? (b) Two ways to carry a recipe to
+a bigger batch — scale the learning rate with weight decay fixed, or scale weight decay with the
+learning rate fixed at 0.0015 — which one transfers to batch sizes 128 and 256? (c) Does momentum
+(β₁) matter more or less at large batch? (d) Which of the NQM's predictions survive?
+
+**What we ran.** 15 new source runs at batch 8/16/32 (3 learning rates at weight decay 0.1, plus
+weight decays 0.05 and 0.2 at learning rate 0.0015), reusing the supplied batch-64 curves from
+Problems 1–2 as the fourth source. Then, with predictions written down first
+(`p32_predictions.md`), 13 target runs at batch 128 and 256 and 6 β₁ controls at batch 8 and 256.
+All at 614.4M tokens; small batches take longer (16 min at batch 8 versus 11 min at batch 32)
+because each update is tiny.
+
+### (a) Optimal learning rate and loss versus batch size (weight decay 0.1)
+
+| batch size | learning rates tried | best sampled | fitted lr* | loss at lr* | run time |
+|---|---|---|---|---|---|
+| 8 | 0.0004 / 0.00075 / 0.0015 | 0.0015 | 0.00109 | 2.934 | 16 min |
+| 16 | 0.00075 / 0.0015 / 0.003 | 0.0015 | 0.00174 | 2.922 | 13 min |
+| 32 | 0.0015 / 0.003 / 0.006 | 0.003 | 0.00329 | 2.919 | 12 min |
+| 64 (supplied) | 0.0015 / 0.003 / 0.006 | 0.003 | 0.00319 | 2.925 | — |
+
+Source fit: lr* ≈ 0.00037 · B^0.56. The optimal learning rate rises with batch size at roughly
+the square root — not linearly as the low-noise NQM predicted (exponent 0.9–1.0 in P3.1) and not
+flat either. The best loss is nearly indifferent to batch size between 16 and 64 (2.92 ± 0.003);
+batch 8 is 0.012 worse, which is the first sign of a "too few tokens per update" penalty rather
+than a "too few updates" one — at batch 8 there are 75,000 updates, so it is not short of steps.
+
+Figure: `figures/p32_batch.png` (loss–learning-rate curves, lr* versus batch, best loss versus
+batch, loss–weight-decay curves).
+
+### (b) Which hypothesis transfers: scale the learning rate, or scale the weight decay?
+
+Source side at learning rate 0.0015:
+
+| batch size | weight decays tried | best sampled | fitted wd* |
+|---|---|---|---|
+| 8 | 0.05 / 0.1 / 0.2 | 0.05 | 0.068 |
+| 16 | 0.05 / 0.1 / 0.2 | 0.1 | 0.12 |
+| 32 | 0.05 / 0.1 / 0.2 | 0.2 | ≥ 0.2 (grid edge) |
+| 64 (supplied) | 0.1 / 0.2 / 0.4 | 0.4 | ≥ 0.4 (grid edge) |
+
+The weight-decay optimum climbs with batch size — a doubling of batch roughly doubles the best
+weight decay, which is the Problem 2 "learning-rate × weight-decay sets a timescale in updates"
+story seen from the other side: halve the number of updates and you need twice the decay per
+update to keep the same timescale in tokens. Two of the four points sit on the grid edge, so the
+exponent is poorly determined: the interior fit gives wd* ∝ B^0.80 (0.63 at batch 128, 1.1 at 256),
+the proportional rule gives 0.95 and 1.9. We used the interior fit for the predicted point and
+bracketed it with a 3-point sweep.
+
+Predictions recorded before launch:
+
+| target batch | hypothesis i: lr at wd 0.1 | hypothesis ii: wd at lr 0.0015 |
+|---|---|---|
+| 128 | 0.0056 (sweep 0.003 / 0.006 / 0.012) | 0.63 (sweep 0.4 / 0.8 / 1.6) |
+| 256 | 0.0082 (sweep 0.006 / 0.012 / 0.024) | 1.1 (sweep 0.8 / 1.6 / 3.2) |
+
+Prediction: hypothesis i wins on loss at both targets, because scaling the learning rate
+keeps the per-update step size matched to the lower gradient noise, while hypothesis ii keeps a
+small step and tries to compensate with a very strong decay, which at these values (ηλ ≈ 0.001–0.002
+per update, a window of only 500–1,000 updates out of 2,300–4,700) starts to erase learning.
+
+**P3.2_TARGETS_PLACEHOLDER**
+
+---
+
 ## Problem 4.0 — Scaling rules from alignment assumptions
 
 Full derivation with all four cases in `P40_derivation.md`. The short version:
