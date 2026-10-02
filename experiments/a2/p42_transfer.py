@@ -35,7 +35,7 @@ def depth_runs(depths=(4, 16), lrs=DEPTH_LRS):
     return [transfer_run('d', pol, 512, d, lr) for pol in ('mup', 'depth_mup', 'completep') for d in depths for lr in lrs]
 
 
-def heldout_runs(predicted, lrs=(.00075, .0015, .003, .006)):
+def heldout_runs(predicted, lrs=(.00075, .0015, .003)):
     """predicted: {policy: fitted lr* at width 1024}; also runs the transferred source LR and a local sweep."""
     out = []
     for pol, lr_star in predicted.items():

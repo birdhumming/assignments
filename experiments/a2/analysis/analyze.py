@@ -124,7 +124,7 @@ def p2c(runs, out):
 def p32(runs, out):
     rs = with_tag(runs, 'a2-p32')
     prov = [r for r in provided() if r['tokens'] == 614400000 and r['batch_size'] == 64 and r['optimizer'] == 'adamw'
-            and r['parts'] in ('P1a', 'P2a')]
+            and set(r['parts'].split('|')) & {'P1a', 'P2a'}]
     rows = [dict(batch=r['batch'], lr=r['lr'], wd=r['wd'], beta1=r['beta1'], val_loss=r['final'], minutes=r['runtime_min'],
                  src='ours') for r in rs]
     rows += [dict(batch=64, lr=r['learning_rate'], wd=r['weight_decay'], beta1=r['beta1'], val_loss=r['final_val_loss'],
@@ -150,14 +150,22 @@ def p32(runs, out):
     for B in sorted({r['batch'] for r in rows}):
         pairs = [(r['wd'], r['val_loss']) for r in rows if r['batch'] == B and abs(r['lr'] - .0015) < 1e-9 and abs(r['beta1'] - .9) < 1e-9]
         if len(pairs) >= 3:
-            x, L, _ = quad_opt(sorted(pairs))
-            res.append(dict(batch=B, n=len(pairs), wd_star=x, loss_star=L, best_wd=min(pairs, key=lambda p: p[1])[0]))
+            pairs = sorted(pairs)
+            x, L, a = quad_opt(pairs)
+            best_wd, best_L = min(pairs, key=lambda p: p[1])
+            inside = a > 0 and pairs[0][0] <= x <= pairs[-1][0]
+            res.append(dict(batch=B, n=len(pairs), wd_star=x if inside else best_wd, loss_star=L if inside else best_L,
+                            best_wd=best_wd, edge='' if inside else 'grid edge (lower bound)'))
     if res:
-        out.append('\n## (b) optimal WD vs batch size at lr 0.0015\n\n' + md(res, ['batch', 'n', 'wd_star', 'loss_star', 'best_wd']))
-        Bs = np.array([r['batch'] for r in res]); ws = np.array([r['wd_star'] for r in res]); src = Bs <= 64
+        out.append('\n## (b) optimal WD vs batch size at lr 0.0015 (quadratic in log wd)\n\n'
+                   + md(res, ['batch', 'n', 'wd_star', 'loss_star', 'best_wd', 'edge']))
+        Bs = np.array([r['batch'] for r in res]); ws = np.array([r['wd_star'] for r in res])
+        src = (Bs <= 64) & np.array([not r['edge'] for r in res])
         if src.sum() >= 2:
             p, lc = np.polyfit(np.log(Bs[src]), np.log(ws[src]), 1)
-            out.append(f'Power law on sources: wd* = {np.exp(lc):.4g} * B^{p:.3f}; predicts B=128: {np.exp(lc) * 128 ** p:.4g}, B=256: {np.exp(lc) * 256 ** p:.4g}\n')
+            out.append(f'Power law on interior sources (B in {sorted(Bs[src].tolist())}): wd* = {np.exp(lc):.4g} * B^{p:.3f}; '
+                       f'predicts B=128: {np.exp(lc) * 128 ** p:.4g}, B=256: {np.exp(lc) * 256 ** p:.4g}. '
+                       f'Linear hypothesis (wd* ∝ B, anchored at B=16): B=128: {ws[Bs == 16][0] * 8:.4g}, B=256: {ws[Bs == 16][0] * 16:.4g}\n')
     # (c) beta1
     mom = [r for r in rows if r['src'] == 'ours' and abs(r['beta1'] - .9) > 1e-9]
     if mom:
