@@ -1,5 +1,6 @@
 """Fit the supplied P1/P2 sweeps and print the predictions needed before launching targets."""
 import numpy as np
+
 from experiments.a2.provided_sweeps import load
 
 B = 1e9

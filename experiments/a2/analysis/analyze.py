@@ -9,6 +9,7 @@ from collections import defaultdict
 from pathlib import Path
 
 import matplotlib
+
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
@@ -149,7 +150,7 @@ def p32(runs, out):
     for B in sorted({r['batch'] for r in rows}):
         pairs = [(r['wd'], r['val_loss']) for r in rows if r['batch'] == B and abs(r['lr'] - .0015) < 1e-9 and abs(r['beta1'] - .9) < 1e-9]
         if len(pairs) >= 3:
-            x, L, a = quad_opt(sorted(pairs))
+            x, L, _ = quad_opt(sorted(pairs))
             res.append(dict(batch=B, n=len(pairs), wd_star=x, loss_star=L, best_wd=min(pairs, key=lambda p: p[1])[0]))
     if res:
         out.append('\n## (b) optimal WD vs batch size at lr 0.0015\n\n' + md(res, ['batch', 'n', 'wd_star', 'loss_star', 'best_wd']))

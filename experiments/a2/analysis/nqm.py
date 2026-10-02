@@ -1,10 +1,11 @@
 """P3.1: noisy quadratic model on CPU. Writes results JSON + plots to $A2_DATA_DIR (default ~/a2)."""
 import json
 import os
+import warnings
 from pathlib import Path
 
 import numpy as np
-import warnings
+
 warnings.filterwarnings('ignore', category=RuntimeWarning)
 
 OUT = Path(os.environ.get('A2_DATA_DIR', Path.home() / 'a2'))
@@ -14,8 +15,10 @@ H = np.array([1., 10.])
 LR_GRID = np.logspace(-4, 0.5, 28)
 rng = np.random.default_rng(0)
 
+INIT_STD = (1., np.sqrt(.1))
 
-def simulate(B, lr, *, opt='sgd', beta1=.9, beta2=.95, mu=0., sigma=1., H=H, init_std=(1., np.sqrt(.1)),
+
+def simulate(B, lr, *, opt='sgd', beta1=.9, beta2=.95, mu=0., sigma=1., H=H, init_std=INIT_STD,
              samples=SAMPLES, eps=1e-8):
     """Return mean final loss f(w_{N/B}) over independent initializations and noise draws."""
     steps = N // B
@@ -51,7 +54,7 @@ def fit_opt(lrs, losses):
     x, y = np.log(lrs[lo:hi]), losses[lo:hi]
     if len(x) < 3:
         return float(lrs[i]), float(losses[i])
-    a, b, c = np.polyfit(x, y, 2)
+    a, b, _ = np.polyfit(x, y, 2)
     if a <= 0:
         return float(lrs[i]), float(losses[i])
     xs = float(np.clip(-b / (2 * a), x.min(), x.max()))

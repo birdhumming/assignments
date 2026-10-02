@@ -10,6 +10,7 @@ Depth (width 64, one head, reference depth 2, r = L / 2, on top of mup width rul
 Embeddings use variance 1, normalization gains 1; embedding/readout/final-norm LR eta, eps 1e-8.
 """
 import math
+
 import torch
 
 EPS = 1e-8
@@ -50,7 +51,7 @@ def make_policy(policy, *, reference_width=512, reference_depth=2):
                 p.normal_(0., 1.)
             elif name == 'head.weight':
                 p.normal_(0., 1. / math.sqrt(reference_width if mup_width else n))
-            elif name.endswith('norm.weight') or name.endswith('norm1.weight') or name.endswith('norm2.weight'):
+            elif name.endswith(('norm.weight', 'norm1.weight', 'norm2.weight')):
                 p.fill_(1.)
             elif _is_hidden_matrix(name):
                 p.normal_(0., 1. / math.sqrt(p.shape[1]))  # fan-in = input dim
@@ -83,6 +84,7 @@ def make_policy(policy, *, reference_width=512, reference_depth=2):
 if __name__ == '__main__':
     # CPU smoke test on random tokens: every policy must initialize, group, and take five steps.
     import argparse
+
     from experiments.a2.stress import StressConfig, run
     p = argparse.ArgumentParser()
     p.add_argument('--width', type=int, default=64); p.add_argument('--depth', type=int, default=2)

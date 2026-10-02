@@ -12,7 +12,7 @@ multiplies by each group's LR, so hidden matrices under muP also decay more slow
 import math
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 from modeling import AutoregressiveLM, LlamaRMSNorm, _truncated_normal_
 from optimizers import ADAMW_EPSILON

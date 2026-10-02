@@ -6,11 +6,18 @@ Depth test: width 64, one head, reference depth 2, BF16 autocast, policies mup /
 Outputs: /a2-stress/<name>.json on the user volume + W&B run tagged a2, a2-p41.
 """
 import argparse
-from pathlib import PurePosixPath
 
 from data import DEFAULT_DATASET_DIR_NAME
-from modal_utils import (app, build_image, user_volume, VOLUME_MOUNTS, MODAL_ENVIRONMENT,
-                         MODAL_SHARED_DATASETS_DIR, timestamped_modal_app_name, secrets)
+from modal_utils import (
+    MODAL_ENVIRONMENT,
+    MODAL_SHARED_DATASETS_DIR,
+    VOLUME_MOUNTS,
+    app,
+    build_image,
+    secrets,
+    timestamped_modal_app_name,
+    user_volume,
+)
 
 WIDTH_LRS = (2.5e-4, 5e-4, 1e-3, 2e-3, 4e-3, 8e-3)
 DEPTH_LRS = (2.5e-4, 5e-4, 1e-3, 2e-3, 4e-3, 8e-3)
@@ -47,10 +54,10 @@ def specs(points=None):
 @app.function(image=build_image(), volumes=VOLUME_MOUNTS, gpu='H100', retries=0,
               max_containers=2, timeout=3600)
 def _run_spec(spec, use_wandb=True):
-    import json
     from pathlib import Path
-    from experiments.a2.stress import StressConfig, load_tokens, run
+
     from experiments.a2.p41_policies import make_policy
+    from experiments.a2.stress import StressConfig, load_tokens, run
     name = name_of(spec)
     output = Path(OUTPUT_DIR) / f'{name}.json'
     if output.exists():
@@ -71,12 +78,13 @@ def _run_spec(spec, use_wandb=True):
     print(name, 'final val', result['history'][-1]['val_loss'])
     if use_wandb:
         import wandb
-        from utils import WANDB_ENTITY, WANDB_PROJECT
+
         from experiments.a2.wandb_diagnostics import log_records
+        from utils import WANDB_ENTITY, WANDB_PROJECT
         with wandb.init(entity=WANDB_ENTITY, project=WANDB_PROJECT, name=name,
                         tags=['a2', 'a2-p41', f"a2-p41-{spec['test']}"], reinit=True,
                         config={**result['config'], **spec, 'parameter_groups': result['parameter_groups'],
-                                'data_sha256': result['data_sha256']}) as wb:
+                                'data_sha256': result['data_sha256']}):
             wandb.define_metric('optimizer_step'); wandb.define_metric('*', step_metric='optimizer_step')
             for row in result['history']:
                 wandb.log({'optimizer_step': row['step'],
@@ -99,13 +107,12 @@ def main():
     if not a.execute:
         return
     import modal
-    with modal.enable_output():
-        with app.run(name=timestamped_modal_app_name('a2-p41-stress'), detach=True,
-                     environment_name=MODAL_ENVIRONMENT):
-            fn = _run_spec.with_options(secrets=secrets(include_wandb=True))
-            for s in todo:
-                call = fn.spawn(s)
-                print(call.object_id, name_of(s))
+    with modal.enable_output(), app.run(name=timestamped_modal_app_name('a2-p41-stress'), detach=True,
+                                        environment_name=MODAL_ENVIRONMENT):
+        fn = _run_spec.with_options(secrets=secrets(include_wandb=True))
+        for s in todo:
+            call = fn.spawn(s)
+            print(call.object_id, name_of(s))
 
 
 if __name__ == '__main__':
