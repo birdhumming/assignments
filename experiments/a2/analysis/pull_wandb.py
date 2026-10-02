@@ -16,6 +16,14 @@ runs = [r for r in api.runs('aleyang-stanford-university/assignments', filters={
 print(len(runs), 'runs', flush=True)
 
 
+def _plain(o):
+    if hasattr(o, 'items'):
+        return dict(o.items())
+    if hasattr(o, '__iter__'):
+        return list(o)
+    return str(o)
+
+
 def pull(r):
     path = os.path.join(DATA_DIR, 'runs', f'{r.id}.json')
     if os.path.exists(path) and r.state == 'finished':
@@ -25,7 +33,7 @@ def pull(r):
     record = dict(name=r.name, id=r.id, state=r.state, tags=r.tags, config=dict(r.config),
                   summary=dict(r.summary.items()), history=rows, created_at=r.created_at)
     with open(path, 'w') as fh:
-        json.dump(record, fh)
+        json.dump(record, fh, default=_plain)
     return r.name, f'{len(rows)} rows {time.time() - t:.0f}s'
 
 
