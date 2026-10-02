@@ -12,6 +12,12 @@ from experiments.a2.common import dedupe, preview, run
 LR_GRIDS = {8: (.0004, .00075, .0015), 16: (.00075, .0015, .003), 32: (.0015, .003, .006)}
 WD_GRID = (.05, .1, .2, .4)
 WD_LR = .0015
+# From p32_predictions.md (fits on B=8..64 sources, recorded before any target run).
+PRED_LR = {128: .00556, 256: .00819}
+PRED_WD = {128: .63, 256: 1.10}
+LR_SWEEP = {128: (.003, .006, .012), 256: (.006, .012, .024)}
+WD_SWEEP = {128: (.4, .8, 1.6), 256: (.8, 1.6, 3.2)}
+BETA1_TRIMMED = (0., .5, .98)
 
 
 def p32_run(part, batch, lr, wd, **overrides):
@@ -42,9 +48,21 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--execute', action='store_true')
     p.add_argument('--wd-grid', type=float, nargs='+', default=WD_GRID)
+    p.add_argument('--targets', action='store_true', help='B=128/256 runs from the fits in p32_predictions.md (trimmed: 4 points each)')
+    p.add_argument('--beta1', nargs=3, type=float, metavar=('BATCH', 'LR', 'WD'), action='append',
+                   help='momentum ablation at this batch and its best (lr, wd); repeatable')
     a = p.parse_args()
-    runs = dedupe(source_runs(tuple(a.wd_grid)))
-    preview(runs, 'experiments/a2/p32_sources_manifest.csv')
+    if a.targets or a.beta1:
+        runs = []
+        if a.targets:
+            runs += target_runs(PRED_LR, PRED_WD, LR_SWEEP, WD_SWEEP)
+        for B, lr, wd in a.beta1 or ():
+            runs += momentum_runs({int(B): (lr, wd)}, betas=BETA1_TRIMMED)
+        runs = dedupe(runs)
+        preview(runs, 'experiments/a2/p32_targets_manifest.csv')
+    else:
+        runs = dedupe(source_runs(tuple(a.wd_grid)))
+        preview(runs, 'experiments/a2/p32_sources_manifest.csv')
     if a.execute:
         from experiments.a2.modal_launcher import launch_training_jobs
         launch_training_jobs(runs, max_parallel_runs=2)

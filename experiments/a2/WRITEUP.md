@@ -348,26 +348,28 @@ alignment assumptions from the derivation hold?
 
 ### (a) Width transfer (36 five-step runs; depth 2, reference width 512, FP32)
 
-Validation loss after update 5, six learning rates per cell (0.00025 … 0.008, doubling):
+Validation loss after update 5, six learning rates per cell (0.00025 … 0.008, doubling), plus two
+lower points (0.0000625, 0.000125) added for wide Kaiming once its optimum fell off the grid:
 
 | policy | width | best sampled lr | fitted lr* | loss at best | loss at lr 0.00025 | loss at lr 0.002 | loss at lr 0.008 |
 |---|---|---|---|---|---|---|---|
 | Kaiming | 640 | 0.001 | 0.0011 | 7.069 | 7.885 | 7.098 | 8.336 |
-| Kaiming | 2560 | 0.00025 (grid edge) | ≤ 0.00025 | 7.245 | 7.245 | 9.235 | 15.39 |
-| Kaiming | 5120 | 0.00025 (grid edge) | ≤ 0.00025 | 8.049 | 8.049 | 11.13 | 21.46 |
+| Kaiming | 2560 | 0.000125 | 0.00015 | 7.184 | 7.245 | 9.235 | 15.39 |
+| Kaiming | 5120 | 0.0000625 (grid edge) | ≤ 0.0000625 | 7.325 | 8.049 | 11.13 | 21.46 |
 | µP | 640 | 0.002 | 0.0015 | 6.784 | 8.006 | 6.784 | 8.015 |
 | µP | 2560 | 0.002 | 0.0013 | 6.669 | 7.710 | 6.669 | 8.127 |
 | µP | 5120 | 0.002 | 0.0012 | 6.700 | 7.655 | 6.700 | 7.968 |
 
 Prediction recorded before running: Kaiming's best base learning rate should fall roughly like
 1/width (so ≈ 0.00025 at 2560 and ≈ 0.000125 at 5120), and µP's should stay near its width-640
-value. Both happened. Kaiming's optimum dropped at least 4× going 640 → 2560 and is below the
-grid at 5120; at 5120 the learning rate that was best at 640 (0.001) gives loss 22.8 — the model
-has blown up. µP's best sampled learning rate is 0.002 at every width, and the fitted optimum
+value. Both happened, and Kaiming fell slightly *faster* than 1/width: its optimum dropped about
+7× going 640 → 2560 (0.001 → 0.00015 fitted) and at least 16× at 5120 (best point is the bottom
+of the extended grid); at 5120 the learning rate that was best at 640 (0.001) gives loss 22.8 — the
+model has blown up. µP's best sampled learning rate is 0.002 at every width, and the fitted optimum
 moves only 0.0015 → 0.0012 (20%) over an 8× width change.
 
 **Answer.** µP transfers its tuned base learning rate across widths; Kaiming does not. µP also
-achieves the lower loss at every width (6.78 / 6.67 / 6.70 versus 7.07 / 7.25 / 8.05), and its
+achieves the lower loss at every width (6.78 / 6.67 / 6.70 versus 7.07 / 7.18 / 7.33), and its
 loss *improves* with width while Kaiming's gets worse. Transfer and performance go together here
 because with only five updates, a parameterization whose updates are the wrong size by a factor of
 4–8 simply cannot make progress on the stiff directions without destabilising the others.
@@ -414,6 +416,84 @@ Three things line up with the derivation and one does not:
    exactly why µP's initial logits shrink with width and the learned readout takes over. The
    assumption that fails is the one the rule did not actually need.
 
+### (c) Depth transfer (63 five-step runs; width 64, one head, reference depth 2, mixed precision)
+
+Nine learning rates per cell (0.00025 … 0.064, doubling). Three prescriptions, all on top of the
+µP width rule; r = depth / 2 is the relative depth.
+
+| prescription | residual-branch multiplier | hidden lr multiplier | Adam ε multiplier |
+|---|---|---|---|
+| µP (no depth rule) | 1 | 1 | 1 |
+| Depth-µP | r^-½ | r^-½ | r^-½ |
+| CompleteP | 1/r | 1 | 1/r |
+
+Prediction recorded before running: CompleteP should transfer best, Depth-µP next, plain µP
+worst, because only CompleteP keeps each block's contribution to the residual stream at the same
+scale regardless of depth. Measured:
+
+| prescription | depth | best sampled lr | fitted lr* | loss at best | loss at lr 0.008 | loss at lr 0.032 |
+|---|---|---|---|---|---|---|
+| µP | 2 | 0.016 | 0.0174 | 6.858 | 7.216 | 7.119 |
+| µP | 100 | 0.016 | 0.0146 | 7.060 | 7.270 | 7.135 |
+| µP | 1000 | 0.016 | 0.0138 | 7.067 | 7.322 | 7.281 |
+| Depth-µP | 100 | 0.016 | 0.0197 | 6.867 | 7.260 | 7.107 |
+| Depth-µP | 1000 | 0.016 | 0.0170 | 6.951 | 7.151 | 7.028 |
+| CompleteP | 100 | 0.016 | 0.0179 | 6.816 | 7.209 | 7.065 |
+| CompleteP | 1000 | 0.016 | 0.0158 | 6.863 | 7.220 | 7.271 |
+
+(Depth 2 is the same model under all three prescriptions, so it appears once.)
+
+**Answer.** At the resolution of a doubling grid, all three prescriptions transfer the base
+learning rate from depth 2 to depth 1000: the best sampled value is 0.016 in every cell. The
+fitted optimum drifts down by 21% for plain µP, 14% for Depth-µP and 12% for CompleteP over a
+500× depth change, so the ranking matches the prediction but the differences are small. Loss is
+where the prescriptions separate: plain µP's tuned loss gets worse with depth (6.86 → 7.06 →
+7.07), while Depth-µP (6.87 → 6.95) and CompleteP (6.82 → 6.86) stay close to the depth-2 value,
+and CompleteP is best at both depths. So in this test better transfer does come with lower loss,
+but the loss gap (0.2) is much larger than the transfer gap (a few percent of learning rate) — the
+depth rules matter more for *what the deep model can do in five steps* than for *where its
+optimum sits*.
+
+### (d) Depth probes (at the best sampled learning rate 0.016, plus 0.008)
+
+| prescription | depth | residual-stream RMS before final norm | branch-output RMS (last block, attention / MLP) | normalised feature movement M₅ | ω_move |
+|---|---|---|---|---|---|
+| µP | 2 | 9.6 | 4.3 / 4.4 | 1.1 | 0.50 |
+| µP | 100 | 696 (235 at lr 0.008) | 3.4 / 6.7 | 1.2 | 0.50 |
+| µP | 1000 | 6378 (2400 at lr 0.008) | 3.4 / 6.7 | 1.25 | 0.50 |
+| Depth-µP | 1000 | 7.7 (5.0 at lr 0.008) | ≈ 1 | 1.1 | 0.50 |
+| CompleteP | 100 | 6.0 | ≈ 1 | 1.1 | 0.50 |
+| CompleteP | 1000 | 6.2 (5.9 at lr 0.008) | ≈ 1 | 1.1 | 0.50 |
+
+How to read this:
+
+1. **Yes, normalised activations hide a growing residual stream.** Plain µP at depth 1000 has a
+   residual stream with RMS 6378 going into the final RMSNorm, yet the normalised features that the
+   readout sees have RMS 1 and have moved by about the same amount (M₅ ≈ 1.1–1.25) as in every
+   other configuration. If you only looked at normalised features, logits (RMS 1.7–2.0 everywhere)
+   or the loss–learning-rate curve, nothing would look wrong. The residual RMS grows roughly
+   linearly in depth (696 → 6378 for 10× depth), not like √depth: after Adam's first update the
+   1000 branch outputs are *coherent* (they all push in the gradient direction), so they add rather
+   than average.
+2. **Depth-µP and CompleteP bound the stream.** With a 1/√r branch multiplier the residual RMS at
+   depth 1000 is 7.7; with 1/r it is 6.2, and CompleteP's value is essentially flat between depth
+   100 (6.0) and 1000 (6.2). Those are bounded signals; plain µP's is a nonvanishing *and growing*
+   one.
+3. **Why bounded beats exploding even though both "transfer".** In plain µP the final norm divides
+   by ~6000, so each block's order-one contribution to the normalised features is 1/6000 of what
+   it was at depth 2 — the model has 1000 blocks but effectively uses the sum of them as one
+   averaged direction. That is why its tuned loss plateaus at 7.06 while CompleteP, whose blocks
+   keep individual leverage, reaches 6.82–6.86. The learning-rate optimum barely moves for any of
+   them because Adam's per-entry step size is the thing the base learning rate sets, and the
+   RMSNorm absorbs the scale change; the *quality* of the step is what the depth rule changes.
+4. **Alignment.** ω_move is 0.50 at every depth and prescription (no alignment between the
+   initial readout and the feature change — same as in the width test). Hidden-update alignment
+   α_upd for query matrices is 0.53 at step 1 for all prescriptions at shallow depth and rises to
+   0.6 by step 5; for plain µP at depth 100–1000 it is already 0.73–0.80 at step 1. That is the
+   coherence from point 1 showing up directly: without a depth multiplier the deep blocks' updates
+   are more aligned with their inputs, which is exactly the mechanism that makes the residual
+   stream grow linearly.
+
 ### Example question (Easy) — widening a Kaiming model by copying
 
 Expanding the width-640 model by k (blocks W/k for every hidden matrix, readout copies divided
@@ -432,4 +512,6 @@ logits *after* Adam updates:
 
 This is the µP prescription derived from scratch: hidden learning rate η/m, readout step shrinks
 by 1/m (µP does it with the 1/m forward multiplier instead), embedding untouched. The measured
-sweep agrees: at width 2560 the Kaiming optimum is 0.00025, exactly 0.001/4.
+sweep agrees to within the grid spacing: at width 2560 the fitted Kaiming optimum is 0.00015,
+versus 0.001/4 = 0.00025 (the sweep's points are a factor of 2 apart, so 0.00025 and 0.000125 are
+both within one grid step).
