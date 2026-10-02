@@ -51,6 +51,14 @@ def specs(points=None):
     return out
 
 
+def extra_spec(test, policy, size, lr):
+    if test == 'width':
+        return dict(test='width', policy=policy, width=int(size), depth=2, head_dim=64, precision='fp32',
+                    lr=float(lr), reference_width=512, reference_depth=2)
+    return dict(test='depth', policy=policy, width=64, depth=int(size), head_dim=64, precision='mp',
+                lr=float(lr), reference_width=64, reference_depth=2)
+
+
 @app.function(image=build_image(), volumes=VOLUME_MOUNTS, gpu='H100', retries=0,
               max_containers=2, timeout=3600)
 def _run_spec(spec, use_wandb=True):
@@ -99,8 +107,13 @@ def main():
     p.add_argument('--execute', action='store_true')
     p.add_argument('--points', type=int, default=None, help='Use only the largest N LRs of each grid')
     p.add_argument('--only', choices=('width', 'depth'), default=None)
+    p.add_argument('--extra', nargs='*', default=None, metavar='TEST:POLICY:SIZE:LR',
+                   help='Launch only these extra grid points, e.g. width:kaiming:2560:6.25e-5')
     a = p.parse_args()
-    todo = [s for s in specs(a.points) if a.only is None or s['test'] == a.only]
+    if a.extra is not None:
+        todo = [extra_spec(*e.split(':')) for e in a.extra]
+    else:
+        todo = [s for s in specs(a.points) if a.only is None or s['test'] == a.only]
     for s in todo:
         print(' ', name_of(s))
     print(len(todo), 'stress runs')
