@@ -407,7 +407,105 @@ keeps the per-update step size matched to the lower gradient noise, while hypoth
 small step and tries to compensate with a very strong decay, which at these values (ηλ ≈ 0.001–0.002
 per update, a window of only 500–1,000 updates out of 2,300–4,700) starts to erase learning.
 
-**P3.2_TARGETS_PLACEHOLDER**
+Measured targets (one run per point, 614.4M tokens):
+
+| target batch | hypothesis i (wd 0.1): lr → loss | hypothesis ii (lr 0.0015): wd → loss |
+|---|---|---|
+| 128 | 0.003 → **2.949** · 0.0056 (pred) → 2.965 · 0.006 → 2.971 · 0.012 → 3.002 | 0.4 → 2.949 · 0.63 (pred) → 2.937 · 0.8 → **2.934** · 1.6 → 2.939 |
+| 256 | 0.006 → **3.080** · 0.0082 (pred) → 3.136 · 0.012 → 3.178 · 0.024 → 3.187 | 0.8 → 2.991 · 1.1 (pred) → 2.978 · 1.6 → **2.971** · 3.2 → 2.978 |
+
+**Answer.** Hypothesis ii wins at both targets, and not by a little: 2.934 vs 2.949 at batch 128
+(0.015) and 2.971 vs 3.080 at batch 256 (0.11). Our prediction was wrong. Two things went wrong
+with hypothesis i and one thing went right with hypothesis ii:
+
+1. The learning-rate optimum stopped rising. From batch 8 to 32 it grew like B^0.56; from 32 to
+   64 it was flat (0.0033 → 0.0032); at 128 the fit says 0.0034 — the same value again — and at
+   256 the best point is the *lowest* learning rate we tried (0.006), so the optimum there is at
+   or below it. Extrapolating the B^0.56 power law to 0.0056 and 0.0082 overshot, and the loss
+   curve is steep on the high side (0.012 at batch 256 costs 0.1).
+2. At weight decay 0.1, large batches simply lose: even the best batch-256 point (3.080) is 0.16
+   worse than batch 32 (2.919). With 2,344 updates instead of 18,750, fixed per-update decay
+   gives an 8× longer memory in tokens, and the model carries early, badly-fitted weights to the
+   end.
+3. The weight-decay optimum doubled every time the batch doubled: best sampled 0.1 (16), 0.2
+   (32), 0.4 (64), 0.8 (128), 1.6 (256), and the fitted optima at the targets are 0.95 (128) and
+   1.88 (256) — exactly wd* ∝ B. The proportional rule we listed as the alternative (0.95 / 1.91)
+   predicted both to within 2 %; the interior power-law fit (B^0.80 → 0.63 / 1.1) undershot
+   because two of its four source points were grid-edge lower bounds. Scaling weight decay this way keeps
+   η·λ·(updates per token) — the decay timescale measured in *tokens* — constant, which is the
+   same quantity P2 found mattered.
+
+Even with the right weight decay, batch 256 is 0.05 worse than batch 32 at this token budget
+(2.971 vs 2.919): fewer updates cannot be fully bought back by either knob. Batch 128 nearly can
+(2.934, 0.015 behind).
+
+### (c) Does momentum matter more or less at large batch?
+
+Held fixed: each batch's best measured pair (batch 8: lr 0.0015, wd 0.05; batch 256: lr 0.0015,
+wd 1.6), β₂ = 0.95, 614.4M tokens. Trimmed to β₁ ∈ {0, 0.5, 0.98} plus the existing β₁ = 0.9 run.
+
+**P3.2C_PLACEHOLDER**
+
+### (d) What does the NQM explain?
+
+| quantity | NQM prediction (P3.1) | language model (P3.2) | verdict |
+|---|---|---|---|
+| lr* vs batch, low noise | ∝ B^0.9–1.0 | ∝ B^0.56 for 8→32, then flat, then *lower* at 128–256 (0.003 → 2.949 beats 0.0056 → 2.965; 0.006 → 3.080 beats 0.0082 → 3.136) | fails above batch ≈ 32: the NQM has no "critical batch size" where more sequences per update stop reducing useful noise |
+| lr* vs batch, high noise | ∝ B^0.5 | B^0.56 in the small-batch range | agrees where the LM is noise-limited |
+| best loss vs batch at fixed tokens | NQM at fixed steps: bigger batch always better | fixed tokens: 2.934 (8) → 2.919 (32) → 2.925 (64) → 2.934 (128, retuned) → 2.971 (256, retuned) | not comparable as stated: the NQM in P3.1 was run at fixed step counts, the LM at fixed tokens; the LM's penalty is the update count |
+| weight decay vs batch | not modelled (no weight decay in the NQM) | wd* ∝ B exactly, 0.1 → 1.6 over 16 → 256; keeping wd fixed costs 0.11 at batch 256 | an effect the NQM does not model, not a failed prediction |
+| momentum (β₁) | helps slightly at small batch, hurts at large batch unless lr is retuned | P3.2C_TABLE_REF | P3.2C_VERDICT |
+
+The change that would fix the biggest disagreement: give the NQM a *per-coordinate noise floor
+that does not shrink with batch* (or equivalently a finite set of "useful" directions), so the
+gradient-noise reduction from batch saturates. Then the optimal step stops growing past a critical
+batch, and the fixed-token loss gets worse past it because there are fewer updates — which is what
+we measured. Adding an L2 term with a decay timescale in updates would also let it reproduce the
+wd* ∝ B rule.
+
+**How to think about it.**
+1. Two currencies: tokens (what you pay for) and updates (what moves the weights). Doubling the
+   batch halves the updates per token. Everything in this problem is about which hyperparameter
+   is "per update" and needs rescaling.
+2. Learning rate is per update, but the step you can afford is capped by curvature, not only by
+   noise. Once the batch is big enough that noise is no longer the limit (here around 32–64 at
+   614M tokens), a bigger batch does not buy a bigger step — that is the critical batch size,
+   and the NQM's low-noise regime does not have one because its noise never stops averaging down.
+3. Weight decay is also per update: the memory of the optimizer is 1/(ηλ) updates. Keep ηλ fixed
+   while halving updates per token and you doubled the memory in tokens. The wd* ∝ B result is
+   exactly "keep the memory constant in tokens". It is the same rule as P2's lr × wd product,
+   with batch size as the third factor.
+4. Why hypothesis ii dominates even though the learning rate was *not* retuned: at these batch
+   sizes the learning-rate optimum had already stopped moving, so there was nothing to gain on
+   that side, while the weight-decay optimum kept moving by 2× per doubling.
+5. Takeaway rule for this model: when you change batch size at fixed tokens, keep the learning
+   rate near its batch-32–64 value and scale weight decay in proportion to the batch; expect a
+   loss penalty for batch ≥ 128 anyway because of the lost updates.
+
+### Example question — double the batch size mid-run (Hard)
+
+Setup: batch 64 → 128 at 307.2M of 614.4M tokens, lr 0.0015, wd 1.6, Adam moments kept, schedule
+in tokens. Policies: A nothing, B lr × √2, C lr × 2, D wd × √2, E wd × 2.
+
+**Pick: A (change nothing), with D close behind; expected spread across A/B/D ≲ 0.01 and C/E
+measurably worse.** Reasoning from our curves:
+
+1. The per-update learning rate does not need to go up: at batch 128 the best measured learning
+   rate is at or below 0.003, and at a large weight decay the product ηλ matters, so B and C
+   push the product (0.0024 → 0.0034 / 0.0048 per update) toward too-short a memory. C doubles
+   the step on top of that in the half of training where the schedule is already decaying.
+2. The run starts at wd 1.6, which at lr 0.0015 is 4× the batch-64 optimum we measured for
+   614M tokens (0.4). Doubling the batch halves the per-token decay, which moves the second half
+   *toward* its optimum (at batch 128, 0.8 → 2.934 and 1.6 → 2.939 are a flat pair). Policy A gets
+   that for free. E restores the over-strong per-token decay (at batch 256, wd 3.2 was 0.007
+   worse than 1.6); D is halfway.
+3. Mechanically, after the switch each update sees a gradient with half the noise and the same
+   curvature, so the safe step is unchanged or slightly larger; what halves is how often the
+   decay is applied. With the decay already too strong, fewer applications is a feature.
+4. Caveat: the first half at batch 64 with wd 1.6 is itself off-optimum, so all five policies
+   land near each other; this is a "small differences" question. If the setup had used the
+   tuned wd 0.4 at batch 64, we would pick E, because then keeping the token-timescale constant
+   is what matters and wd* ∝ B says double it.
 
 ---
 
