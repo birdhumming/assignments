@@ -19,12 +19,15 @@ def p41():
     for test, xlabel in (('width', 'width'), ('depth', 'depth')):
         rows = [f for f in fits if f['test'] == test]
         fig, axes = plt.subplots(1, 3, figsize=(15, 4.2))
+        shared = [f for f in rows if test == 'depth' and f['size'] == 2]  # depth 2 is the same model under every prescription
         for pol in dict.fromkeys(f['policy'] for f in rows):
-            sub = sorted((f for f in rows if f['policy'] == pol), key=lambda f: f['size'])
+            sub = sorted((f for f in rows if f['policy'] == pol or f in shared), key=lambda f: f['size'])
             xs = [f['size'] for f in sub]
             axes[0].plot(xs, [f['lr_star'] for f in sub], 'o-', label=LABEL[pol])
             axes[1].plot(xs, [f['loss_star'] for f in sub], 'o-', label=LABEL[pol])
             for f in sub:
+                if f in shared and pol != 'mup':
+                    continue
                 lrs = sorted(float(k) for k in f['losses'])
                 axes[2].plot(lrs, [f['losses'][k] for k in sorted(f['losses'], key=float)], 'o-', ms=3, label=f"{LABEL[pol]} {f['size']}")
         axes[0].set(xscale='log', yscale='log', xlabel=xlabel, ylabel='fitted optimal base LR', title=f'P4.1 {test}: fitted lr*')

@@ -236,6 +236,28 @@ lesson: a weight decay of 1.6 that was optimal at 153.6M tokens is 17× too larg
 
 ---
 
+### Example question (Medium) — can we postpone weight decay?
+
+Setup: 153.6M tokens, learning rate 0.0015, weight decay 0.4, three seeds. Instead of shrinking the
+weights by (1 − η_t λ) at every update, shrink them once per block of 2 or 4 updates by the product
+of the skipped factors, so the *cumulative* shrinkage is identical.
+
+Prediction from the Problem 2 picture: weight decay's job is to set the averaging window — the
+weights are an exponential moving average of recent updates with timescale 1/(ηλ). At
+learning rate 0.0015 and weight decay 0.4 that window is about 1,700 updates. Applying the same
+total shrinkage every 2 or 4 steps instead of every step is a change at the scale of a few updates
+against a window of 1,700, so the final loss should not move. The weights themselves will differ
+(the shrink happens before different gradient steps, so the trajectory is not preserved), but the
+loss should be the same to within seed noise.
+
+**Answer.** All three schedules give mean loss ≈ 3.21 (course answer key). Matching cumulative
+retention does not preserve the trajectory, yet both delays match per-step decay in final loss.
+This is the same lesson as P2(c): what matters is the product ηλ (the timescale), not the exact
+step on which the decay is applied. Our P2(c) runs show how insensitive the loss is near the right
+timescale — weight decay 0.0927 and 0.1 at learning rate 0.003 differ by 0.0009 — and how
+sensitive it is far from it (weight decay 1.6 costs 0.085). A 2–4 step delay is a tiny
+perturbation of the timescale, far inside the flat region.
+
 ## Problem 3.1 — What does the noisy quadratic model predict about batch size? (CPU)
 
 **Question.** In a 2-D quadratic with noisy gradients and a fixed dataset of N = 8192 samples
