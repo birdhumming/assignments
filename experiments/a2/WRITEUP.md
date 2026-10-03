@@ -34,8 +34,10 @@ when the predicted learning rate is 40% off. It is also why fitted optima have w
    at 2.5B tokens to within 0.001.
 3. **Batch-size rules depend on the noise regime.** In the toy quadratic model the optimal
    learning rate grows almost linearly with batch when gradient noise is small (exponent 0.9–1.0),
-   but only like the square root when noise dominates (exponent 0.45–0.55). Momentum helps at
-   small batch and hurts at large batch.
+   but only like the square root when noise dominates (exponent 0.45–0.55). The language model
+   followed the toy only up to batch ≈ 32: past that the learning-rate optimum stopped moving,
+   the weight-decay optimum doubled with every doubling of batch (wd* ∝ B), and momentum mattered
+   *more* at large batch (removing it cost 0.04 at batch 8 and 0.23 at batch 256), not less.
 4. **µP is about keeping the first few updates width-independent.** The derivation says: hidden
    learning rate ∝ 1/width, readout multiplier ∝ 1/width, embedding untouched. Kaiming's tuned
    learning rate falls roughly like 1/width; µP's stays put.
@@ -444,7 +446,41 @@ Even with the right weight decay, batch 256 is 0.05 worse than batch 32 at this 
 Held fixed: each batch's best measured pair (batch 8: lr 0.0015, wd 0.05; batch 256: lr 0.0015,
 wd 1.6), β₂ = 0.95, 614.4M tokens. Trimmed to β₁ ∈ {0, 0.5, 0.98} plus the existing β₁ = 0.9 run.
 
-**P3.2C_PLACEHOLDER**
+| β₁ | batch 8 (75,000 updates) | batch 256 (2,343 updates) |
+|---|---|---|
+| 0 (no momentum) | 2.978 | 3.198 |
+| 0.5 | 2.963 | 3.060 |
+| 0.9 (the tuned runs) | **2.935** | **2.971** |
+| 0.98 | 2.934 | 3.025 |
+| cost of removing momentum (β₁ 0.9 → 0) | +0.043 | +0.228 |
+
+**Answer: momentum matters *more* at large batch, not less — the opposite of the NQM's call.**
+Dropping β₁ from 0.9 to 0 costs 0.04 at batch 8 and 0.23 at batch 256, five times more. Going up
+to 0.98 is free at batch 8 (2.934 vs 2.935) but costs 0.054 at batch 256 (3.025 vs 2.971), so at
+large batch the optimum is pinned near 0.9 from both sides.
+
+**How to think about it.**
+1. The NQM's "momentum hurts at large batch" came from a 32-update run where a β₁ = 0.9 window
+   (~10 updates) is a third of training. The language model at batch 256 still has 2,343
+   updates, so at β₁ = 0.9 the lag cost the NQM measured is negligible here (it comes back at
+   β₁ = 0.98, point 4).
+2. What is left is the benefit. Adam with β₁ = 0 is RMSProp: every coordinate moves by about
+   `lr` per update whatever the gradient's signal-to-noise, so a noisy coordinate takes a
+   full-size step in a random direction. β₁ = 0.9 averages ~10 updates before stepping and
+   shrinks those random steps.
+3. Why that benefit grows with batch at fixed tokens (our reading, not a measured mechanism): at
+   batch 8 there are 75,000 updates and a long decaying schedule, so the random steps largely
+   cancel over time without momentum's help; at batch 256 there are only 2,343 updates, each
+   32× more consequential, and nothing else averages them. Momentum is the only noise-reduction
+   left once the batch is large and the step count is small.
+4. Where the NQM was right: at small batch the gain from momentum is modest (0.04 here, 20 % in
+   the toy), and the lag cost does appear once the averaging window is a visible fraction of the
+   run. β₁ = 0.98 averages ~50 updates: 0.07 % of the batch-8 run (free) but 2 % of the batch-256
+   run, and it costs 0.054 there — the same mechanism the NQM showed at β₁ = 0.9 with 32 updates,
+   shifted to the scale where the LM actually has few updates.
+5. Practical rule for this model: never turn momentum off. β₁ in 0.9–0.98 is safe at small batch;
+   at large batch keep it at 0.9 — both less (noise) and more (lag) cost real loss, and the fewer
+   updates you have, the sharper that optimum gets.
 
 ### (d) What does the NQM explain?
 
@@ -454,7 +490,7 @@ wd 1.6), β₂ = 0.95, 614.4M tokens. Trimmed to β₁ ∈ {0, 0.5, 0.98} plus t
 | lr* vs batch, high noise | ∝ B^0.5 | B^0.56 in the small-batch range | agrees where the LM is noise-limited |
 | best loss vs batch at fixed tokens | NQM at fixed steps: bigger batch always better | fixed tokens: 2.934 (8) → 2.919 (32) → 2.925 (64) → 2.934 (128, retuned) → 2.971 (256, retuned) | not comparable as stated: the NQM in P3.1 was run at fixed step counts, the LM at fixed tokens; the LM's penalty is the update count |
 | weight decay vs batch | not modelled (no weight decay in the NQM) | wd* ∝ B exactly, 0.1 → 1.6 over 16 → 256; keeping wd fixed costs 0.11 at batch 256 | an effect the NQM does not model, not a failed prediction |
-| momentum (β₁) | helps slightly at small batch, hurts at large batch unless lr is retuned | P3.2C_TABLE_REF | P3.2C_VERDICT |
+| momentum (β₁) | helps slightly at small batch, hurts at large batch unless lr is retuned | β₁ 0.9 → 0 costs 0.043 at batch 8 and 0.228 at batch 256; 0.98 ≈ 0.9 at batch 8 but costs 0.054 at batch 256 | small-batch half agrees; large-batch half fails — the NQM's harm was lag in a 32-update run, the LM has 2,343 updates and momentum is its remaining noise reduction |
 
 The change that would fix the biggest disagreement: give the NQM a *per-coordinate noise floor
 that does not shrink with batch* (or equivalently a finite set of "useful" directions), so the
