@@ -1,0 +1,30 @@
+\clearpage
+\begin{examplequestion}[difficulty=medium]
+\phantomsection\label{ex:a2-wd-timing}
+\textbf{Can we postpone weight decay?}
+Use the default training settings at 153.6M tokens with peak LR $.0015$ and WD $\lambda=.4$, with initialization seeds 42--44 and fixed data order. We modify the standard training process so that weight decay does not happen at every step, but instead applies a stronger weight decay every $K$ steps.
+
+Let $\eta_t$ be the LR actually used at update $t$ (the optimizer's LR
+before calling \texttt{optimizer.step}, not the LR after advancing its scheduler).
+With positive warmup the first update uses zero LR, and the schedule reaches
+zero only after the final update. Ordinary AdamW scales down the weights by $r_t=1-\eta_t\lambda$ before applying
+the gradient update. Compare three schedules:
+\begin{itemize}
+\item Apply weight decay every update, as usual.
+\item Apply it only at the end of each block of two updates.
+\item Apply it only at the end of each block of four updates.
+\end{itemize}
+For a block ending at update $t$ with length $k$, the delayed schedule applies a stronger weight decay every $k$ steps
+\[
+ \widetilde r_t=\prod_{j=t-k+1}^{t}(1-\eta_j\lambda).
+\]
+
+The usual schedule gives mean final validation loss approximately $3.209$
+across the three seeds.
+\textbf{Predict the mean final validation loss for each delayed schedule.}
+Round each mean to the nearest multiple of $0.01$.
+\begin{itemize}
+\item Weight decay every two updates: \underline{\hspace{2cm}}.
+\item Weight decay every four updates: \underline{\hspace{2cm}}.
+\end{itemize}
+\end{examplequestion}

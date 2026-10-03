@@ -1,0 +1,362 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{worksheet}[2026/07/14 v1.1 Shared style for hard_dl worksheets]
+
+% ---------------------------------------------------------------------
+% Shared preamble for the worksheets. Load from a worksheet directory
+% (basics/, experiment_prediction_quiz/, ...):
+%     \usepackage{../common/worksheet}              in-class quiz layout
+%     \usepackage[assignment]{../common/worksheet}  assignment handout
+%
+% Per-document setup (before \begin{document}):
+%     \worksheetname{Assignment 1: Basics}  document title + left header
+%     \coursename{CS 312}                   title byline (optional)
+%     \duedate{Due Oct 7, 11:59pm}          title byline + right header
+%                                           (optional)
+% Then start the body with
+%     \worksheettitle
+% which typesets the centered title, a byline (course - due date -
+% total points), and, in quiz mode, the Name/Date blanks. Pass an
+% optional display title if it should differ from the header text:
+%     \worksheettitle[Experimental Outcome Prediction Quiz]
+%
+% Units, questions, points:
+%     \unitheader{A}{Architecture}{optional subtitle}
+%         quiz mode:       starts a new page, questions numbered A1, A2, ...
+%         assignment mode: flows inline, problems numbered continuously
+%     \subunitheader{Title}
+%         unnumbered mid-weight heading for prose within a unit
+%     \questionheader[points]{Title}{optional right-aligned subtitle}
+%         quiz mode:       "A1. Title" with a points line below the rule
+%         assignment mode: "Problem 1: Title (points)"
+%     \questionpoints{15}
+%         separate points line (quiz style); prefer the optional
+%         argument of \questionheader. Either way the points accumulate
+%         into \totalpoints (correct after two latex passes).
+%     \begin{problem}[points]{Title} ... \end{problem}
+%         framed problem statement (preferred in assignment mode);
+%         same numbering and points accounting as \questionheader
+%
+% Parts within a problem:
+%     \begin{parts} \item ... \end{parts}   ->   (a), (b), ...
+%
+% Solutions:
+%     \solution{...} and \begin{solutionblock}...\end{solutionblock}
+%     appear only in solutions mode. Enable with `make solutions`
+%     (defines \enablesolutions via latexmk's pretex) or by putting
+%     \solutionstrue in the document preamble.
+% ---------------------------------------------------------------------
+
+\newif\ifassignment
+\DeclareOption{assignment}{\assignmenttrue}
+\ProcessOptions\relax
+
+\RequirePackage[margin=0.72in]{geometry}
+\RequirePackage[sc]{mathpazo}
+\RequirePackage[T1]{fontenc}
+\RequirePackage{amsmath,amssymb}
+\RequirePackage[table]{xcolor}
+\RequirePackage{array}
+\RequirePackage{tabularx}
+\RequirePackage{enumitem}
+\RequirePackage{fancyhdr}
+\RequirePackage{environ}
+\RequirePackage{needspace}
+\RequirePackage{tcolorbox}
+\tcbuselibrary{breakable,skins}
+\RequirePackage{listings}
+\RequirePackage{graphicx}
+
+% ---- Palette ----
+\definecolor{QuizPurple}{HTML}{7030A0}
+\definecolor{QuizBlue}{HTML}{5178D5}
+\definecolor{QuizCyan}{HTML}{45BFC6}
+\definecolor{QuizGreen}{HTML}{55A630}
+\definecolor{QuizOrange}{HTML}{F8961E}
+\definecolor{QuizRed}{HTML}{E74C3C}
+\definecolor{QuizText}{HTML}{333333}
+\definecolor{QuizRule}{HTML}{D9D9D9}
+\definecolor{QuizShade}{HTML}{F5F2F8}
+\definecolor{QuizGray}{HTML}{9AA0A6}
+\definecolor{QuizGrayShade}{HTML}{FAFAFA}
+
+% ---- Shaded info boxes ----
+% \begin{shadebox}[Instructions.] ... \end{shadebox}
+% Multi-paragraph friendly: \parbox zeroes \parskip, so paragraph
+% separation is restored explicitly inside the box.
+\NewEnviron{shadebox}[1][]{%
+  \par\addvspace{0.55em}%
+  \noindent
+  {\setlength{\fboxsep}{7pt}%
+   \colorbox{QuizShade}{%
+     \parbox{\dimexpr\linewidth-2\fboxsep}{%
+       \setlength{\parskip}{0.8em}%
+       \if\relax\detokenize{#1}\relax\else\textbf{\textcolor{QuizPurple}{#1}} \fi
+       \BODY\par}}}%
+  \par}
+
+% ---- Solutions toggle ----
+\newif\ifsolutions
+\ifdefined\enablesolutions\solutionstrue\fi
+
+\newcommand{\solution}[1]{%
+  \ifsolutions
+    \par\vspace{0.3em}%
+    {\color{QuizGreen}\textbf{Solution.} #1\par}%
+  \fi}
+
+\NewEnviron{solutionblock}{%
+  \ifsolutions
+    \par\vspace{0.3em}%
+    {\color{QuizGreen}\textbf{Solution.} \BODY\par}%
+  \fi}
+
+% ---- Document metadata ----
+% \def rather than \newcommand so empty values are \ifx-comparable
+% to \@empty when assembling the byline.
+\def\ws@name{Worksheet}
+\def\ws@course{}
+\def\ws@due{}
+\newcommand{\worksheetname}[1]{\def\ws@name{#1}}
+\newcommand{\coursename}[1]{\def\ws@course{#1}}
+\newcommand{\duedate}[1]{\def\ws@due{#1}}
+
+% ---- Title block ----
+\newcommand{\ws@bylinesep}{\quad$\cdot$\quad}
+\newcommand{\worksheettitle}[1][\ws@name]{%
+  \begin{center}
+    {\LARGE\bfseries\textcolor{QuizPurple}{#1%
+      \ifsolutions\ \textcolor{QuizRed}{(Solutions)}\fi}}\\[0.45em]
+    {\small\bfseries\textcolor{QuizText}{%
+      \ifx\ws@course\@empty\else\ws@course\ws@bylinesep\fi
+      \ifx\ws@due\@empty\else\ws@due\ws@bylinesep\fi
+      \totalpoints{} points}}%
+    \ifassignment\else
+      \\
+      \vspace{0.6em}
+      \begin{tabularx}{0.9\linewidth}{>{\bfseries}l X}
+        Name: & \rule{0.7\linewidth}{0.5pt} \\
+        Date: & \rule{0.7\linewidth}{0.5pt} \\
+      \end{tabularx}%
+    \fi
+  \end{center}%
+}
+
+% ---- Page style ----
+
+\pagestyle{fancy}
+\fancyhf{}
+\setlength{\headheight}{22pt}
+\lhead{\small\textcolor{QuizPurple}{\ws@name}%
+  \ifsolutions\textcolor{QuizRed}{\ --- Solutions}\fi}
+\rhead{\small\textcolor{QuizText}{\ws@due}}
+\cfoot{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{QuizRule}\leaders\hrule height \headrulewidth\hfill}}
+
+% ---- Layout ----
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\setlist[itemize]{leftmargin=1.4em,itemsep=0.18em,topsep=0.25em}
+\setlist[enumerate]{leftmargin=1.7em,itemsep=0.25em,topsep=0.25em}
+\newlist{parts}{enumerate}{1}
+\setlist[parts]{label=(\alph*),leftmargin=1.7em,itemsep=0.35em,topsep=0.3em}
+\renewcommand{\arraystretch}{1.25}
+
+% ---- Points accounting ----
+\newcommand{\ws@points}{0}
+\newcommand{\ws@addpoints}[1]{\xdef\ws@points{\fpeval{\ws@points + (#1)}}}
+\newcommand{\questionpoints}[1]{%
+  \ws@addpoints{#1}%
+  {\small\bfseries\textcolor{QuizText}{#1 points}}\par\vspace{0.2em}%
+}
+\newcommand{\totalpoints}{%
+  \ifcsname ws@totalpoints\endcsname\csname ws@totalpoints\endcsname\else ??\fi}
+\AtEndDocument{%
+  \immediate\write\@auxout{\string\gdef\string\ws@totalpoints{\ws@points}}}
+
+% ---- Units and question numbering ----
+\newcounter{question}
+\newcommand{\ws@prefix}{}
+
+\newcommand{\unitheader}[3]{%
+  \ifassignment
+    \par\needspace{6\baselineskip}%
+    \vspace{1.5em}%
+  \else
+    \clearpage
+    \renewcommand{\ws@prefix}{#1}%
+    \setcounter{question}{0}%
+  \fi
+  {\Large\bfseries\textcolor{QuizPurple}{#2}}%
+  \if\relax\detokenize{#3}\relax\else
+    \quad{\small\itshape\textcolor{QuizText}{#3}}%
+  \fi
+  \vspace{0.25em}
+  {\color{QuizRule}\hrule height 0.6pt}
+  \vspace{0.8em}
+}
+
+% \subunitheader{Title} — unnumbered mid-weight heading between
+% \unitheader and \questionheader; for organizing prose, not
+% gradeable items. No rule so it stays visually subordinate.
+\newcommand{\subunitheader}[1]{%
+  \par\needspace{4\baselineskip}%
+  \vspace{0.9em}%
+  {\normalsize\bfseries\textcolor{QuizPurple}{#1}}\par
+  \vspace{0.15em}%
+}
+
+\newcommand{\questionheader}[3][]{%
+  \par
+  \vspace{0.8em}
+  \noindent
+  \stepcounter{question}%
+  \ifassignment
+    {\large\bfseries\textcolor{QuizPurple}{Problem \arabic{question}: #2}}%
+    \if\relax\detokenize{#1}\relax\else
+      \ws@addpoints{#1}%
+      ~{\bfseries\textcolor{QuizText}{(\ws@pointsword{#1})}}%
+    \fi
+  \else
+    {\large\bfseries\textcolor{QuizPurple}{\ws@prefix\arabic{question}. #2}}%
+  \fi
+  \if\relax\detokenize{#3}\relax\else
+    \hfill{\small\itshape\textcolor{QuizText}{#3}}%
+  \fi
+  \par\vspace{0.1em}
+  {\color{QuizRule}\hrule height 0.5pt}
+  \vspace{0.35em}
+  \ifassignment\else
+    \if\relax\detokenize{#1}\relax\else\questionpoints{#1}\fi
+  \fi
+}
+
+% ---- Problem boxes ----
+% \begin{problem}[points]{Title} ... \end{problem}
+% Framed problem statement (CS336-handout style) so problems stand out
+% from surrounding prose. Shares the question counter and points
+% accounting with \questionheader; boxes break across pages.
+\newcommand{\ws@problemlabel}{%
+  \ifassignment Problem~\arabic{question}\else\ws@prefix\arabic{question}\fi}
+\newcommand{\ws@pointsword}[1]{#1 point\ifdim #1pt=1pt\else s\fi}
+\NewDocumentEnvironment{problem}{O{} m}{%
+  \stepcounter{question}%
+  \begin{tcolorbox}[
+    enhanced, breakable,
+    parbox=false,
+    colback=white,
+    colframe=QuizPurple,
+    boxrule=1.1pt,
+    arc=2pt,
+    left=9pt, right=9pt, top=8pt, bottom=9pt,
+    before skip=1.2em, after skip=1.2em,
+  ]
+  \noindent
+  {\bfseries\textcolor{QuizPurple}{\ws@problemlabel: #2}}%
+  \if\relax\detokenize{#1}\relax\else
+    \ws@addpoints{#1}%
+    ~{\bfseries\textcolor{QuizText}{(\ws@pointsword{#1})}}%
+  \fi
+  \par\nobreak\vspace{0.45em}%
+  {\color{QuizRule}\hrule height 0.5pt}%
+  \nobreak\vspace{0.6em}%
+}{%
+  \end{tcolorbox}%
+}
+
+% Small inline pill badge (filled, rounded). #1 = color, #2 = text.
+\newcommand{\ws@badge}[2]{%
+  \tcbox[on line, enhanced, nobeforeafter, box align=base,
+    boxsep=0pt, left=5pt, right=5pt, top=1.5pt, bottom=1.5pt,
+    colback=#1, colframe=#1, arc=3pt, boxrule=0pt]%
+    {\footnotesize\bfseries\textcolor{white}{#2}}%
+}
+% \difficultytag{easy|medium|hard} renders a color-coded difficulty
+% pill; an unrecognized value renders gray with the value verbatim.
+\newcommand{\difficultytag}[1]{%
+  \ifcsname ws@dtag@#1\endcsname\csname ws@dtag@#1\endcsname
+  \else\ws@badge{QuizGray}{Difficulty: #1}\fi}
+\@namedef{ws@dtag@easy}{\ws@badge{QuizGreen}{Difficulty: Easy}}
+\@namedef{ws@dtag@medium}{\ws@badge{QuizOrange}{Difficulty: Medium}}
+\@namedef{ws@dtag@hard}{\ws@badge{QuizRed}{Difficulty: Hard}}
+
+% \begin{examplequestion}[key=value] ... \end{examplequestion}
+% Deemphasized companion to \begin{problem}: light-gray frame, no
+% numbering, no points. Use to show students the kind of question we
+% might ask, without it reading as a gradeable problem. Options:
+%   label=...        header text (default "Example question")
+%   difficulty=...   easy|medium|hard, shown as a colored pill (right)
+% e.g. \begin{examplequestion}[difficulty=easy]
+\pgfkeys{/wsq/.cd, label/.initial=Example question, difficulty/.initial=}
+\NewDocumentEnvironment{examplequestion}{O{}}{%
+  \pgfkeys{/wsq/.cd, label=Example question, difficulty=, #1}%
+  \begin{tcolorbox}[
+    enhanced, breakable,
+    parbox=false,
+    colback=QuizGrayShade,
+    colframe=QuizGray,
+    boxrule=0.7pt,
+    arc=2pt,
+    left=9pt, right=9pt, top=8pt, bottom=9pt,
+    before skip=1.2em, after skip=1.2em,
+  ]
+  \noindent
+  {\bfseries\textcolor{QuizGray}{\pgfkeysvalueof{/wsq/label}}}%
+  \edef\ws@diff{\pgfkeysvalueof{/wsq/difficulty}}%
+  \ifx\ws@diff\@empty\else\hfill\difficultytag{\ws@diff}\fi
+  \par\nobreak\vspace{0.45em}%
+  {\color{QuizRule}\hrule height 0.5pt}%
+  \nobreak\vspace{0.6em}%
+}{%
+  \end{tcolorbox}%
+}
+
+% ---- Diff listings ----
+% \begin{diffblock} ... \end{diffblock} renders a unified diff: lines
+% beginning with + are green, - are red, and @@ hunk headers are muted.
+% Markers must sit in column 0 (morecomment=[f] = fixed first column).
+\lstdefinelanguage{wsdiff}{
+  morecomment=[f][\color{QuizGreen!65!black}]{+},
+  morecomment=[f][\color{QuizRed}]{-},
+  morecomment=[f][\color{QuizGray}]{@@},
+}
+\lstdefinestyle{wsdiff}{
+  language=wsdiff,
+  basicstyle=\ttfamily\footnotesize,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  aboveskip=0.3em, belowskip=0.3em,
+}
+\lstnewenvironment{diffblock}{\lstset{style=wsdiff}}{}
+
+% ---- Answer blanks and helpers ----
+\newcommand{\checkbox}{\(\square\)}
+\newcommand{\method}[1]{\ensuremath{\mathrm{#1}}}
+\newcommand{\conditionlabel}[1]{\textbf{\textcolor{QuizPurple}{#1}}}
+\newcommand{\rankingblank}{\rule{0.96\linewidth}{0.5pt}}
+\newcommand{\rankbox}{\fbox{\rule[-0.35em]{0pt}{1.45em}\hspace{0.52in}}}
+\newcommand{\rankopbox}{\fbox{\rule[-0.15em]{0pt}{1.05em}\hspace{0.18in}}}
+\newcommand{\rankchainthree}{\rankbox\ \rankopbox\ \rankbox\ \rankopbox\ \rankbox}
+\newcommand{\rankchainfour}{\rankbox\ \rankopbox\ \rankbox\ \rankopbox\ \rankbox\ \rankopbox\ \rankbox}
+\newcommand{\rankchainfive}{\rankbox\ \rankopbox\ \rankbox\ \rankopbox\ \rankbox\ \rankopbox\ \rankbox\ \rankopbox\ \rankbox}
+\newcommand{\rankchainsix}{\rankbox\ \rankopbox\ \rankbox\ \rankopbox\ \rankbox\ \rankopbox\ \rankbox\ \rankopbox\ \rankbox\ \rankopbox\ \rankbox}
+\newcommand{\shortblank}[1][1.35in]{\rule{#1}{0.5pt}}
+\newcommand{\answerarea}[1]{%
+  \vspace{#1}
+  {\color{QuizRule}\hrule height 0.5pt}
+}
+\newcommand{\reasoningarea}{%
+  \textit{Reasoning.}
+  \vspace{0.65in}
+  {\color{QuizRule}\hrule height 0.5pt}
+}
+
+% In assignment mode the paper answer areas collapse into writeup prompts.
+\ifassignment
+  \renewcommand{\answerarea}[1]{\par}
+  \renewcommand{\reasoningarea}{\par{\itshape Explain your reasoning in your writeup.}\par}
+\fi
+
+% ---- Links (loaded last) ----
+\RequirePackage[colorlinks=true,allcolors=QuizBlue]{hyperref}

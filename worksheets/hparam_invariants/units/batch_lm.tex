@@ -1,0 +1,53 @@
+\clearpage
+\subunitheader{Batch size scaling in a language model}
+
+Do the scaling rules and momentum effects from the NQM carry over to
+language-model training? Use the default model and training settings at
+614.4M tokens, varying batch size and the specified hyperparameters.
+
+Here $B$ is the number of sequences per optimizer update. Use microbatches of
+$\min(B,64)$ sequences and report the actual number of tokens processed.
+Use a linear learning-rate schedule with warmup over the first 1\% of
+optimizer updates. The batch-switch example below specifies its own
+schedule in terms of tokens processed.
+
+
+\begin{problem}{What should scale when batch size changes? (suggested: 48 new runs)}
+\begin{parts}
+\item \textbf{Tune LR with weight decay (9 new runs).}
+Set WD to $.1$ and sweep peak LR at $B\in\{8,16,32,64\}$.
+Plot the loss--LR curves, fitted optimal LR, and best measured loss against
+batch size. How do the optimal LR and performance change with batch size?
+
+\item \textbf{Compare two scaling hypotheses (suggested: 27 new runs).}
+The NQM can also give predictions of how weight decay and batch might jointly scale together.
+Design experiments at $B\in\{8,16,32,64\}$ to test two hypotheses:
+\begin{enumerate}[label=\roman*.]
+\item Fix WD at $.1$ across batches and scale the optimal peak LR.
+\item Fix peak LR at $.0015$ across batches and scale the optimal WD.
+\end{enumerate}
+Use the source results to predict configurations at $B=128$ and $B=256$,
+then test which hypothesis transfers better. Discuss whether your findings
+agree with the NQM.
+
+\item \textbf{Ablate momentum (suggested: 12 new runs).}
+At $B=8$ and $B=256$, hold each batch's best measured LR--WD pair and
+$\beta_2=.95$ fixed. Design experiments including a $\beta_1=0$ control to test how the effect of momentum changes with batch size.
+Compare with our earlier problem when we retuned LR.
+
+\item \textbf{What does the NQM explain? (no new runs).}
+Which predictions from your quadratic experiments agree with your language-model experiments,
+and which do not?
+
+Give a short prediction--measurement table for LR--batch-size scaling,
+weight decay, and momentum. Include the measured target losses supporting
+your conclusions. Distinguish a prediction that fails from an effect
+the NQM does not model. What would you change in the NQM to explain one of
+the disagreements?
+\end{parts}
+\end{problem}
+
+\paragraph{Further reading.}
+\href{https://arxiv.org/abs/2505.13738}{\textbf{Power Lines}}: WD--LR--batch coupling;
+\href{https://arxiv.org/abs/2503.04715}{\textbf{Step Law}}: optimal LR and batch-size scaling;
+\href{https://arxiv.org/abs/2606.16899}{\textbf{Hyperball}}: control of weight and update norms.

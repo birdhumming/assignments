@@ -1,0 +1,97 @@
+\subunitheader{Background: The noisy quadratic model}
+
+A noisy quadratic model (NQM) replaces neural-network training with a quadratic
+loss and noisy gradients. There are two key properties of the noisy quadratic that we will need to vary and understand. The curvature of the quadratic controls the optimization difficulty of the problem, and controls how quickly different directions
+can be optimized; the gradient noise represents variation among training examples and informs whether larger batches are helpful.
+We will follow
+\href{https://proceedings.neurips.cc/paper_files/paper/2019/hash/e0eacd983971634327ae1819ea8b6214-Abstract.html}{Guodong Zhang et al. (2019),
+\emph{Which Algorithmic Choices Matter at Which Batch Sizes? Insights From a
+Noisy Quadratic Model}}, which uses this simple model to explain how learning
+rate, momentum, and the optimizer affect batch-size scaling.
+
+We will investigate two conclusions and the conditions under which they hold:
+\begin{enumerate}[label=\arabic*.]
+\item \textbf{Optimal LR can follow a power law in batch size.}
+Let $B$ be batch size and $\eta^*(B)$ the LR minimizing expected final loss
+at a fixed total number of training examples. Write a candidate rule as
+$\eta^*(B)\approx cB^p$, with fitted constants $c$ and $p$.
+For SGD in the small-step regime, the NQM predicts approximately linear scaling,
+        $p=1$: doubling batch size calls for doubling LR. Of course, there will come a point where this prediction breaks down, as an arbitrarily large learning rate will lead to divergence. We will test this scaling rule, and identify the range of parameters where it is useful.
+\item \textbf{Momentum can help more at large batches than at small batches.}
+The classical NQM prediction is that, in the noise-dominated small-batch regime,
+SGD momentum mainly rescales the effective LR and offers little extra benefit
+after LR tuning. At larger batches, reduced noise can allow momentum to
+accelerate convergence. We will test this prediction at a finite training budget and perform comparisons with Adam.
+\end{enumerate}
+
+
+Our first problem will make use of a simple, two dimensional quadratic model for you to play with.
+\paragraph{2D quadratic toy model.}
+Let $w=(w_1,w_2)^\top$ be the parameters and fix the curvature matrix
+$H=\operatorname{diag}(1,10)$. The loss and its exact gradient are
+\[
+ f(w)=\tfrac12 w^\top H w=\tfrac12(w_1^2+10w_2^2),
+ \qquad \nabla f(w)=Hw.
+\]
+To define the \emph{noisy} part of this quadratic, we will consider our gradients to be noisy version of the true gradient. For an update with batch size $B$, we define the corresponding minibatch gradient to be
+\[
+ g_t=Hw_t+\epsilon_t,\qquad
+ \epsilon_t\sim\mathcal N(0,I_2/B)
+\]
+independently across updates, where $I_2$ is the two-dimensional identity matrix. This noise model comes from the naive assumption that the gradients are averages of i.i.d. items, and thus we expect variance to scale as $O(1/B)$.
+
+\paragraph{Optimizers.}
+In this problem, we will use a simplified optimizer model with constant LR $\eta$ and no weight decay. For the optimizer itself, we will study Stochastic gradient descent (SGD)  (defined as $w_{t+1}=w_t-\eta g_t$), Adam with $\epsilon=10^{-8}$, $\beta_{1}=0.9$, and $\beta_{2}=0.95$, and RMSProp, which is Adam with $\beta_{1}=0$.
+
+\begin{problem}{What does this model predict about batch size? (Run locally with CPUs)}
+  Consider our 2D toy quadratic model above. You will perform stochastic optimization on this toy model using the noisy gradients and compare how the hyperparameters change the final loss.
+
+    Concretely, let $N=8,192$ be the total dataset size, $B$ be the batch size (which we specify below), and  $w_{0,1}\sim\mathcal N(0,1)$ and $w_{0,2}\sim\mathcal N(0,.1)$ as initialization.
+
+     Compare expected final loss $L_N(B,\eta)=\mathbb E[f(w_{N/B})]$, estimated by averaging over independent
+     initializations and noise (using at least 512 samples).
+
+  \begin{parts}
+
+
+\item \textbf{SGD.}
+Sweep LR at batches $B\in\{1,2,4,8,16,32,64\}$ and fit a power law to the
+estimated optimal LRs. Predict the optimal LR at $B=256$, then test the
+prediction with an LR sweep at that batch. Extend the batch range through
+512 and plot optimal LR and best final loss after tuning LR.
+Over what range does the rule work? Think about how reduced gradient noise
+competes with fewer updates at fixed $N$.
+
+\item \textbf{Adaptive updates.}
+Repeat the experiment with RMSProp and Adam, tuning LR separately.
+Compare the source exponents and the losses at predicted versus tuned LRs
+at batch 256. Do these optimizers follow the same rule, and does a similar exponent imply similar transfer accuracy?
+State your predictions for the language model setting. How should optimal LR change with batch size, and over what range do you expect that prediction to hold?
+
+\item \textbf{Explore the assumptions.}
+Replace the gradient-noise covariance $I_2$ by $\sigma^2 I_2$ for
+$\sigma\in\{1,\allowbreak 10,\allowbreak 100,\allowbreak 300\}$. Repeat the RMSProp and Adam source fits and
+batch-256 tests. Plot the fitted exponent against $\sigma$.
+Does changing the ratio of gradient signal to noise change the scaling rule?
+Relate your observations to the contributions to the second moment.
+
+As a curvature comparison, repeat the experiments with the scalar loss $f(w)=w^2/2$, initial $w_0\sim\mathcal N(0,2)$, and gradient-noise variance $\sigma^2/B$. Which conclusions
+are sensitive to the curvature model?
+
+\item \textbf{Momentum at small and large batches.}
+Return to $H=\operatorname{diag}(1,10)$ and noise covariance $I_2$.
+For SGD with momentum, initialize $s_0=0$ and use
+\[
+ s_{t+1}=\mu s_t+g_t,\qquad w_{t+1}=w_t-\eta s_{t+1},
+\]
+where $\mu$ is the momentum coefficient.
+At small batch $B=16$ and large batch $B=256$, compare $\mu=0$ and $.9$,
+tuning LR separately. For Adam, keep $\beta_2=.95$ and jointly sweep
+$\beta_1$ and LR at each batch (hint: you should include $\beta_{1}=0$, $0.9$ and other values closer to one).
+
+Plot the best loss at each $\beta_1$ after tuning LR.
+How does the benefit of momentum depend on batch size? Compare the learning
+curves of the best ($\beta$, LR) pair with the best no-momentum baseline. Do you expect these observations to carry over to language model training?
+
+\end{parts}
+\end{problem}

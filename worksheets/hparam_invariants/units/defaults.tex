@@ -1,0 +1,47 @@
+\subunitheader{Default training settings}
+Unless a problem specifies otherwise, use the following defaults for language-model
+experiments. Write $\eta$ for the peak learning rate (LR) and $\lambda$ for the
+weight-decay coefficient (WD). Each problem specifies its token budget.
+The default model is $d8$, with the training settings below.
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+Setting & Default \\
+\midrule
+Optimizer & AdamW \\
+Peak learning rate $\eta$ & $.003$ \\
+Weight decay $\lambda$ & $.1$ \\
+Adam moment coefficients $(\beta_1,\beta_2)$ & $(.9,.95)$ \\
+Numerical stabilizer $\epsilon$ & $10^{-8}$ \\
+Batch size & 64 sequences \\
+LR schedule & Linear decay after warmup \\
+Warmup & First 1\% of training updates \\
+Gradient clipping & Global gradient norm capped at 1 \\
+Model and data seeds & 42 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subunitheader{AdamW: Adam with decoupled weight decay}
+In this assignment, many of our problems will make use of AdamW. For completeness, we define what we mean by the AdamW optimizer here. AdamW combines an adaptive gradient update with a separate shrinkage of the weights.
+At update $t\geq0$, let $g_t$ be the gradient supplied to Adam for a weight matrix $W_t$.
+With moment coefficients $\beta_1,\beta_2$ and numerical stabilizer $\epsilon>0$,
+define gradient and squared-gradient moments $m_t,v_t$, their bias-corrected
+versions $\widehat m_t,\widehat v_t$, and the Adam direction $U_t$ below.
+Start from $m_0=v_0=0$; operations are elementwise.
+\[
+\begin{aligned}
+m_{t+1}&=\beta_1m_t+(1-\beta_1)g_t,
+& v_{t+1}&=\beta_2v_t+(1-\beta_2)g_t^2,\\
+\widehat m_{t+1}&=\frac{m_{t+1}}{1-\beta_1^{t+1}},
+& \widehat v_{t+1}&=\frac{v_{t+1}}{1-\beta_2^{t+1}},\\
+U_t&=\frac{\widehat m_{t+1}}{\sqrt{\widehat v_{t+1}}+\epsilon}.
+\end{aligned}
+\]
+With current LR $\eta_t$,
+AdamW updates the matrix as
+\[
+W_{t+1}=W_t-\eta_t U_t-\eta_t\lambda W_t.
+\]
+We follow the common practice of excluding embeddings, normalization parameters, and biases from weight decay.

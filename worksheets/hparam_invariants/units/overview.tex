@@ -1,0 +1,48 @@
+\unitheader{}{Overview}{}
+
+Training neural networks requires us to reason about scale: we train larger models, use more data, and
+increase batch sizes. Hyperparameters that work well at one scale may not work well
+at another. In this assignment, you will study \emph{hyperparameter scaling}: how
+to adjust hyperparameters as the model and training scale change.
+
+This assignment addresses the following questions:
+\begin{itemize}
+\item How should hyperparameters like learning rate and weight decay scale as we train on more data?
+\item Can initialization and learning-rate scaling let us reuse a single optimal learning rate as we scale?
+\item How does scaling the batch size affect the hyperparameters?
+\end{itemize}
+The goal is to learn when experiments at one scale can guide training at another,
+and how to test the limits of those scaling rules.
+
+As part of this process, we will carefully study \emph{toy examples}: simple optimization tasks for which we have solid theory and predictions. Toy examples are important as they form the basis of many theory-based intuitions that researchers have, and understanding both the power and limitations of these models is critical to understanding the extent to which we should trust theory in deep learning optimization.
+
+\begin{shadebox}[Our model.]
+We use a Llama-style architecture with the following baseline dimensions:
+8 layers, hidden size 512, 8 attention heads, a 4,096-token vocabulary, and about
+35M parameters. The model uses query/key (QK) normalization, which applies root mean square
+normalization to queries and keys within each attention head. The baseline context
+length is 1,024 tokens. RoPE is unscaled and training uses a prefix
+of the full source dataset shuffled with seed 42. We train on fresh data and
+evaluate validation loss.
+At the baseline model size and a batch size of 64 sequences, training on 614.4M
+tokens takes approximately 15 minutes on a single H100.
+\end{shadebox}
+
+\subunitheader{Provided experiments}
+Use the \href{\providedSweepsURL}{provided source sweeps} for Problems 1 and 2.
+From the starter repository root, list the run links for a subpart with:
+\begin{verbatim}
+uv run python -m experiments.a2.provided_sweeps --part P1a --links
+\end{verbatim}
+Replace \texttt{P1a} with \texttt{P1b}, \texttt{P1d}, \texttt{P1e}, or \texttt{P2a} for the other supplied runs.
+The command lists each run's token budget, optimizer, schedule, learning rate,
+weight decay, and W\&B link.
+Use the command without \texttt{-{}-links} to read the measurements offline.
+
+\subunitheader{Estimated experiments}
+The suggested grids total about 166 new runs, including 55 five-step tests;
+supplied runs and optional explorations (including Muon) are excluded.
+Reuse matching runs across parts. Stay within the \textbf{48 GPU-hour budget}:
+plan for at most 36 hours of experiments and reserve 12 for debugging and reruns.
+Time a representative run at each model size before launching sweeps; shrink
+the grids as needed and report any untested comparisons.

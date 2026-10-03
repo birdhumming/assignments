@@ -14,3 +14,14 @@ slurmjobs/
 .wandb.secret.env
 .venv/
 wandb/
+
+
+# Local experiment artifacts
+/tmp/
+/output/
+
+# Intentionally distributed A2 source measurements (no target answers).
+!worksheets/hparam_invariants/data/
+!worksheets/hparam_invariants/data/README.md
+!worksheets/hparam_invariants/data/provided_sweeps.csv
+!worksheets/hparam_invariants/data/reference_diagnostics.json

@@ -1,0 +1,9 @@
+run_name,tags,tokens,batch,lr,wd,beta1,optimizer,est_minutes
+model-a2-w1024-d8-lr0.001403-tok154M-a2-a2-p42c-baseline,"a2,a2-p42c,a2-p42-baseline",153600000,64,0.001403,0.1,0.9,adamw,15.0
+model-a2-w1024-d8-lr0.003-tok154M-a2-a2-p42c-baseline,"a2,a2-p42c,a2-p42-baseline",153600000,64,0.003,0.1,0.9,adamw,15.0
+model-a2-w1024-d8-lr0.00075-tok154M-a2-a2-p42c-baseline,"a2,a2-p42c,a2-p42-baseline",153600000,64,0.00075,0.1,0.9,adamw,15.0
+model-a2-w1024-d8-lr0.0015-tok154M-a2-a2-p42c-baseline,"a2,a2-p42c,a2-p42-baseline",153600000,64,0.0015,0.1,0.9,adamw,15.0
+model-a2-w1024-d8-lr0.001809-tok154M-a2-a2-p42c-mup,"a2,a2-p42c,a2-p42-mup",153600000,64,0.001809,0.1,0.9,adamw,15.0
+model-a2-w1024-d8-lr0.003-tok154M-a2-a2-p42c-mup,"a2,a2-p42c,a2-p42-mup",153600000,64,0.003,0.1,0.9,adamw,15.0
+model-a2-w1024-d8-lr0.00075-tok154M-a2-a2-p42c-mup,"a2,a2-p42c,a2-p42-mup",153600000,64,0.00075,0.1,0.9,adamw,15.0
+model-a2-w1024-d8-lr0.0015-tok154M-a2-a2-p42c-mup,"a2,a2-p42c,a2-p42-mup",153600000,64,0.0015,0.1,0.9,adamw,15.0

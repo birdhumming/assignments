@@ -1,0 +1,123 @@
+\clearpage
+\subunitheader{4.1: Toy Example: A five-step Transformer stress test}
+
+Test how $\mu$P scaling transfers hyperparameters across extreme widths and depths.
+
+\paragraph{Training protocol.}
+Train for five updates with constant LR from the first update, no warmup,
+no weight decay, and no gradient clipping. Use unscaled rotary position
+embeddings (RoPE). Use the same five training batches
+and 64 fixed validation sequences across parameterizations; evaluate in
+microbatches and tune LR using validation loss after update five.
+
+\paragraph{Width settings.}
+Let $m=n/n_0$ and let $k$ be each matrix's fan-in. Initialize weight matrices
+with independent centered Gaussian entries using the variances below.
+\begin{center}
+\begin{tabular}{l@{\hspace{2em}}c@{\hspace{2em}}c}
+\toprule
+Setting & Kaiming & $\mu$P \\
+\midrule
+Depth & \multicolumn{2}{c}{2} \\
+Attention-head dimension & \multicolumn{2}{c}{64} \\
+Reference width $n_0$ & \multicolumn{2}{c}{512} \\
+Weights, activations, optimizer states & \multicolumn{2}{c}{FP32} \\
+Embedding variance & \multicolumn{2}{c}{1} \\
+Hidden-matrix variance & \multicolumn{2}{c}{$1/k$} \\
+Initial normalization gains & \multicolumn{2}{c}{1} \\
+\midrule
+Readout variance & $1/n$ & $1/n_0$ \\
+Readout forward multiplier & $1$ & $1/m$ \\
+Hidden-matrix LR & $\eta$ & $\eta/m$ \\
+Embedding, readout, norm LR & $\eta$ & $\eta$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Depth settings.}
+Fix width and reference width at 64, with one attention head and reference
+depth two. Keep parameters, gradients, Adam states, and residual additions
+in FP32; use BF16 autocast for branch computations.
+Let $L$ count Transformer layers, $r=L/2$, and $c_L$ multiply each attention
+and feedforward branch before residual addition. Apply these depth multipliers
+on top of the $\mu$P width prescription:
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+ & Residual $c_L$ & Block LR multiplier & Block Adam $\epsilon$ \\
+\midrule
+Standard $\mu$P & $1$ & $1$ & $10^{-8}$ \\
+\href{https://arxiv.org/abs/2310.02244}{Depth-$\mu$P} & $r^{-1/2}$ & $r^{-1/2}$ & $10^{-8}r^{-1/2}$ \\
+\href{https://arxiv.org/abs/2505.01618}{CompleteP} & $r^{-1}$ & $1$ & $10^{-8}r^{-1}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+Block multipliers apply to hidden matrices and within-block normalization.
+Embedding, readout, and final-normalization LR and stabilizer remain unchanged.
+
+\needspace{12\baselineskip}
+\begin{problem}{Test width and depth scaling over five updates (about 55 runs)}
+\paragraph{Measure feature movement, update alignment, and readout--feature-change alignment.}
+Let $h_t$ be a hidden feature vector of width $n$, evaluated on $N$ fixed
+probes $x_1,\ldots,x_N$. For a matrix $A_t$ with fan-in $k$, let
+$\Delta A_t=A_t-A_{t-1}$ be its actual update and $u_{t-1}$ its pre-update input.
+Measure feature movement from initialization and update alignment by
+\[
+ M_t=\left[\frac1{Nn}\sum_{i=1}^N
+ \|h_t(x_i)-h_0(x_i)\|_2^2\right]^{1/2},\qquad
+ \alpha_{\rm upd}^{(t)}=\log_k R(\Delta A_t,u_{t-1}).
+\]
+Pool feature RMS over sequences, token positions, and coordinates; compute
+weight RMS over entries. Inspect normalized features and the residual stream
+separately.
+
+For readout probes, take $h_t$ to be the final RMSNorm output before the
+readout multiplier, and let $V_0\in\mathbb R^{n\times q}$ be the initial
+readout weights in the transposed convention. Measure
+\[
+ \omega_{\rm move}^{(t)}=\log_n S(V_0,h_t-h_0).
+\]
+This probes the initial-readout/feature-change term in the derivation.
+Use the same fixed probes and pool RMS as above; omit the ratio when
+feature movement is zero.
+
+\begin{parts}
+\item \textbf{Transfer across widths (about 30 five-step runs).}
+Predict how well Kaiming and standard $\mu$P will transfer their best base LR
+across widths 640, 2,560, and 5,120. Choose an LR sweep for each width
+and parameterization.
+Fit each loss--LR curve with a suitable model. Plot fitted optimal base LR
+and fitted minimum validation loss against width. Which parameterization
+transfers its tuned base LR better? Does it also achieve lower loss?
+
+\item \textbf{Probe width scaling (reuse part (a)'s configurations).}
+At each width and parameterization's best sampled LR, track logit RMS and
+the RMS and movement $M_t$ of the final RMSNorm output on fixed probes
+through the five updates. Plot update alignment $\alpha_{\rm upd}^{(t)}$ for
+each block's query, key, value, attention-output, and feedforward gate/up/down
+matrices, and the final readout. Use each matrix's pre-update input and its
+actual fan-in $k$. Also plot $\omega_{\rm move}^{(t)}$, comparing with the no-alignment ($1/2$) and
+full-alignment ($1$) scales. Compare feature movement and alignment across
+layers and widths. Which assumptions and predictions of the preceding derivation agree
+with your measurements?
+
+\needspace{7\baselineskip}
+\item \textbf{Transfer across depths (about 25 five-step runs).}
+Predict which depth prescription should transfer its base LR most reliably.
+Compare standard $\mu$P, Depth-$\mu$P, and CompleteP at depths 2, 100, and
+1,000, choosing an LR sweep for each depth and prescription.
+Plot fitted optimal base LR and fitted minimum validation loss against depth.
+Does better LR transfer imply lower loss after five updates?
+
+\item \textbf{Probe depth scaling (reuse part (c)'s configurations).}
+At each depth and prescription's best sampled LR, track residual-stream RMS
+before normalization and branch-output RMS before multiplication by $c_L$.
+Measure movement of the normalized residual-stream features at matched
+relative positions, such as the midpoint and final layer.
+Also track $\omega_{\rm move}^{(t)}$ through
+all five updates and compare it across depths and prescriptions.
+Can similar normalized activations hide a growing residual stream?
+Relate these probes to the LR-transfer results in part (c), distinguishing
+bounded signals from nonvanishing feature changes.
+\end{parts}
+\end{problem}

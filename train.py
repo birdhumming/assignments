@@ -78,6 +78,8 @@ class TrainConfig:
     train_dataset: TokenDatasetConfig = field(default_factory=dclm_train_dataset)
     val_dataset: TokenDatasetConfig = field(default_factory=dclm_val_dataset)
     optimizer_name: str = "adamw"
+    optimizer_builder: str | None = None
+    optimizer_kwargs: dict = field(default_factory=dict)
     beta1: float = 0.9
     beta2: float = 0.95
     save_model: bool = True
@@ -294,7 +296,7 @@ def checked_train_config(config):
     if not isinstance(config, TrainConfig):
         raise TypeError(f"config must be a TrainConfig, got {type(config).__name__}.")
     validate_precision(config.precision)
-    if config.optimizer_name not in {"adamw", "sgd"}:
+    if config.optimizer_builder is None and config.optimizer_name not in {"adamw", "sgd"}:
         raise ValueError(
             f"optimizer_name must be 'adamw' or 'sgd', got {config.optimizer_name!r}."
         )
@@ -337,6 +339,9 @@ def checked_train_config(config):
             f"{type(config.model_builder_kwargs).__name__}."
         )
     resolve_model_builder(config.model_builder)
+    resolve_model_builder(config.optimizer_builder)
+    if not isinstance(config.optimizer_kwargs, dict):
+        raise TypeError("optimizer_kwargs must be a dict")
     LoggerManager(config.metric_loggers)
     if config.batch_size % config.num_micro_batches != 0:
         raise ValueError(
@@ -461,13 +466,15 @@ def train(config):
         print(f"Using DataParallel across {num_cuda_devices} CUDA devices")
         model = DataParallel(base_model, device_ids=list(range(num_cuda_devices)))
 
-    optimizer = build_optimizer(
+    optimizer_factory = resolve_model_builder(config.optimizer_builder) or build_optimizer
+    optimizer = optimizer_factory(
         base_model,
         optimizer_name=config.optimizer_name,
         learning_rate=config.learning_rate,
         weight_decay=config.weight_decay,
         beta1=config.beta1,
         beta2=config.beta2,
+        **config.optimizer_kwargs,
     )
 
     micro_batch_size = config.batch_size // config.num_micro_batches
@@ -633,6 +640,7 @@ def train(config):
                         base_model.parameters(), max_norm=config.grad_norm
                     )
 
+                applied_learning_rate = optimizer.param_groups[0]["lr"]
                 optimizer.step()
                 scheduler.step()
 
@@ -665,7 +673,7 @@ def train(config):
                         {
                             "optimizer_step": step,
                             "train_loss": current_loss,
-                            "learning_rate": scheduler.get_last_lr()[0],
+                            "learning_rate": applied_learning_rate,
                             "step": step,
                             "progress": completed_steps / total_steps,
                             **train_logger_stats,

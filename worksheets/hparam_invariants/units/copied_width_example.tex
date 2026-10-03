@@ -1,0 +1,52 @@
+\clearpage
+\begin{examplequestion}[difficulty=easy]
+\phantomsection\label{ex:a2-copied-width}
+\textbf{Widening a Kaiming model by copying.}
+Use the five-step width-stress-test setting from Problem 4.1 on matching
+training batches. Assume Adam's numerical stabilizer is negligible for these updates.
+
+Start with the width-640 Kaiming baseline from the assignment, including its
+embedding, normalization, and readout initialization. Its LR is $.001$ for
+\emph{every} parameter group. Instead of independently initializing a wider
+model, expand this model by a factor $k$, where $k=4$ or $8$.
+
+Copy the embedding coordinates and width-dependent normalization gains $k$
+times. Copy complete attention heads, keeping each head's dimension at 64;
+leave the shared 64-dimensional QK-normalization gains unchanged.
+For each attention or feedforward matrix $W$ (including the rectangular
+gate, up, and down projections), replace it by the
+$k$-by-$k$ block matrix whose every block is $W/k$. If $V$ is the readout
+matrix, concatenate $k$ copies along its input dimension and divide by $k$:
+\[
+ W'=\frac1k\begin{bmatrix}W&\cdots&W\\\vdots&\ddots&\vdots\\W&\cdots&W\end{bmatrix},
+ \qquad V'=\frac1k[V\ \cdots\ V].
+\]
+There is no additional readout multiplier. The copies are separate trainable
+parameters, not tied weights.
+
+\textbf{Which learning rates should most closely preserve the width-640
+model's logits on the same inputs after each of the five updates?}
+Select one option for each width. The entries below are actual parameter-group
+LRs, with no additional width multipliers. ``Other'' means embedding and all
+normalization parameters.
+
+\textbf{(a) Width 2560.}
+\begin{center}\begin{tabular}{lrrr}
+\toprule
+Option & Hidden matrices & Readout & Other\\\midrule
+\checkbox\ 1 & $.001$ & $.001$ & $.001$\\
+\checkbox\ 2 & $.00025$ & $.00025$ & $.00025$\\
+\checkbox\ 3 & $.00025$ & $.00025$ & $.001$\\
+\checkbox\ 4 & $.00025$ & $.001$ & $.001$\\
+\bottomrule\end{tabular}\end{center}
+\textbf{(b) Width 5120.}
+\begin{center}\begin{tabular}{lrrr}
+\toprule
+Option & Hidden matrices & Readout & Other\\\midrule
+\checkbox\ 1 & $.00025$ & $.00025$ & $.001$\\
+\checkbox\ 2 & $.000125$ & $.000125$ & $.001$\\
+\checkbox\ 3 & $.000125$ & $.000125$ & $.000125$\\
+\checkbox\ 4 & $.000125$ & $.001$ & $.001$\\
+\bottomrule\end{tabular}\end{center}
+
+\end{examplequestion}
