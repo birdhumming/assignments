@@ -1,0 +1,599 @@
+\documentclass[10pt,letterpaper]{article}
+\usepackage[margin=0.75in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage[font=small,labelfont=bf,skip=3pt]{caption}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xcolor}
+\usepackage{parskip}
+\usepackage{float}
+\setlength{\parskip}{4pt}
+\setlist{nosep,leftmargin=*}
+\graphicspath{{../figures/}}
+\newcommand{\muP}{$\mu$P}
+\newcommand{\lrs}{\ensuremath{\mathrm{lr}^{*}}}
+\newcommand{\wds}{\ensuremath{\mathrm{wd}^{*}}}
+\newcommand{\B}{\,\mathrm{B}}
+\newcommand{\M}{\,\mathrm{M}}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\renewcommand{\arraystretch}{1.08}
+\captionsetup[table]{skip=2pt}
+
+\title{\vspace{-1.6em}CS 312 --- Assignment 2: Hyperparameter Scaling\vspace{-0.4em}}
+\author{Sandra Yang (\texttt{aleyang})}
+\date{\vspace{-0.6em}}
+
+\begin{document}
+\maketitle
+\vspace{-2em}
+
+\paragraph{Where things are.} W\&B project \texttt{aleyang-stanford-university/assignments}, tag \texttt{a2}; code in \texttt{experiments/a2/} on the \texttt{a2-experiments} branch of \texttt{github.com/birdhumming/assignments}.
+
+\paragraph{Compute.} 198 new runs, $\approx$28 GPU-hours on H100 (budget 48). The 78 supplied source runs in \texttt{provided\_sweeps.csv} were fitted, never retrained. P3.1 ran on CPU. Every prediction below was written to \texttt{p32\_predictions.md} or the launcher manifest before the corresponding target run started.
+
+\paragraph{Conventions.} Loss means final validation loss (nats) of the course d8 model (8 layers, width 512, batch 64, AdamW $\beta=(0.9,0.95)$, weight decay 0.1, 1\% warmup then linear decay) unless stated. From Assignment 1 the seed-to-seed standard deviation of this model is $\approx 0.002$, so gaps below 0.005 are noise, 0.01 is real but small, and 0.1 is a different regime. $\lrs$ is the optimum of a quadratic fitted in $\log$ learning rate ($\log$ LR and $\log$ WD jointly for P2); ``best sampled'' is the lowest measured point. $D$ denotes training tokens, $B$ batch size.
+
+%=====================================================================
+\section{When can training on less data guide large-scale runs?}
+
+\subsection*{(a) Small budgets (supplied runs)}
+
+\begin{table}[H]\centering\small
+\begin{tabular}{rrrrrrr}\toprule
+tokens & lr 0.0015 & lr 0.003 & lr 0.006 & fitted $\lrs$ & fitted loss & curvature\\\midrule
+153.6M & 3.2442 & 3.2291 & 3.3056 & 0.00238 & 3.2240 & 0.095\\
+307.2M & 3.0709 & 3.0562 & 3.0715 & 0.00298 & 3.0562 & 0.031\\
+614.4M & 2.9473 & 2.9256 & 2.9408 & 0.00319 & 2.9255 & 0.038\\\bottomrule
+\end{tabular}
+\end{table}
+
+Rule through the three optima: $\lrs = 4.4\times10^{-5}\, D^{+0.21}$ ($R^2=0.91$). The optimum drifts slowly upward with budget, and the loss--LR curve flattens (curvature $0.095\to0.038$), so missing the optimum costs less as the budget grows (Figure~\ref{fig:p1}, left and middle).
+
+\subsection*{(b) Predict before increasing the budget (supplied runs)}
+
+\begin{table}[H]\centering\small
+\begin{tabular}{rrrrl}\toprule
+tokens & predicted $\lrs$ (small-3 rule) & fitted $\lrs$ after looking & fitted loss & best sampled\\\midrule
+1.2288B & 0.00380 & 0.00388 & 2.8368 & 0.003 (2.8378)\\
+1.8432B & 0.00414 & 0.00343 & 2.7964 & 0.003 (2.7967)\\
+2.4576B & 0.00440 & 0.00291 & 2.7682 & 0.003 (2.7683)\\\bottomrule
+\end{tabular}
+\end{table}
+
+The trend does not continue: the optimum peaks near 1.2B tokens and turns back down, and the small-budget rule over-predicts by 20--50\% at 1.8B and 2.5B. In loss it hardly matters: lr 0.003 is the best sampled point at every budget and the curvature keeps falling (to 0.014--0.018), so being 40\% off costs $\approx0.001$.
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{p1_sources.png}
+\caption{Left: supplied AdamW loss--LR curves. Middle: fitted optima with the three candidate rules; the vertical line marks the 4.9152B target. Right: Hyperball vs.\ AdamW optima and rules, with the P1(d) prediction ($\times$) and measured optimum ($\square$).}
+\label{fig:p1}
+\end{figure}
+
+\subsection*{(c) Two scaling rules tested at 4.9152B tokens (5 new runs, $\approx$74 min each)}
+
+\begin{table}[H]\centering\small
+\begin{tabular}{llrr}\toprule
+rule & law & $R^2$ & predicted $\lrs$ at 4.9152B\\\midrule
+all six budgets & $\lrs\propto D^{+0.10}$ & 0.41 & 0.00373\\
+three largest budgets & $\lrs\propto D^{-0.41}$ & 0.97 & 0.00223\\\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Prediction (before running):} the three-largest fit gives the lower loss. The small budgets are in a different regime (optimum still rising) and bias the slope; $R^2=0.41$ says the six-point data is not a power law.
+
+\begin{table}[H]\centering\small
+\begin{tabular}{lrr}\toprule
+lr at 4.9152B & val loss & gap to best sampled\\\midrule
+0.0015 & 2.7176 & $+0.0007$\\
+\textbf{0.00223} (larger-three rule) & \textbf{2.7169} & 0\\
+0.003 (carry over the 2.5B best) & 2.7176 & $+0.0007$\\
+0.00373 (all-six rule) & 2.7185 & $+0.0017$\\
+0.006 & 2.7273 & $+0.0105$\\\bottomrule
+\end{tabular}
+\end{table}
+
+Fitted target optimum 0.00214 (loss 2.7169). The larger-three rule landed on it; the all-six rule was $1.7\times$ too high and cost 0.0017; simply reusing 0.003 cost 0.0007.
+
+\textbf{Synthesis.} Small-budget tuning tells you where the flat region is, and a fit over the right regime (three large budgets, one doubling of extrapolation) predicted the 4.9B optimum essentially exactly. But the \emph{gain} from fitting over carrying the previous best learning rate was 0.0007, a third of the seed noise, because the loss--LR curve is nearly flat at this budget. Bias--variance: six points lower the variance but add bias from a regime where the optimum was still rising; with a monotone trend, choosing the right regime mattered more than the extra points. A low $R^2$ is the fit telling you not to extrapolate it. Extrapolate one doubling with confidence; the small-three rule extrapolated two and was 50\% off.
+
+\subsection*{(d) Hyperball versus AdamW (4 new runs at 1.2288B tokens)}
+
+Hyperball: Adam direction, each weight matrix rescaled after every step to keep its initial Frobenius norm, no weight decay. Supplied sweeps (8 LRs per budget) fitted the same way:
+
+\begin{table}[H]\centering\small
+\begin{tabular}{rrrrr}\toprule
+tokens & Hyperball $\lrs$ & Hyperball loss$^*$ & AdamW $\lrs$ & AdamW loss$^*$\\\midrule
+153.6M & 0.0156 & 3.2009 & 0.00238 & 3.2240\\
+307.2M & 0.0122 & 3.0319 & 0.00298 & 3.0562\\
+614.4M & 0.0104 & 2.9176 & 0.00319 & 2.9255\\\bottomrule
+\end{tabular}
+\end{table}
+
+Rules: Hyperball $\lrs\propto D^{-0.29}$ ($R^2=0.985$) vs.\ AdamW $\lrs\propto D^{+0.21}$ ($R^2=0.91$). \textbf{Prediction recorded before running: Hyperball $\lrs$ at 1.2288B $=0.00839$.}
+
+\begin{table}[H]\centering\small
+\begin{tabular}{lr}\toprule
+Hyperball lr at 1.2288B & val loss\\\midrule
+0.006 & 2.8437\\
+0.00839 (predicted) & 2.8291\\
+\textbf{0.01} & \textbf{2.8271}\\
+0.015 & 2.8358\\\bottomrule
+\end{tabular}
+\end{table}
+
+Fitted target optimum 0.0102 (loss 2.8270). The prediction was 18\% low and cost 0.002, one seed standard deviation. Hyperball's best (2.8271) also beats AdamW's best at this budget (2.8378) by 0.011.
+
+\textbf{Synthesis.} Hyperball's optimum varies more regularly: a clean monotone decrease with a tight power law, versus AdamW's non-monotone wobble. The reason is mechanical. With the weight norm pinned, the effective step is just $\eta\lVert W\rVert/\lVert U\rVert$, one knob, whereas AdamW's effective step depends on a weight norm that the learning rate and weight decay move together over training. Regular is not the same as precise: three source budgets spanning $4\times$ fix the exponent to maybe $\pm0.1$, and one more doubling turns that into $\pm10$--$20\%$ in the predicted learning rate, which is what we saw. Three points give no estimate of their own error; treat any three-point extrapolation as ``within a factor of 1.5'' and sweep around it.
+
+%=====================================================================
+\section{How should learning rate and weight decay scale together?}
+
+\subsection*{(a) Joint fits (supplied $3\times3$ grids)}
+
+Quadratic in $(x,y)=(\log\mathrm{lr},\log\mathrm{wd})$ per budget; all four fits are proper minima (positive-definite Hessian). Contours in Figure~\ref{fig:p2c}.
+
+\begin{table}[H]\centering\small
+\begin{tabular}{rrrrrlrr}\toprule
+tokens & fitted $\lrs$ & fitted $\wds$ & $\lrs\!\cdot\!\wds$ & fitted loss & best sampled (lr, wd) $\to$ loss & P1 best & gain from wd\\\midrule
+153.6M & 0.00186 & 0.847 & $1.57\times10^{-3}$ & 3.1766 & (0.0015, 1.6) $\to$ 3.1844 & 3.2291 & 0.045\\
+307.2M & 0.00160 & 0.519 & $8.33\times10^{-4}$ & 3.0309 & (0.0015, 0.8) $\to$ 3.0282 & 3.0562 & 0.028\\
+614.4M & 0.00247 & 0.258 & $6.37\times10^{-4}$ & 2.9175 & (0.003, 0.2) $\to$ 2.9178 & 2.9256 & 0.008\\
+1.2288B & 0.00270 & 0.162 & $4.37\times10^{-4}$ & 2.8349 & (0.003, 0.2) $\to$ 2.8361 & 2.8378 & 0.002\\\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{p2_contours.png}
+\caption{Quadratic fits per budget on log--log axes; dots are supplied runs (colour $=$ loss), the star is the fitted optimum, the dashed line is $\mathrm{lr}\cdot\mathrm{wd}=\lrs\cdot\wds$. The long axis of every ellipse runs along the dashed line.}
+\label{fig:p2c}
+\end{figure}
+
+The optimal learning rate wanders ($0.0019\to0.0016\to0.0025\to0.0027$), as in Problem~1; the optimal weight decay falls steadily ($0.85\to0.16$, $5\times$ over $8\times$ tokens). The benefit of tuning weight decay shrinks from 0.045 at 153.6M to 0.002 (noise) at 1.2B (Figure~\ref{fig:p2t}, right).
+
+\subsection*{(b) From coupling to a joint scaling law}
+
+\begin{table}[H]\centering\small
+\begin{tabular}{llr}\toprule
+quantity & power law in tokens & $R^2$\\\midrule
+$\lrs$ & $\propto D^{+0.22}$ & 0.68\\
+$\wds$ & $\propto D^{-0.82}$ & 0.994\\
+$\lrs\cdot\wds$ & $\propto D^{-0.59}$ & 0.967\\\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.92\textwidth]{p2_trends.png}
+\caption{Left: fitted $\lrs$, $\wds$, and their product vs.\ tokens with power laws; the P2(c) prediction ($\times$) and the measured optimum at 2.4576B ($\square$). Right: best measured loss with WD fixed at 0.1 (P1) vs.\ jointly tuned (P2), and the difference.}
+\label{fig:p2t}
+\end{figure}
+
+Yes, one hyperparameter compensates for the other: on every contour plot the valley runs along $\mathrm{lr}\cdot\mathrm{wd}=\text{const}$, so raising one and lowering the other by the same factor barely changes the loss, while moving across that line changes it a lot. The product has a tight law ($R^2=0.97$); weight decay alone is tighter still here (0.994), but mainly because the learning rate was nearly constant across these budgets. The product is the quantity with a physical meaning: with AdamW the weights shrink by $(1-\mathrm{lr}\cdot\mathrm{wd})$ per step, so $1/(\mathrm{lr}\cdot\mathrm{wd})$ is the averaging window in updates.
+
+\subsection*{(c) Test of the joint rule at 2.4576B tokens (5 new runs)}
+
+The product law on the four source budgets predicts $\lrs\cdot\wds=2.78\times10^{-4}$ at 2.4576B, so at peak LR 0.003 the \textbf{predicted weight decay is 0.0927}.
+
+\begin{table}[H]\centering\small
+\begin{tabular}{rlrrr}\toprule
+lr & wd & lr$\cdot$wd & val loss & gap to prediction\\\midrule
+0.0015 & 1.6 --- baseline (i): best 153.6M pair, untuned & $2.4\times10^{-3}$ & 2.8517 & $+0.084$\\
+0.003 & 0.05 & $1.5\times10^{-4}$ & 2.7715 & $+0.004$\\
+\textbf{0.003} & \textbf{0.0927 (prediction)} & $2.8\times10^{-4}$ & \textbf{2.7680} & ---\\
+0.003 & 0.1 --- baseline (ii): grid best & $3.0\times10^{-4}$ & 2.7671 & $-0.001$\\
+0.003 & 0.2 & $6.0\times10^{-4}$ & 2.7725 & $+0.005$\\\bottomrule
+\end{tabular}
+\end{table}
+
+Quadratic in $\log\mathrm{wd}$ at lr 0.003: $\wds=0.096$, loss 2.7675. The prediction is within noise of the tuned grid best ($-0.001$) and 0.084 better than carrying the small-budget pair.
+
+\textbf{Synthesis.} The product rule is an effective recipe: hold the learning rate anywhere in its flat region and set $\mathrm{wd}=(\text{predicted product})/\mathrm{lr}$. The loss valley is long and narrow along the product direction, so fixing one coordinate and solving for the other loses nothing. The product falls like $D^{-0.6}$, so the averaging window in steps grows like $D^{0.6}$, slower than the run length, and the weight-decay benefit shrinks with budget because at large budgets the default 0.1 is already near the optimum. The real lesson is baseline (i): a weight decay of 1.6 that was right at 153.6M tokens is $17\times$ too large at 2.5B and costs 0.084, far more than any learning-rate mistake in Problem~1.
+
+%=====================================================================
+\section{Batch-size scaling}
+\subsection{What does the noisy quadratic model predict? (CPU)}
+
+Setup: $f(w)=\tfrac12 w^\top Hw$, $H=\mathrm{diag}(1,10)$, gradient-noise covariance $\sigma^2 I$, $w_0\sim\mathcal N(0,1)\oplus\mathcal N(0,0.1)$, $N=8192$ samples per epoch so updates $=N/B$, 1024 Monte-Carlo samples per loss estimate. Source batches 1--64, fit $\lrs\propto B^{p}$, predict $B=256$, test with a sweep at 256.
+
+\subsubsection*{(a)--(b) Scaling exponent by optimizer ($\sigma=1$)}
+
+\begin{table}[H]\centering\small
+\begin{tabular}{lrrrrrr}\toprule
+optimizer & exponent $p$ ($B$ 1--64) & predicted $\lrs(256)$ & measured $\lrs(256)$ & loss at predicted & tuned loss & gap\\\midrule
+SGD & 0.99 & 0.184 & 0.123 & 0.00237 & 0.00073 & $+0.0016$\\
+RMSProp & 0.90 & 0.113 & 0.094 & 0.0151 & 0.0121 & $+0.0031$\\
+Adam & 0.92 & 0.125 & 0.156 & 0.0149 & 0.0144 & $+0.0005$\\\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.5\textwidth]{p31_lr_vs_batch.png}
+\caption{Optimal LR vs.\ batch for SGD, RMSProp, Adam ($\sigma=1$): source fits (dots, dashed), prediction at 256 ($\times$), measured optimum ($\square$).}
+\label{fig:p31a}
+\end{figure}
+
+All three scale almost linearly with batch at low noise. The SGD rule breaks exactly where expected: the predicted 0.184 is at the stability edge of the stiff direction ($\mathrm{lr}<2/10=0.2$), so the measured optimum backs off to 0.123. Adam and RMSProp have similar exponents but Adam transfers better (gap 0.0005 vs.\ 0.0031): same exponent, different curve width, so a similar exponent does not imply similar transfer accuracy. Tuned SGD loss by batch: 0.00037 ($B{=}1$) $\to$ 0.00032 ($B{=}8$--16) $\to$ 0.00039 ($B{=}64$) $\to$ 0.00073 ($B{=}256$): best at $B\approx8$--16, then worse, because at fixed $N$ the number of updates is what you pay with and $B=256$ leaves 32. The rule holds while noise dominates the error; once the budget is a handful of steps, the stability ceiling and the step count take over.
+
+\textbf{Prediction for the language model (made before P3.2):} optimal LR rises with batch, close to linearly from batch 8 to 64, flattening by 128--256 where per-step noise stops being the bottleneck.
+
+\subsubsection*{(c) Noise level}
+
+\begin{table}[H]\centering\small
+\begin{tabular}{rrrrr}\toprule
+$\sigma$ & RMSProp exponent (2-D) & Adam exponent (2-D) & RMSProp (scalar $f=w^2/2$) & Adam (scalar)\\\midrule
+1 & 0.91 & 0.92 & 0.94 & 0.93\\
+10 & 0.55 & 0.54 & 0.57 & 0.55\\
+100 & 0.45 & 0.49 & 0.50 & 0.48\\
+300 & 0.53 & 0.49 & 0.40 & 0.45\\\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.85\textwidth]{p31_sigma.png}
+\caption{Optimal LR vs.\ batch by noise level for the 2-D (left) and scalar (right) models; exponents in the legend.}
+\label{fig:p31c}
+\end{figure}
+
+Yes, signal-to-noise changes the rule. The second moment is $v\approx g^2+\sigma^2/B$. When the gradient dominates, $v$ is batch-independent and $g/\sqrt v$ behaves like SGD, so $\lrs\propto B$. When noise dominates, $\sqrt v\propto\sigma/\sqrt B$ already scales the update by $\sqrt B$ and the learning rate only needs to supply another $\sqrt B$: exponent $\tfrac12$. The 2-D and scalar models agree, so this is a property of second-moment normalisation, not curvature. What is curvature-sensitive is where the linear rule breaks: the stiff direction imposes $\mathrm{lr}<2/\lambda_{\max}$ in 2-D, and the scalar model has no such ceiling.
+
+\subsubsection*{(d) Momentum at small and large batch}
+
+\begin{table}[H]\centering\small
+\begin{tabular}{lll}\toprule
+setting & $B=16$ (512 updates): $\lrs\to$ loss & $B=256$ (32 updates): $\lrs\to$ loss\\\midrule
+SGD, $\mu=0$ & $0.0126\to0.00035$ & $0.124\to0.00067$\\
+SGD, $\mu=0.9$ & $0.00127\to0.00032$ & $0.0083\to0.0041$\\
+Adam, $\beta_1=0$ & $0.0089\to0.00104$ & $0.093\to0.0123$\\
+Adam, $\beta_1=0.5$ & $0.0089\to0.00082$ & $0.133\to0.0035$\\
+Adam, $\beta_1=0.9$ & $0.0090\to0.00083$ & $0.156\to0.0143$\\
+Adam, $\beta_1=0.95$ & $0.0090\to0.00094$ & $0.188\to0.050$\\
+Adam, $\beta_1=0.99$ & $0.018\to0.0127$ & $0.064\to0.134$\\\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.8\textwidth]{p31_momentum.png}
+\caption{Best loss after tuning the LR at each $\beta_1$, with tuned SGD with and without momentum as reference lines.}
+\label{fig:p31d}
+\end{figure}
+
+Momentum is mildly helpful at small batch (SGD $0.00035\to0.00032$; Adam $\beta_1=0.5$--0.9 beat $\beta_1=0$ by 20\%) and harmful at large batch even after retuning the LR (SGD $\mu=0.9$ is $6\times$ worse; Adam $\beta_1\ge0.9$ is worse than 0.5). The tuned SGD $\lrs$ drops $15\times$ with momentum at $B=256$ ($0.124\to0.0083$): the effective step $\mathrm{lr}/(1-\mu)$ must be cut because the stiff direction overshoots.
+
+\textbf{Synthesis.} Momentum averages gradients over $\approx1/(1-\beta_1)$ updates. That is noise reduction, which is also what a bigger batch does, so the benefit shrinks with batch; the cost is lag, and at $B=256$ a $\beta_1=0.9$ window ($\approx10$ updates) is a third of the 32-update run. \textbf{Expectation for the language model:} $\beta_1=0.9$ should help slightly at batch 8 and matter little at batch 256, because the LM run has thousands of updates rather than 32, so the lag cost should not appear. (Tested in P3.2(c); this expectation turned out half right.)
+
+%=====================================================================
+\subsection{What should scale when batch size changes? (language model)}
+
+Setup: d8 model, 614.4M tokens, AdamW, 1\% warmup then linear decay, microbatch $\min(B,64)$. 15 new source runs at batch 8/16/32 (3 LRs at wd 0.1, plus wd 0.05 and 0.2 at lr 0.0015), reusing the supplied batch-64 curves from Problems 1--2 as the fourth source. Then, with predictions written down first, 13 target runs at batch 128/256 (trimmed to 4 points per curve) and 6 $\beta_1$ controls. One run per point.
+
+\subsubsection*{(a) Optimal learning rate and loss vs.\ batch size (weight decay 0.1)}
+
+\begin{table}[H]\centering\small
+\begin{tabular}{rlrrrrr}\toprule
+batch & LRs tried & best sampled & fitted $\lrs$ & loss at $\lrs$ & updates & run time\\\midrule
+8 & 0.0004 / 0.00075 / 0.0015 & 0.0015 & 0.00109 & 2.934 & 75{,}000 & 16 min\\
+16 & 0.00075 / 0.0015 / 0.003 & 0.0015 & 0.00174 & 2.922 & 37{,}500 & 13 min\\
+32 & 0.0015 / 0.003 / 0.006 & 0.003 & 0.00329 & 2.919 & 18{,}750 & 12 min\\
+64 (supplied) & 0.0015 / 0.003 / 0.006 & 0.003 & 0.00319 & 2.925 & 9{,}375 & ---\\\bottomrule
+\end{tabular}
+\end{table}
+
+Source fit: $\lrs\approx0.00037\,B^{0.56}$. The optimum rises roughly like $\sqrt B$ from 8 to 32 (not linearly as the low-noise NQM predicted, and not flat), then stops between 32 and 64. Best loss is indifferent to batch between 16 and 64 ($2.92\pm0.003$); batch 8 is 0.012 worse despite 75{,}000 updates, so that penalty is ``too few tokens per update'', not ``too few updates''.
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{p32_batch.png}
+\caption{Left to right: loss--LR curves at wd 0.1 for all batches (targets included); fitted and best-sampled $\lrs$ vs.\ batch with the source $B^{0.56}$ law; best loss vs.\ batch at wd 0.1; loss--WD curves at lr 0.0015.}
+\label{fig:p32}
+\end{figure}
+
+\subsubsection*{(b) Two scaling hypotheses: scale LR at fixed WD, or scale WD at fixed LR 0.0015}
+
+Source side at lr 0.0015:
+
+\begin{table}[H]\centering\small
+\begin{tabular}{rlrl}\toprule
+batch & WDs tried & best sampled wd & fitted $\wds$\\\midrule
+8 & 0.05 / 0.1 / 0.2 & 0.05 & 0.068\\
+16 & 0.05 / 0.1 / 0.2 & 0.1 & 0.12\\
+32 & 0.05 / 0.1 / 0.2 & 0.2 & $\ge0.2$ (grid edge)\\
+64 (supplied) & 0.1 / 0.2 / 0.4 & 0.4 & $\ge0.4$ (grid edge)\\\bottomrule
+\end{tabular}
+\end{table}
+
+The weight-decay optimum roughly doubles with each batch doubling. Two source optima sit on the grid edge, so the exponent is poorly determined: the interior fit gives $\wds\propto B^{0.80}$ (0.63 at 128, 1.1 at 256); a proportional rule gives 0.95 and 1.9. We used the interior fit for the predicted point and bracketed it.
+
+\textbf{Predictions recorded before launch:} hypothesis (i), wd 0.1: lr 0.0056 at $B=128$, 0.0082 at $B=256$; hypothesis (ii), lr 0.0015: wd 0.63 at 128, 1.1 at 256. \textbf{We predicted hypothesis (i) would win}, reasoning that scaling the LR keeps the per-update step matched to the lower gradient noise, while hypothesis (ii) keeps a small step and compensates with a decay so strong (window of 500--1{,}000 updates out of 2{,}300--4{,}700) that it erases learning.
+
+\begin{table}[H]\small
+\begin{tabularx}{\textwidth}{llLr}\toprule
+target batch & hypothesis & points (lr or wd $\to$ loss) & best\\\midrule
+128 (4{,}688 updates) & (i) wd 0.1, vary lr & $0.003\to\mathbf{2.949}$;\; 0.0056 (pred) $\to2.965$;\; $0.006\to2.971$;\; $0.012\to3.002$ & 2.949\\
+ & (ii) lr 0.0015, vary wd & $0.4\to2.949$;\; 0.63 (pred) $\to2.937$;\; $0.8\to\mathbf{2.934}$;\; $1.6\to2.939$ & \textbf{2.934}\\\midrule
+256 (2{,}344 updates) & (i) wd 0.1, vary lr & $0.006\to\mathbf{3.080}$;\; 0.0082 (pred) $\to3.136$;\; $0.012\to3.178$;\; $0.024\to3.187$ & 3.080\\
+ & (ii) lr 0.0015, vary wd & $0.8\to2.991$;\; 1.1 (pred) $\to2.978$;\; $1.6\to\mathbf{2.971}$;\; $3.2\to2.978$ & \textbf{2.971}\\\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{Hypothesis (ii) wins at both targets: 2.934 vs.\ 2.949 at batch 128 (0.015), 2.971 vs.\ 3.080 at batch 256 (0.11). Our prediction was wrong.} Three reasons:
+\begin{enumerate}
+\item The LR optimum stopped rising: $B^{0.56}$ from 8 to 32; flat from 32 to 64 ($0.0033\to0.0032$); 0.0034 again at 128; at 256 the best point is the \emph{lowest} LR tried. Extrapolating the source law to 0.0056/0.0082 overshot, and the loss curve is steep on the high side (0.012 at batch 256 costs 0.1).
+\item At fixed wd 0.1, large batches simply lose: the best batch-256 point (3.080) is 0.16 worse than batch 32. With 2{,}344 updates instead of 18{,}750, a fixed per-update decay is an $8\times$ longer memory in tokens; the model carries early, badly fitted weights to the end.
+\item The WD optimum doubled every time the batch doubled: best sampled 0.1 (16), 0.2 (32), 0.4 (64), 0.8 (128), 1.6 (256); fitted target optima 0.95 and 1.88, i.e.\ $\wds\propto B$. The proportional rule (0.95 / 1.91) was right to 2\%; the interior power law undershot because two of its four points were lower bounds. Scaling $\mathrm{wd}\propto B$ keeps $\mathrm{lr}\cdot\mathrm{wd}\cdot(\text{updates per token})$, the decay timescale in \emph{tokens}, constant: the same quantity Problem~2 found mattered.
+\end{enumerate}
+
+Even with the right weight decay, batch 256 is 0.05 worse than batch 32 at this token budget (2.971 vs.\ 2.919), and batch 128 is 0.015 worse: fewer updates cannot be fully bought back by either knob. This agrees with the NQM only in the small-batch range (exponent $\approx\tfrac12$ matches its \emph{high-noise} regime); the NQM has no critical batch size and no weight decay, so it cannot predict the flattening or the $\mathrm{wd}\propto B$ rule.
+
+\subsubsection*{(c) Momentum ablation}
+
+Held fixed: each batch's best measured pair (batch 8: lr 0.0015, wd 0.05; batch 256: lr 0.0015, wd 1.6), $\beta_2=0.95$, 614.4M tokens. Trimmed to $\beta_1\in\{0,0.5,0.98\}$ plus the existing $\beta_1=0.9$ run.
+
+\begin{table}[H]\centering\small
+\begin{tabular}{lrr}\toprule
+$\beta_1$ & batch 8 (75{,}000 updates) & batch 256 (2{,}344 updates)\\\midrule
+0 (no momentum) & 2.978 & 3.198\\
+0.5 & 2.963 & 3.060\\
+0.9 (tuned runs) & \textbf{2.935} & \textbf{2.971}\\
+0.98 & 2.934 & 3.025\\\midrule
+cost of removing momentum ($0.9\to0$) & $+0.043$ & $+0.228$\\\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Momentum matters \emph{more} at large batch, not less: the opposite of the NQM's call.} Dropping $\beta_1$ to 0 costs 0.04 at batch 8 and 0.23 at batch 256 ($5\times$). Raising it to 0.98 is free at batch 8 (2.934 vs.\ 2.935) but costs 0.054 at batch 256, so at large batch the optimum is pinned near 0.9 from both sides. Unlike P3.1(d), where we retuned the LR per $\beta_1$, here the LR is held at the $\beta_1=0.9$ optimum, so the $\beta_1=0$ runs may be slightly under-tuned; but the size of the gap (0.23) is far beyond anything a retune could recover given the P3.2(a) curve shape at batch 256.
+
+Reading (an interpretation, not a measured mechanism): the NQM's ``momentum hurts at large batch'' was lag in a 32-update run where a $\beta_1=0.9$ window is a third of training. The LM at batch 256 has 2{,}344 updates, so that lag is negligible at 0.9 and only reappears at 0.98 ($\approx50$-update window, 2\% of the run, cost 0.054). What is left is the benefit: Adam with $\beta_1=0$ is RMSProp, every coordinate moves $\approx\mathrm{lr}$ per update regardless of signal-to-noise; at batch 8 the 75{,}000 small steps under a long decaying schedule average that noise out on their own, while at batch 256 each of 2{,}344 steps is $32\times$ more consequential and momentum is the only remaining noise reduction.
+
+\subsubsection*{(d) What does the NQM explain?}
+
+\begin{table}[H]\small
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{2.1cm} L L L}\toprule
+quantity & NQM prediction (P3.1) & language model (P3.2) & verdict\\\midrule
+$\lrs$ vs.\ batch, low noise & $\propto B^{0.9\text{--}1.0}$ & $\propto B^{0.56}$ for $8\to32$, then flat, then \emph{lower} at 128--256 ($0.003\to2.949$ beats $0.0056\to2.965$; $0.006\to3.080$ beats $0.0082\to3.136$) & \textbf{fails} above batch $\approx32$: the NQM has no critical batch size where more sequences per update stop reducing useful noise\\
+$\lrs$ vs.\ batch, high noise & $\propto B^{0.5}$ & $B^{0.56}$ in the small-batch range & agrees where the LM is noise-limited\\
+best loss vs.\ batch & at fixed $N$: bigger batch better until the stability/step-count ceiling ($B\approx8$--16 best) & fixed tokens: 2.934 (8) $\to$ 2.919 (32) $\to$ 2.925 (64) $\to$ 2.934 (128, retuned wd) $\to$ 2.971 (256, retuned wd) & qualitatively agrees: an interior best batch, a penalty from the update count beyond it\\
+weight decay vs.\ batch & not modelled & $\wds\propto B$, $0.1\to1.6$ over $16\to256$; keeping wd fixed costs 0.11 at batch 256 & \textbf{an effect the NQM does not model}, not a failed prediction\\
+momentum ($\beta_1$) & helps slightly at small batch, hurts at large batch even with the LR retuned & $0.9\to0$ costs 0.043 at batch 8 and 0.228 at batch 256; $0.98\approx0.9$ at batch 8 but costs 0.054 at batch 256 & small-batch half agrees; \textbf{large-batch half fails}: the NQM's harm was lag in a 32-update run\\\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{Synthesis.} Two currencies: tokens (what you pay for) and updates (what moves the weights). Doubling the batch halves updates per token, and every hyperparameter defined per update needs rescaling. The learning rate is per update but is capped by curvature once noise stops being the limit, a critical batch size around 32--64 here, which the NQM's low-noise regime lacks because its noise never stops averaging down. Weight decay is also per update: $1/(\mathrm{lr}\cdot\mathrm{wd})$ updates of memory, so keeping it fixed while halving updates per token doubles the memory in tokens; $\wds\propto B$ is ``keep the memory constant in tokens'', the Problem~2 product rule with batch as the third factor. \textbf{One change to the NQM} that would fix the biggest disagreement: add a per-coordinate noise floor that does not shrink with batch (equivalently, a finite number of useful directions), so gradient-noise reduction saturates, the optimal step stops growing past a critical batch, and fixed-token loss worsens beyond it. Adding an $L_2$ term with a timescale in updates would also reproduce $\wds\propto B$. Practical rule for this model: when changing batch size at fixed tokens, keep the LR near its batch-32--64 value, scale weight decay in proportion to the batch, keep $\beta_1=0.9$, and expect a loss penalty at batch $\ge128$ anyway.
+
+%=====================================================================
+\section{Width and depth scaling}
+\subsection*{4.0\quad Scaling rules from alignment assumptions}
+
+Setup: width $n$, reference $n_0$, $m=n/n_0$. Each matrix is used as $n^{-a}W$, initialised with i.i.d.\ entries of variance $n^{-2b}$, and updated by $\Delta W=-\eta\,n^{-c}U$ with $\lVert U\rVert_{\mathrm{RMS}}=\Theta(1)$. $a=0$ for hidden and input matrices, $c=0$ for the readout. Alignment ratios: $R(U,x_0)=\Theta(n^{\alpha})$, with $\alpha=1$ if the update direction is aligned with its input ($n$ terms add coherently) and $\alpha=\tfrac12$ if not (random-walk sum); $S(V_0,\Delta x)=\Theta(n^{\omega})$, $\omega=1$ aligned, $\tfrac12$ not. Assume $R(U,\Delta x)=O(n^{\alpha})$.
+
+\paragraph{(a) Constraints.}
+\emph{Hidden} ($a=0$, fan-in $k=n$). Order-one features at initialisation: $\lVert Wx_0\rVert\sim\sqrt n\,n^{-b}=\Theta(1)\Rightarrow b=\tfrac12$ (variance $1/k$), independent of alignment. Order-one direct update: $\lVert\Delta W x_0\rVert=\eta\,n^{-c}R(U,x_0)=\eta\,n^{\alpha-c}=\Theta(1)\Rightarrow c=\alpha$. Interaction: $\lVert\Delta W\,\Delta x\rVert=O(n^{\alpha-c})=O(1)$, bounded automatically.
+
+\emph{Readout} ($c=0$, transposed $V_0\in\mathbb R^{n\times q}$, response $n^{-a}V^\top x$). Direct update: $\eta\,n^{\alpha-a}=\Theta(1)\Rightarrow a=\alpha$. Initial-readout response to the feature change: $n^{-a}S(V_0,\Delta x)\,n^{-b}=n^{\omega-a-b}=\Theta(1)\Rightarrow b=\omega-\alpha$. Interaction $\eta\,n^{\alpha-a}=O(1)$, bounded.
+
+\emph{Input / embedding} (fixed fan-in: a token hits one column, no sum over $n$). Order-one features $\Rightarrow b=0$ (variance 1). Order-one update $\lVert\Delta W e_j\rVert=\eta\,n^{-c}\Rightarrow c=0$. Alignment plays no role.
+
+\begin{table}[H]\centering\small
+\begin{tabular}{lccc}\toprule
+alignment $(\alpha,\omega)$ & hidden $(a,b,c)$ & readout $(a,b,c)$ & input $(a,b,c)$\\\midrule
+update aligned, readout aligned $(1,1)$ & $(0,\tfrac12,1)$ & $(1,0,0)$ & $(0,0,0)$\\
+update aligned, readout not $(1,\tfrac12)$ & $(0,\tfrac12,1)$ & $(1,-\tfrac12,0)$ & $(0,0,0)$\\
+update not aligned, readout aligned $(\tfrac12,1)$ & $(0,\tfrac12,\tfrac12)$ & $(\tfrac12,\tfrac12,0)$ & $(0,0,0)$\\
+neither aligned $(\tfrac12,\tfrac12)$ & $(0,\tfrac12,\tfrac12)$ & $(\tfrac12,0,0)$ & $(0,0,0)$\\\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{(b) Rules in $m=n/n_0$.} Matching the table at $n_0$: forward multiplier $m^{-a}$, initialisation variance $\sigma_0^2\,m^{-2b}$, learning rate $\eta\,m^{-c}$.
+
+\begin{table}[H]\centering\small
+\begin{tabular}{lccc}\toprule
+layer & forward multiplier & init variance & learning rate\\\midrule
+hidden & 1 & $1/k$ & $\eta\,m^{-\alpha}$\\
+readout & $m^{-\alpha}$ & $n_0^{-1}\,m^{-2(\omega-\alpha)}$ & $\eta$\\
+embedding & 1 & 1 & $\eta$\\\bottomrule
+\end{tabular}
+\end{table}
+
+Update alignment $\alpha$ sets how fast hidden LRs shrink ($1/m$ aligned, $1/\sqrt m$ not) and how strongly the readout is damped ($1/m$ vs.\ $1/\sqrt m$). Readout alignment $\omega$ only changes the readout initialisation: with $\omega=\alpha$ the variance is width-independent ($1/n_0$); with $\omega<\alpha$ it would have to \emph{grow} with width ($m^{+1}$), the signal that ``aligned updates, unaligned readout'' is not a consistent regime. The interaction terms are $O(n^{\alpha-c})$ and $O(n^{\alpha-a})$, bounded in every row once the direct-update constraint holds.
+
+\textbf{\muP{} is $(\alpha,\omega)=(1,1)$:} hidden variance $1/k$ and LR $\eta/m$; readout variance $1/n_0$, multiplier $1/m$, LR $\eta$; embedding variance 1, LR $\eta$ --- exactly the P4.2 \muP{} column ($G/n_0$, $G/\sqrt{n_0}$, $1/m$, $\eta/m$ at $n_0=512$). \textbf{Kaiming} keeps readout $(0,\tfrac12,0)$ and hidden $c=0$: its readout satisfies $a+b=\tfrac12=\omega$ only for an unaligned readout, and with aligned Adam updates its first step moves features by $\Theta(n)$ at fixed $\eta$, so its tuned base LR must fall like $1/n$. That is the prediction P4.1 tests.
+
+%=====================================================================
+\subsection*{4.1\quad Five-step Transformer stress test}
+
+Five Adam updates, constant LR, no warmup, no weight decay, the same five batches for every configuration; fixed probe inputs for all measurements.
+
+\subsubsection*{(a) Width transfer (36 runs; depth 2, reference width 512, FP32)}
+
+Six LRs per cell (0.00025 to 0.008, doubling), plus 0.0000625 and 0.000125 for wide Kaiming once its optimum fell off the grid. \textbf{Prediction before running:} Kaiming's best base LR falls like 1/width ($\approx0.00025$ at 2560, $\approx0.000125$ at 5120); \muP's stays near its width-640 value.
+
+\begin{table}[H]\centering\small
+\begin{tabular}{lrlrrrrr}\toprule
+policy & width & best sampled lr & fitted $\lrs$ & loss at best & at lr 0.00025 & at 0.002 & at 0.008\\\midrule
+Kaiming & 640 & 0.001 & 0.0011 & 7.069 & 7.885 & 7.098 & 8.336\\
+Kaiming & 2560 & 0.000125 & 0.00015 & 7.184 & 7.245 & 9.235 & 15.39\\
+Kaiming & 5120 & 0.0000625 (grid edge) & $\le0.0000625$ & 7.325 & 8.049 & 11.13 & 21.46\\
+\muP & 640 & 0.002 & 0.0015 & 6.784 & 8.006 & 6.784 & 8.015\\
+\muP & 2560 & 0.002 & 0.0013 & 6.669 & 7.710 & 6.669 & 8.127\\
+\muP & 5120 & 0.002 & 0.0012 & 6.700 & 7.655 & 6.700 & 7.968\\\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{p41_width.png}
+\caption{Fitted optimal base LR (left) and fitted minimum five-step loss (middle) vs.\ width; loss--LR curves (right).}
+\label{fig:p41w}
+\end{figure}
+
+Both predictions held, and Kaiming fell slightly \emph{faster} than 1/width ($7\times$ from 640 to 2560, $\ge16\times$ at 5120; at 5120 the width-640 optimum 0.001 gives loss 22.8). \muP's best sampled LR is 0.002 at every width and its fitted optimum moves 20\% over $8\times$ width. \textbf{\muP{} transfers its tuned base LR; Kaiming does not. \muP{} also reaches the lower loss at every width} (6.78 / 6.67 / 6.70 vs.\ 7.07 / 7.18 / 7.33), improving with width while Kaiming worsens.
+
+\subsubsection*{(b) Width probes (at each configuration's best sampled LR)}
+
+\begin{table}[H]\small
+\begin{tabularx}{\textwidth}{l r l l l L L}\toprule
+policy & width & logit RMS, step $0\to5$ & feature movement $M_5$ & $\omega_{\mathrm{move}}$ & $\alpha_{\mathrm{upd}}$ hidden (q, k, v, gate, up, down), step $1\to5$ & $\alpha_{\mathrm{upd}}$ attention-out / readout, step $1\to5$\\\midrule
+Kaiming & 640 & $1.00\to1.26$ & 1.07 & 0.501--0.507 & $0.59$--$0.64\to0.64$--$0.88$ & 0.79--0.82 / $0.63\to0.92$\\
+Kaiming & 2560 & $1.00\to1.23$ & 0.85 & 0.512--0.519 & $0.65$--$0.70\to0.69$--$0.74$ & 0.83 / 0.69\\
+Kaiming & 5120 & $1.00\to1.33$ & 1.08 & 0.516--0.528 & --- & 0.85--0.87 / $0.71\to0.89$\\
+\muP & 640 & $0.89\to1.61$ & 1.12 & 0.500--0.506 & $0.59$--$0.64\to0.65$--$0.92$ & 0.79--0.82 / $0.63\to0.92$\\
+\muP & 2560 & $0.45\to1.45$ & 1.02 & 0.514--0.517 & --- & 0.83--0.85 / $0.68\to0.93$\\\bottomrule
+\end{tabularx}
+\end{table}
+
+The residual-stream RMS before the final norm grows from 1 to 3.1--3.9 in every case; normalised features stay at RMS 1.00.
+\begin{enumerate}
+\item \textbf{Tuned $=$ order-one feature movement.} At the best LR the final normalised features have moved by RMS $\approx1$ after five steps in every configuration, which is the derivation's definition of a correct step size. \muP{} produces it at the same base LR at every width; Kaiming needs a smaller base LR as width grows because its hidden updates move features by $\Theta(\text{width})$.
+\item \textbf{Logit RMS at initialisation.} Kaiming's $1/n$ readout variance gives RMS 1 at every width; \muP's (variance $1/n_0$, multiplier $1/m$) gives $1/\sqrt m$: 0.89 at 640, 0.45 at 2560. After five updates both reach 1.2--1.6, so in \muP{} the learned part of the readout carries the signal.
+\item \textbf{Update alignment is partial, not full.} $\alpha_{\mathrm{upd}}$ is 0.59--0.70 at step 1 for q/k/v/gate/up/down, higher (0.79--0.87) for the attention output projection, rising to 0.7--0.95 by step 5. Adam updates are far more aligned than random ($\tfrac12$) but not fully coherent (1). The $\eta/m$ rule still transferred because slightly over-shrinking the hidden LR only shifts the optimum within the flat region: the 20\% drift we see.
+\item \textbf{Readout--feature-change alignment is at the no-alignment scale.} $\omega_{\mathrm{move}}=0.50$--0.53 everywhere, against \muP's assumed $\omega=1$. So $V_0^\top\Delta x$ scales like $m^{\omega-\alpha-b}=m^{-1/2}$ under \muP's initialisation: a bounded, vanishing contribution, which is exactly why \muP's initial logits shrink with width and the learned readout takes over. The assumption that fails is one the LR rule did not actually need.
+\end{enumerate}
+
+\subsubsection*{(c) Depth transfer (63 runs; width 64, one head, reference depth 2, mixed precision)}
+
+Nine LRs per cell (0.00025 to 0.064, doubling), all on top of the \muP{} width rule, $r=\text{depth}/2$.
+
+\begin{table}[H]\centering\small
+\begin{tabular}{lccc}\toprule
+prescription & residual-branch multiplier & hidden LR multiplier & Adam $\epsilon$ multiplier\\\midrule
+\muP{} (no depth rule) & 1 & 1 & 1\\
+Depth-\muP & $r^{-1/2}$ & $r^{-1/2}$ & $r^{-1/2}$\\
+CompleteP & $1/r$ & 1 & $1/r$\\\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Prediction before running:} CompleteP transfers best, Depth-\muP{} next, plain \muP{} worst, because only CompleteP keeps each block's contribution to the residual stream depth-independent.
+
+\begin{table}[H]\centering\footnotesize
+\begin{tabular}{llrrrrr}\toprule
+prescription & depth & best sampled lr & fitted $\lrs$ & loss at best & loss at lr 0.008 & loss at lr 0.032\\\midrule
+\muP & 2 (same model for all three) & 0.016 & 0.0174 & 6.858 & 7.216 & 7.119\\
+\muP & 100 & 0.016 & 0.0146 & 7.060 & 7.270 & 7.135\\
+\muP & 1000 & 0.016 & 0.0138 & 7.067 & 7.322 & 7.281\\
+Depth-\muP & 100 & 0.016 & 0.0197 & 6.867 & 7.260 & 7.107\\
+Depth-\muP & 1000 & 0.016 & 0.0170 & 6.951 & 7.151 & 7.028\\
+CompleteP & 100 & 0.016 & 0.0179 & 6.816 & 7.209 & 7.065\\
+CompleteP & 1000 & 0.016 & 0.0158 & 6.863 & 7.220 & 7.271\\\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{p41_depth.png}
+\caption{Fitted optimal base LR and fitted minimum loss vs.\ depth for the three prescriptions; loss--LR curves (right).}
+\label{fig:p41d}
+\end{figure}
+
+At the resolution of a doubling grid all three prescriptions transfer the base LR from depth 2 to 1000 (best sampled 0.016 in every cell). Fitted optima drift down 21\% (\muP), 14\% (Depth-\muP), 12\% (CompleteP) over $500\times$ depth: the predicted ranking, but small differences. \textbf{Loss is where they separate:} plain \muP's tuned loss worsens with depth ($6.86\to7.06\to7.07$) while Depth-\muP{} ($6.87\to6.95$) and CompleteP ($6.82\to6.86$) stay near the depth-2 value, CompleteP best at both depths. Better transfer does come with lower loss, but the loss gap (0.2) is much larger than the transfer gap (a few percent of LR): the depth rules matter more for what the deep model can do in five steps than for where its optimum sits.
+
+\subsubsection*{(d) Depth probes (best sampled LR 0.016, plus 0.008)}
+
+\begin{table}[H]\footnotesize
+\begin{tabularx}{\textwidth}{l r L L c c}\toprule
+prescription & depth & residual RMS before final norm & branch-output RMS, last block (attn / MLP) & feature movement $M_5$ & $\omega_{\mathrm{move}}$\\\midrule
+\muP & 2 & 9.6 & 4.3 / 4.4 & 1.1 & 0.50\\
+\muP & 100 & 696 (235 at lr 0.008) & 3.4 / 6.7 & 1.2 & 0.50\\
+\muP & 1000 & 6378 (2400 at lr 0.008) & 3.4 / 6.7 & 1.25 & 0.50\\
+Depth-\muP & 1000 & 7.7 (5.0 at lr 0.008) & $\approx1$ & 1.1 & 0.50\\
+CompleteP & 100 & 6.0 & $\approx1$ & 1.1 & 0.50\\
+CompleteP & 1000 & 6.2 (5.9 at lr 0.008) & $\approx1$ & 1.1 & 0.50\\\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{Yes, normalised activations hide a growing residual stream.} Plain \muP{} at depth 1000 feeds a residual stream of RMS 6378 into the final RMSNorm, yet the normalised features have RMS 1 and have moved by $M_5\approx1.1$--1.25, like every other configuration; logits are RMS 1.7--2.0 everywhere. The residual RMS grows roughly linearly in depth ($696\to6378$ for $10\times$ depth), not like $\sqrt{\text{depth}}$: after Adam's first update the branch outputs are coherent and add rather than average. Depth-\muP{} ($1/\sqrt r$) bounds the stream at 7.7; CompleteP ($1/r$) at 6.2, flat between depth 100 and 1000: bounded signals versus plain \muP's non-vanishing, growing one. In plain \muP{} the final norm divides by $\approx6000$, so each block's order-one contribution is $1/6000$ of its depth-2 value, 1000 blocks used as one averaged direction, which is why its loss plateaus at 7.06 while CompleteP's blocks keep individual leverage (6.82--6.86). The LR optimum barely moves for any of them because Adam's per-entry step is what the base LR sets and RMSNorm absorbs the scale; the depth rule changes the \emph{quality} of the step. $\omega_{\mathrm{move}}$ is 0.50 at every depth and prescription; hidden $\alpha_{\mathrm{upd}}$ for query matrices is 0.53 at step 1 at shallow depth, but already 0.73--0.80 for plain \muP{} at depth 100--1000, the coherence behind the linear growth showing up directly.
+
+\textbf{Synthesis (P4.1).} The derivation's two assumptions fare differently: $\alpha=1$ is approximately right (0.6--0.9, rising), $\omega=1$ is wrong everywhere (0.5). The rules that matter, hidden LR $\eta/m$ and readout multiplier $1/m$, depend on $\alpha$, so \muP{} transfers; the rule that depends on $\omega$ (readout initialisation) only changes whether the initial readout contributes, and it does not. For depth, ``transfers the LR'' and ``keeps the residual stream bounded'' are different properties: all three prescriptions have the first over a doubling grid, only Depth-\muP{} and CompleteP have the second, and the second is what sets the loss.
+
+%=====================================================================
+\subsection*{4.2\quad From five updates to a longer training budget}
+
+Setup for every new run: 153.6M tokens, batch 64, AdamW $\beta=(0.9,0.95)$, weight decay 0.1 (held fixed), seed 42, same data order. Baseline $=$ course default (Kaiming-style, identical to \muP{} at the reference width 512); \muP{} changes only the four table settings with $n_0=512$. The supplied width-512 curve is the source (best sampled LR 0.003, fitted 0.0024).
+
+\subsubsection*{(a)--(b) Width transfer (20 new runs, five LRs per cell)}
+
+\textbf{Prediction before running:} 0.003 transfers to widths 128 and 256 under \muP{} (loss at 0.003 within noise of the tuned loss) but not under the baseline, whose optimum should rise as width shrinks.
+
+\begin{table}[H]\centering\small
+\begin{tabular}{lrrrrrr}\toprule
+policy & width & best sampled lr & fitted $\lrs$ & tuned loss (fit) & loss at transferred lr 0.003 & gap to best sampled\\\midrule
+baseline & 128 & 0.006 & 0.0074 & 3.613 & 3.693 & 0.067\\
+baseline & 256 & 0.003 & 0.0048 & 3.388 & 3.405 & 0\\
+\muP & 128 & 0.003 & 0.0037 & 3.628 & 3.628 & 0\\
+\muP & 256 & 0.0015 & 0.0025 & 3.406 & 3.419 & 0.006\\
+source (both) & 512 & 0.003 & 0.0024 & 3.224 & 3.229 & 0\\\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.9\textwidth]{p42_width.png}
+\caption{Fitted optimal LR vs.\ width (left; dotted $=$ source LR 0.003) and tuned vs.\ transferred-LR loss (right), both prescriptions, including the held-out width 1024 from part (c).}
+\label{fig:p42w}
+\end{figure}
+
+Power laws through the three fitted optima: baseline $\lrs\propto\text{width}^{-0.82}\Rightarrow0.0014$ at 1024; \muP{} $\lrs\propto\text{width}^{-0.31}\Rightarrow0.0018$ at 1024 (both recorded before part (c)).
+\begin{enumerate}
+\item \textbf{Transfer: \muP{} still wins, less cleanly than in five steps.} From 512 to 128 the baseline optimum moves $3\times$ ($0.0024\to0.0074$), \muP's $1.5\times$ ($\to0.0037$). At the transferred LR the baseline loses 0.067 at width 128; \muP{} loses nothing measurable. But \muP's optimum is not flat (exponent $-0.31$), so over a $4\times$ width change ``tune once'' is only approximately kept.
+\item \textbf{Performance: the tuned baseline is slightly better}, 3.613 / 3.388 vs.\ \muP's 3.628 / 3.406, ahead by 0.015--0.018 at both widths. In the five-step test \muP{} was ahead by 0.2--0.7.
+\item \textbf{Why it flips.} In five steps only the size of the first updates mattered. Over 2{,}444 updates with warmup and decay a $3\times$ mis-sized LR is survivable (the baseline at 0.003 is 0.067 behind its own optimum), and two effects push against \muP{} at \emph{narrow} widths: the $1/m$ readout multiplier becomes a $\times4$ boost at width 128 (initial logit RMS 1.96 vs.\ 0.98), and the hidden LR is multiplied by 4 while weight decay stays at 0.1, so the $\mathrm{lr}\cdot\mathrm{wd}$ product that Problem~2 showed controls the averaging window is $4\times$ the source value. \muP{} transfers the step size but not the regularisation timescale; holding WD fixed is a hidden mis-tuning that grows with the width ratio.
+\end{enumerate}
+
+\subsubsection*{(c) Held-out width 1024 (8 new runs)}
+
+\begin{table}[H]\centering\footnotesize
+\begin{tabular}{lrrrrrr}\toprule
+policy & lr 0.00075 & power-law pick (0.0014 / 0.0018) & lr 0.0015 & lr 0.003 (direct transfer) & fitted $\lrs$ & fitted loss\\\midrule
+baseline & 3.139 & \textbf{3.114} & 3.135 & 3.242 & 0.0011 & 3.116\\
+\muP & 3.240 & 3.111 & 3.124 & \textbf{3.104} & 0.0026 & 3.102\\\bottomrule
+\end{tabular}
+\end{table}
+
+Gaps to best sampled: baseline, power law 0, direct transfer $+0.128$; \muP, direct transfer 0, power law $+0.007$. \textbf{Fitting the width dependence improves on direct transfer for the baseline (by 0.128) and slightly hurts for \muP.} The baseline's optimum moved to a third of the source value, as $\text{width}^{-0.82}$ said; \muP's extrapolated exponent over-corrected because its drift happened at the narrow widths (128, 256), not between 512 and 1024, consistent with the fixed-WD and $\alpha$-decay mechanisms being largest when the width ratio is far from 1 in the shrinking direction. Once each is tuned, the two reach the same place (3.114 vs.\ 3.104). Caveat: the baseline's 1024 curve is not smooth at the 0.02 level ($0.0014\to3.114$ vs.\ $0.0015\to3.135$, a gap present from step 300 on), so single runs at this width resolve LR differences of $\approx0.02$ at best; the 0.128 and 0.067 headline gaps stand, the 0.007 \muP{} gap does not.
+
+\subsubsection*{(d) Depth transfer at width 512 (18 new runs; reference depth 8, $r=\text{depth}/8$)}
+
+\begin{table}[H]\centering\small
+\begin{tabular}{lrrrrrr}\toprule
+prescription & depth & best sampled lr & fitted $\lrs$ & tuned loss (fit) & loss at transferred lr 0.003 & gap\\\midrule
+\muP{} (no depth rule) & 4 & 0.003 & 0.0025 & 3.312 & 3.314 & 0\\
+Depth-\muP & 4 & 0.0015 & 0.0016 & 3.326 & 3.344 & 0.018\\
+CompleteP & 4 & 0.003 & 0.0025 & 3.313 & 3.316 & 0\\
+source & 8 & 0.003 & 0.0024 & 3.224 & 3.229 & 0\\
+\muP{} (no depth rule) & 16 & 0.0015 & 0.0021 & 3.167 & 3.175 & 0.002\\
+Depth-\muP & 16 & 0.003 & 0.0028 & 3.169 & 3.169 & 0\\
+CompleteP & 16 & 0.0015 & 0.0017 & 3.169 & 3.193 & 0.023\\\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.9\textwidth]{p42_depth.png}
+\caption{Fitted optimal LR vs.\ depth (left) and tuned vs.\ transferred-LR loss (right) for \muP, Depth-\muP, CompleteP at width 512.}
+\label{fig:p42d}
+\end{figure}
+
+Over a $4\times$ depth range the depth corrections change nothing the data can resolve: tuned losses agree within 0.003 at depth 16 and 0.014 at depth 4 (seed noise 0.002--0.005), and the fitted optima wander between 0.0016 and 0.0028 with no consistent ordering (Depth-\muP{} misses at depth 4, CompleteP at depth 16). With $r$ between $\tfrac12$ and 2 the residual stream grows by at most $\approx1.4\times$, inside what the final RMSNorm and warmup absorb, unlike depth 100--1000 in P4.1. The depth rules are insurance for extreme depth, not a tuning knob at ordinary depth; they improve neither transfer nor tuned loss here.
+
+\subsubsection*{(e) Training-regime diagnostics (fixed inputs, source LR 0.003)}
+
+\begin{table}[H]\footnotesize
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{2.7cm} L L c L L}\toprule
+configuration & $\alpha_{\mathrm{upd}}$ hidden (median), step $5\to100\to$ end & $\alpha_{\mathrm{upd}}$ readout, step $5\to$ end & $\omega_{\mathrm{move}}$ & logit RMS, init $\to$ end & feature movement, step $5\to$ end\\\midrule
+baseline w128 d8 & $0.79\to0.73\to0.61$ & $0.87\to0.64$ & 0.50 & $0.98\to4.4$ & $1.29\to2.02$\\
+baseline w256 d8 & $0.90\to0.73\to0.61$ & $0.95\to0.63$ & 0.50 & $0.99\to4.2$ & $1.20\to1.63$\\
+\muP{} w128 d8 & $0.88\to0.71\to0.60$ & $0.92\to0.60$ & 0.50 & $1.96\to4.4$ & $1.37\to1.26$\\
+\muP{} w256 d8 & $0.91\to0.74\to0.61$ & $0.94\to0.62$ & 0.50 & $1.40\to4.2$ & $1.25\to1.22$\\
+\muP{} / Depth-\muP{} / CompleteP w512 d16 & $0.91\to0.77$--$0.78\to0.63$--$0.64$ & $0.96\to0.63$ & 0.50 & $0.98\to4.1$--4.3 & $1.30\to1.34$--1.35\\\bottomrule
+\end{tabularx}
+\end{table}
+
+Gradient clipping (max norm 1) is active only at the start: the step-1 clip coefficient is 0.26 (baseline, width 128) and 0.11 (baseline, width 256) versus 0.034 and 0.040 under \muP{} (\muP's larger readout multiplier makes the initial gradient 3--8$\times$ larger), and it is identical across LRs because the first gradient does not depend on the LR. At every logged point after the first few dozen updates the coefficient is 1 in every configuration, so clipping shapes the first steps and nothing after.
+\begin{enumerate}
+\item \textbf{Update alignment decays during training.} $\alpha\approx0.9$ at step 5 (near the derivation's $\alpha=1$), 0.73--0.78 at step 100, 0.60--0.64 at the end, only a little above random ($\tfrac12$). Early training is a coherent, nearly rank-one push; late training is closer to noise averaging. The $\eta/m$ rule is derived for $\alpha=1$, so it is most exact in the phase the five-step test measured and progressively over-conservative later, consistent with \muP's optimum drifting \emph{up} at narrow widths over a full run.
+\item \textbf{Readout--feature-change alignment never appears:} $\omega_{\mathrm{move}}=0.50$ at every width, depth, prescription, and step. $\alpha=1$ holds early and fails late; $\omega=1$ holds nowhere. The rules that depend on $\alpha$ still work approximately; the one that depends on $\omega$ is irrelevant to the LR.
+\item \textbf{Transients vs.\ final loss.} \muP{} at width 128 starts with logits twice as large (1.96 vs.\ 0.98) and moves its features further in five steps (1.37 vs.\ 1.29), yet its loss at the transferred LR is \emph{better} (3.628 vs.\ 3.693); the baseline's features end up moving the most (2.02) and it is worst. Larger early transients did not decide the outcome; the step size did.
+\item \textbf{Does a shifted optimum show the model is outside the stable \muP{} regime? No.} \muP's optimum moved $1.5\times$ between widths 512 and 128 while every stability signal stayed bounded (logit RMS grows the same way for all configurations, feature movement 1.2--1.4, smooth flat loss--LR curves). A drifting optimum with bounded diagnostics points to a mis-scaled \emph{secondary} quantity, here the fixed weight decay (Problem~2's coupling: \muP{} multiplies the hidden LR by $1/m$ but leaves $\mathrm{lr}\cdot\mathrm{wd}$ unscaled, so the averaging window changes by $m$) and the decaying $\alpha$, not to a breakdown of feature learning.
+\end{enumerate}
+
+\textbf{Synthesis (P4.2).} Transfer a learning rate \emph{upward} in width with \muP{} as-is (0.003 was the best point at 1024); transfer it with a standard parameterisation only through a fitted power law (direct transfer cost 0.128). After tuning, the two reach the same loss to within 0.01--0.02, so over a real budget \muP{} buys predictability, not performance: the opposite emphasis from the five-step test, where it bought both. Depth corrections are irrelevant at depths 4--16. And whenever the width ratio exceeds $\approx2\times$, revisit weight decay: the $\mathrm{lr}\cdot\mathrm{wd}$ timescale is the one quantity none of these prescriptions preserves, and it is the most likely cause of \muP's residual optimum drift at narrow widths.
+
+\end{document}
