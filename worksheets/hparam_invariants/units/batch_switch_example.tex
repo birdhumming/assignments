@@ -1,0 +1,36 @@
+\clearpage
+\begin{examplequestion}[difficulty=hard]
+\phantomsection\label{ex:a2-batch-switch}
+\textbf{Double batchsize during training}
+Train the $d8$ language model 614.4M tokens with AdamW,
+initial batch size $64$, peak LR $.0015$, and WD $1.6$.
+Let $\eta_{\rm base}(D)$ denote the learning rate after processing
+$D$ tokens: warm up over the first $1\%$ of tokens, then decay linearly to zero
+at 614.4M tokens.
+
+After processing exactly 307.2M tokens, double the batch size to $128$.
+Reach the midpoint with 4,687 batches of 64 sequences followed by one batch
+of 32; this gives 4,688 updates before the switch. Then use 2,343 batches of
+128 sequences and a final batch of 96, giving 2,344 updates after the switch.
+Compute each update's mean loss using its actual batch size.
+Keep Adam's accumulated moments and both $\beta$ values unchanged.
+For the remaining half of training, consider five policies:
+\begin{center}
+\begin{tabular}{clcc}
+\toprule
+Policy & Change at the midpoint & LR after the change & WD after the change\\
+\midrule
+A & Neither LR nor WD & $\eta_{\rm base}(D)$ & $1.6$\\
+B & Multiply LR by $\sqrt{2}$ & $\sqrt{2}\,\eta_{\rm base}(D)$ & $1.6$\\
+C & Multiply LR by $2$ & $2\,\eta_{\rm base}(D)$ & $1.6$\\
+D & Multiply WD by $\sqrt{2}$ & $\eta_{\rm base}(D)$ & $1.6\sqrt{2}$\\
+E & Multiply WD by $2$ & $\eta_{\rm base}(D)$ & $3.2$\\
+\bottomrule
+\end{tabular}
+\end{center}
+All runs process the same ordered tokens. Evaluate $\eta_{\rm base}(D)$ at
+the number of tokens consumed \emph{before} each update, including the partial
+batches. Changing the batch size must not restart warmup.
+\textbf{Which policy do you predict will give the lowest mean final validation loss across 3 seeds (42,43,44)?}
+Choose one and explain how changing LR or WD affects training when there are approximately half as many optimizer updates per token after the switch.
+\end{examplequestion}

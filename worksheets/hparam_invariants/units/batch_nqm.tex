@@ -1,0 +1,19 @@
+\clearpage
+\unitheader{C}{How does batch size affect the hyperparameters?}{}
+
+We now have had some taste of bivariate hyperparameters scaling (in our learning rate and weight decay tuning problem). We might wonder whether if there is a better way, where we can mathematically derive the right scaling relationships between hyperparameters.
+
+To this end, we will study how batch size, learning rate, and scale all interact with each other. Batch size is an ideal variable to study, since the relationship between batch size, learning rates and convergence rates are very well studied and understood as part of the theory of online optimization.
+
+We will make use of a well-known toy model called the noisy quadratic model, and see how this gives us learning-rate rules that (might) carry over to language model training in the wild.
+
+\begingroup
+\setcounter{question}{0}
+\renewcommand{\aTwoProblemNumber}{3.\arabic{question}}
+
+\input{units/batch_nqm_theory.tex}
+\input{units/batch_lm.tex}
+\endgroup
+\setcounter{question}{3}
+
+\input{units/batch_switch_example.tex}

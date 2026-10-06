@@ -1,0 +1,65 @@
+\clearpage
+\unitheader{B}{Joint learning-rate and weight-decay scaling}{}
+
+At this point, you should have a general sense of how learning rates behave as a function of scale, and we've seen some intriguing signs in the hyperball experiment that learning rates and the \emph{norm} of the parameters might be related (at least in our transformer model). In this problem, we will dig deeper into the phenomenon and try to understand how learning rates and weight decay interact with each other.
+
+\begin{problem}{How should learning rate and weight decay scale together? (4 new runs)}
+\begin{parts}
+\item \textbf{Let LR and WD vary together (provided runs).}
+Analyze the \providedSweeps{} for the following LR--WD grids.
+Our runs contain all combinations of peak LR and WDs given in the following table,
+\begin{center}
+\begin{tabular}{rll}
+\toprule
+Tokens (B) & Peak LRs & WDs \\
+\midrule
+.1536 & $\{.00075,.0015,.003\}$ & $\{.4,1.6,6.4\}$ \\
+.3072 & $\{.0015,.003,.006\}$ & $\{.1,.4,.8\}$ \\
+.6144 & $\{.0015,.003,.006\}$ & $\{.1,.2,.4\}$ \\
+1.2288 & $\{.0015,.003,.006\}$ & $\{.1,.2,.4\}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+As we have two hyperparameters, we will have to extend our earlier scaling rules, and consider a bivariate functional form for the loss.
+Let $x=\log\eta$ and $y=\log\lambda$. For each scale (token budget), fit a local quadratic $\widehat L(x,y)$ to approximate the final val loss using the coefficients
+$a,b,c,d,e,f$:
+\[
+ \widehat L(x,y)=a+b x+c y+d x^2+e xy+f y^2,
+\]
+The cross term $e xy$ allows LR and WD to interact.
+
+For each budget, draw its contours and mark the fitted optimum at each budget. If we make two plots, one for LR and WD where we plot optimal LR or WD as a function of scale, what do we see?
+How does the LR trend compare with the one in Problem 1?
+Can either coordinate be described well by a single power law?
+
+Compare the best measured validation losses from joint tuning with those from Problem 1 at the same budgets. Plot both against tokens, along with their difference. How does the benefit of tuning WD depend on the training budget?
+
+\item \textbf{From coupling to a joint scaling law (no new runs).}
+At each budget, let $(\eta^*,\lambda^*)$ be the fitted optimal pair from part (a).
+On its contour plot, draw your quadratic fit and observed data with the two axes being peak LR and WD (with log-log scale). Can increasing one hyperparameter compensate for decreasing another?
+Draw a line where $\eta\lambda=\eta^*\lambda^*$ on this plot, and see how it relates to the contour plot.
+
+Now plot $\eta^*\lambda^*$ against tokens and compare it with the separate
+LR and WD trends. Does the product vary more regularly than either coordinate? Measure the $R^{2}$ of each of these different scaling fits and figure out which of these variables have the tightest power law scaling.
+
+\needspace{4\baselineskip}
+\item \textbf{Test the joint rule (4 new runs).}
+Consider a policy with peak LR $.003$ at every budget (note that this is not asking for a constant LR schedule, we just fix the same peak LR across scales). Our goal will be to see if we can ``rescue'' this LR policy by adjusting our weight decay.
+
+\begin{enumerate}[label=\arabic*., nosep, leftmargin=*]
+\item \textbf{Fit.} Use the product law from part (b) fitted on
+$\{.1536,.3072,.6144,1.2288\}$B tokens.
+\item \textbf{Test.} Validate at \textbf{2.4576B tokens}, excluded from the fit.
+At peak LR $.003$, test the WD given by the predicted product divided by $.003$.
+Use linear decay for all runs.
+\item \textbf{Compare.} Use two baselines, both trained for 2.4576B tokens:
+(i) reuse the LR--WD pair with the lowest validation loss in the 153.6M sweep,
+without retuning; (ii) fix peak LR at $.003$, test WD $\{.05,.1,.2\}$,
+and take the best validation loss.
+Report the prediction's loss gap to both baselines.
+Does the product rule give an effective training recipe?
+\end{enumerate}
+\end{parts}
+\end{problem}
+\input{units/wd_timing_example.tex}

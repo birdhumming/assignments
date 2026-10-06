@@ -1,0 +1,30 @@
+\begin{problem}{Derive scaling rules for update and feature-change alignment}
+Consider all four combinations of two assumptions, each full or no alignment:
+\begin{itemize}
+\item Alignment of the weight-update direction $U$ with the pre-update input $x_0$.
+\item Alignment of the initial readout head $V_0\in\mathbb R^{n\times q}$
+with its input feature change $\Delta x=x_1-x_0$.
+\end{itemize}
+Here $V_0$ uses the transposed convention, so its response to the feature
+change is $n^{-a}V_0^\top\Delta x$.
+Write $\Delta W=-\eta n^{-c}U$, with fixed $\eta>0$ and
+$\|U\|_{\rm RMS}=\Theta(1)$. For hidden and readout matrices, assume
+$x_0$ and $\Delta x$ have order-one RMS, and write
+\[
+ R(U,x_0)=\Theta(n^\alpha),\qquad
+ S(V_0,\Delta x)=\Theta(n^{\omega_{\rm move}}).
+\]
+For the interaction term, also assume $R(U,\Delta x)=O(n^\alpha)$.
+Use $a=0$ for hidden and input matrices and $c=0$ for the readout.
+\begin{parts}
+\item For each combination, identify $\alpha$ and $\omega_{\rm move}$ and derive the
+constraints on $(a,b,c)$. Require order-one hidden features at initialization,
+order-one direct updates, and an order-one response $n^{-a}V_0^\top\Delta x$ from the initial readout.
+Summarize $(a,b,c)$ for hidden, readout, and fixed-fan-in input matrices in a table.
+\item Using $m=n/n_0$, give the forward multiplier, initialization variance,
+and LR for each layer type, matching the preceding table at $n_0$.
+How do the scaling rules change with each alignment assumption?
+Check that the interaction term stays bounded and identify the combination
+that recovers the preceding $\mu$P rules.
+\end{parts}
+\end{problem}

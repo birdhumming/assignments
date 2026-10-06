@@ -20,4 +20,5 @@ uv run python -m scripts.modal_usage
 uv run python -m scripts.inspect_data_row
 ```
 
-Course staff manage environment provisioning and assignment budgets separately.
+These scripts are student-facing convenience wrappers. Contact the course staff
+for environment provisioning or assignment budget questions.

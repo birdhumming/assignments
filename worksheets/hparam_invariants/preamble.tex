@@ -1,0 +1,33 @@
+% Course worksheet style copied verbatim from the inspected A1 source.
+\usepackage[assignment]{style/worksheet}
+\usepackage{longtable,booktabs,etoolbox,xurl}
+% Unnumbered statements for Part 4's theory; numbers would collide with problem labels.
+\usepackage{amsthm}
+\theoremstyle{definition}
+\newtheorem*{aTwoDefinition}{Definition}
+\theoremstyle{plain}
+\newtheorem*{aTwoLemma}{Lemma}
+\newtheorem*{aTwoProposition}{Proposition}
+\theoremstyle{remark}
+\newtheorem*{aTwoRemark}{Remark}
+\coursename{CS 312}
+\setlength{\emergencystretch}{2em}
+% This ungraded assignment has no point total. Keep the A1 title and typography.
+\expandafter\patchcmd\csname\string\worksheettitle\endcsname
+  {\totalpoints{} points}{}{}{
+  \PackageError{a2}{Cannot patch worksheet title}{Check the shared title macro.}}
+% The course name is the only byline field, so it needs no separator.
+\makeatletter
+\renewcommand{\ws@bylinesep}{}
+\makeatother
+
+% Parts 3 and 4 use subsection numbering; leave the shared A1 style intact.
+\newcommand{\aTwoProblemNumber}{\arabic{question}}
+\makeatletter
+\patchcmd{\ws@problemlabel}{\arabic{question}}{\aTwoProblemNumber}{}{
+  \PackageError{a2}{Cannot patch problem numbering}{Check the shared problem macro.}}
+\makeatother
+
+% Public course sweep-results project.
+\newcommand{\providedSweepsURL}{https://wandb.ai/hashimoto-group/public-alchemy/overview}
+\newcommand{\providedSweeps}{\href{\providedSweepsURL}{provided W\&B sweeps}}
