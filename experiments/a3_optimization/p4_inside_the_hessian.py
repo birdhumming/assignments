@@ -86,6 +86,12 @@ RESCALE_JOBS = [
     _rescale("mlp-norm", [MLP_IN], WATCH),
     _rescale("head-norm", [(HEAD_IN[0].replace("{}", ""), HEAD_IN[1])], WATCH),
     _rescale("all-norms", [ATTN_IN, MLP_IN, (HEAD_IN[0], HEAD_IN[1])], WATCH),
+    # Scale 2 instead of 4 on the head pair: the head block shrinks 4x and the final-norm
+    # block grows 4x, which should roughly balance them and cut lambda_max the most.
+    {"name": "b-rescale-head-norm-s2",
+     "measure": {"run": "adamw", "step": FINAL_STEP, **FINAL,
+                 "scale": {"model.norm.weight": 0.5, "lm_head.weight": 2.0},
+                 "tensors": [t.format(0) for t in WATCH]}},
     # QK-norm makes the scale of q_proj irrelevant on its own: only the linear moves.
     {"name": "b-rescale-qproj-only",
      "measure": {"run": "adamw", "step": FINAL_STEP, **FINAL,

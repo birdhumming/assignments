@@ -100,3 +100,12 @@ So any lambda_max change from b-rescale jobs is purely a reparameterization at i
   the threshold 38; top eigvec now ~50% MLP / 40% attention), then drifts down: 33.7 @500, 27.3 @1000, median 24.2 over
   100-180M tokens, 20.4 at the last probe (update 2700). Touches the edge during warmup, then sits below it. Final train loss 3.24.
 - Cache bug fixed: p3_tables cached a running run's partial history; now only finished runs are cached.
+
+## P4(b) loss-invariant rescaling (final AdamW checkpoint, 16:30 UTC Oct 15)
+- Probe loss is 2.9474 in all 6 jobs (exactly invariant). lambda_max: reference 5.97, attn-norm 5.88, mlp-norm 6.46,
+  head-norm 5.51, all-norms 7.82, qproj-only 5.97.
+- Per-tensor: lm_head block 5.64 -> 0.35 (/16 as predicted) under head-norm; final norm gain 0.30 -> 4.79 (x16).
+  The curvature moves to the other side of the reparameterization; the top eigenvector flips from 94% head to 89% norm.
+  Scale 4 overshoots. Balanced scale s=2 should give head 1.41, norm 1.20 -> lambda_max ~1.4-1.5 (4x cut, same loss).
+  Prediction locked before the b-rescale-head-norm-s2 job runs.
+- Gradient norm also changes (0.130 -> 0.106 head, 0.084 all): the gradient is not invariant, only the loss is.
