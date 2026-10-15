@@ -32,3 +32,10 @@ Order: P2 wave1 (running) -> P4 a (13 ckpts + 4 densities, pass max_parallel=2) 
 ## P1 (p1_mode_connectivity.py)
 - Starter grid x in {0,50,100,250,500,1000}, y in {25,...,500}, two batch orders, constant LR after warmup. prefix -> branches -> measure (connectivity.measure_pairs_on_modal). Part (c) interpolation alpha in {0,.25,.5,.75,1} for representative cells (small x / large y, large x / small y, diagonal).
 - (d) knobs, each repeats the grid with a new BASE: learning_rate=6e-3; batch_size=16; lr_schedule="linear" (decaying). Trimmed: first two.
+
+## P4(a) calibration (first result, 12:10 UTC Oct 15)
+- Plain measurement job: 13.5 min on H100 (810 s compute + load). Density steps (0, 153, 1526, 9375) add ~13 min.
+  13 jobs at 2 parallel -> ~1.8 h wall; app ap-Z3EjcjkWE4KX3ksqUiWlFj, launched 11:44.
+- Step 3 (2M tokens): lambda_max 1572, lambda_min -602 (ratio 0.38), top eigenvector 98% embedding;
+  family lambda_max: embedding 1554, attention 11.0, mlp 10.4, head 1.39, norm 0.022, qk_norm 0.008.
+  Early curvature is all in the embedding table.
