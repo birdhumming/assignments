@@ -341,7 +341,7 @@ The head prediction was half right. Multiplying \texttt{lm\_head} by 4 did divid
 
 This is the honest answer to ``can you move $\lmax$ without moving the loss'': yes, by any factor you like, because $\lmax$ is a property of the coordinates and not of the function. Curvature is pushed from one side of a scale symmetry to the other. The gradient norm changes too (0.130 to 0.084), so neither $\lmax$ nor $\|\nabla L\|$ is a coordinate-free diagnostic; only ratios that the optimizer actually sees, such as Adam's preconditioned sharpness, survive this.
 
-Scale 4 overshoots. Balancing the two blocks needs $5.64/s^2 = 0.30\,s^2$, so $s\approx 2$ should give $\lmax\approx 1.4$ at the same loss, a 4$\times$ drop. %P4B_S2%
+Scale 4 overshoots. Balancing the two blocks needs $5.64/s^2 = 0.30\,s^2$, so $s\approx 2$ should give $\lmax\approx 1.4$ at the same loss, a 4$\times$ drop. We ran that job after writing the prediction down. The two blocks landed where the algebra said (\texttt{lm\_head} 1.41, final norm 1.20) but the full $\lmax$ came out at 2.35, not 1.4, with the top eigenvector split 44\% norm, 29\% head, 19\% MLP: once the two blocks are comparable, their off-diagonal coupling (the 28\% cross-family energy from part (a)) carries the top direction. So the loss-invariant rescaling cut $\lmax$ by 2.5$\times$ (5.97 to 2.35) at a probe loss of 2.9474 in both cases, and the block-diagonal estimate is a floor, not the answer.
 
 %P4B_TRAIN%
 

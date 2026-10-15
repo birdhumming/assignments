@@ -109,3 +109,5 @@ So any lambda_max change from b-rescale jobs is purely a reparameterization at i
   Scale 4 overshoots. Balanced scale s=2 should give head 1.41, norm 1.20 -> lambda_max ~1.4-1.5 (4x cut, same loss).
   Prediction locked before the b-rescale-head-norm-s2 job runs.
 - Gradient norm also changes (0.130 -> 0.106 head, 0.084 all): the gradient is not invariant, only the loss is.
+- s2 result: loss 2.9474, lambda_max 2.35 (predicted 1.4). Blocks as predicted (head 1.41, norm 1.20); the cross term
+  between them lifts the top eigenvalue; top eigvec 44% norm / 29% head / 19% MLP. Net: 2.5x cut at identical loss.
