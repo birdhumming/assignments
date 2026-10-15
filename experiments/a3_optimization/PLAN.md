@@ -85,3 +85,12 @@ So any lambda_max change from b-rescale jobs is purely a reparameterization at i
   eta*lambda is back near 2.2 at 1400 and dips below 2 at the end (loss 0.33, model is memorizing the 32 sequences).
 - Final losses 1.23 / 2.25 / 0.33: doubling the lr trains faster once the curvature has adapted; the sharpness self-regulates
   to lambda ~ 2/eta in both directions.
+
+## P4(a) trace results (14:40 UTC Oct 15; 13 Hutchinson jobs, 16 probes each, ~35 s per checkpoint)
+- tr(H)/d is negative at init (-4.2e-4: more negative than positive curvature on average, saddle), jumps to +3.8e-3 at step 3
+  (tr(H) = 132k), then falls to a minimum 1.2e-5 (tr(H) = 422) at step 1526 and rises to 2.7e-5 (947) at the end,
+  the same U shape as lambda_max.
+- lambda_max / (tr(H)/d) sits at 1.8e5-2.5e5 from step 61 on: the top eigenvalue is ~2e5 times the mean eigenvalue and that
+  ratio barely moves, so the whole spectrum shrinks and regrows together.
+- Participation ratio tr(H)^2 / (d tr(H^2)) = 1.1e-4 to 1.4e-4 after step 300, i.e. ~4,000-5,000 of the 34.6M directions
+  carry the curvature. At init it is 2e-8 (a handful of directions in the embedding).
