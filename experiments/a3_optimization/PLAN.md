@@ -75,3 +75,13 @@ So any lambda_max change from b-rescale jobs is purely a reparameterization at i
 - 13:37 p3_core (4 runs, parallel 1): full-batch run ~14 min each (sharpness every 25 updates, ~0.9 s/update), eta*lambda = 2.36 at update 1349.
 - 13:51 P1 prefix (1000 steps, done 13:55); 13:56 P1 branches (12 runs, parallel 1).
 - Queue: P1 measure -> P4 trace -> P4 b-rescale -> P4 b-train -> P3 explore -> P4 c -> P1(d) variants -> P2 wave 2.
+
+## P3 core results (14:25 UTC Oct 15; 3 full-batch runs done, minibatch running)
+- All three full-batch runs (lr 0.01, 32 sequences) start at eta*lambda = 0.22, climb (progressive sharpening) and cross 2 at
+  update 375, then hover at 2.2-2.7 (plateau medians 2.56 constant / 2.24 halved / 2.70 doubled). Loss rises on 0% of updates
+  before the crossing and on 24-41% after: classic edge of stability.
+- Halve lr at 750: eta*lambda drops to 1.3 at once (eta halves, lambda does not), then lambda re-sharpens and is back at 2 by ~950.
+- Double lr at 750: eta*lambda jumps to ~6 (above 2 -> unstable), loss spikes briefly, lambda falls over ~600 updates until
+  eta*lambda is back near 2.2 at 1400 and dips below 2 at the end (loss 0.33, model is memorizing the 32 sequences).
+- Final losses 1.23 / 2.25 / 0.33: doubling the lr trains faster once the curvature has adapted; the sharpness self-regulates
+  to lambda ~ 2/eta in both directions.
