@@ -111,3 +111,11 @@ So any lambda_max change from b-rescale jobs is purely a reparameterization at i
 - Gradient norm also changes (0.130 -> 0.106 head, 0.084 all): the gradient is not invariant, only the loss is.
 - s2 result: loss 2.9474, lambda_max 2.35 (predicted 1.4). Blocks as predicted (head 1.41, norm 1.20); the cross term
   between them lifts the top eigenvalue; top eigvec 44% norm / 29% head / 19% MLP. Net: 2.5x cut at identical loss.
+
+## P3(c) exploration (10 runs, 17:35 UTC Oct 15; median eta*lambda_pre over 100-180M tokens / final)
+- lr 1e-3: 19.4/17.1, 3e-3: 24.2/20.4, 1e-2: 30.5/48.6 (loss 3.39, worst). Higher lr -> closer to / over the edge.
+- bs16: 8.6/8.8 (far below), bs256: 47.7/59.9 (above 38 the whole run; loss 3.34). Noise keeps small batches off the edge.
+- beta1=0: 10.5/11.5 (threshold for RMSProp ~2, so still 5x over it; loss 3.37); beta1=0.98: 34.8/31.6.
+- wd 0: 18.4/17.1 (loss 3.20, best of constant-lr runs); warmup 12.5%: 22.6/23.5 (same as 3%).
+- cosine decay: 10.8/5.4 -> eta*lambda_pre FALLS with eta, i.e. lambda_pre does not grow to compensate (prediction wrong).
+- emb16: 22.1/21.6 (same as reference). Final losses are training losses at 3000 updates.
