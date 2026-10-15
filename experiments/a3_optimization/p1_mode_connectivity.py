@@ -25,6 +25,20 @@ RESULTS_PATH = Path(__file__).resolve().parent / "results" / f"{EXPERIMENT_KEY}.
 # 600M-token run length; stop_at_step only ends training early.
 BASE = TrainConfig(lr_schedule="wsd0.0", wandb_tags=(EXPERIMENT_KEY,))
 
+# Part (d): training choices that may change whether the two branches stay in one basin.
+VARIANTS = {
+    "default": BASE,
+    "lr6e-3": replace(BASE, learning_rate=6e-3),
+    "lr1.5e-3": replace(BASE, learning_rate=1.5e-3),
+    "bs256": replace(BASE, batch_size=256),
+    "linear": replace(BASE, lr_schedule="linear"),
+}
+
+
+def results_path(variant):
+    suffix = "" if variant == "default" else f"-{variant}"
+    return RESULTS_PATH.with_name(f"{EXPERIMENT_KEY}{suffix}.json")
+
 
 
 def prefix_for(base):
@@ -56,15 +70,17 @@ def branch(x, order_seed, base=BASE):
     )
 
 
-BRANCHES = {
-    x: [branch(x, seed) for seed in BRANCH_ORDER_SEEDS] for x in PREFIX_STEPS
-}
+def branches_for(base=BASE):
+    return {x: [branch(x, seed, base=base) for seed in BRANCH_ORDER_SEEDS] for x in PREFIX_STEPS}
 
 
-def pairs():
+BRANCHES = branches_for(BASE)
+
+
+def pairs(base=BASE):
     """((run_a, step), (run_b, step)) for every (x, y) cell."""
     cells = []
-    for x, (a, b) in BRANCHES.items():
+    for x, (a, b) in branches_for(base).items():
         for y in BRANCH_STEPS:
             cells.append(((training_run_name(a), x + y), (training_run_name(b), x + y)))
     return cells
@@ -101,23 +117,28 @@ def check_prefix_checkpoints(prefix=PREFIX):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("stage", choices=("prefix", "branches", "measure"))
+    parser.add_argument("--variant", choices=sorted(VARIANTS), default="default")
+    parser.add_argument("--max-parallel-runs", type=int, default=2)
     args = parser.parse_args()
+    base = VARIANTS[args.variant]
     if args.stage == "prefix":
         from modal_train import launch_training_jobs
 
-        launch_training_jobs([PREFIX])
+        launch_training_jobs([prefix_for(base)], max_parallel_runs=args.max_parallel_runs)
     elif args.stage == "branches":
         from modal_train import launch_training_jobs
 
-        check_prefix_checkpoints()
-        launch_training_jobs([run for runs in BRANCHES.values() for run in runs])
+        check_prefix_checkpoints(prefix_for(base))
+        runs = [run for runs in branches_for(base).values() for run in runs]
+        launch_training_jobs(runs, max_parallel_runs=args.max_parallel_runs)
     else:
         from experiments.a3_optimization.connectivity import measure_pairs_on_modal
 
-        rows = measure_pairs_on_modal(pairs())
-        RESULTS_PATH.parent.mkdir(parents=True, exist_ok=True)
-        RESULTS_PATH.write_text(json.dumps(rows, indent=2) + "\n")
-        print(f"Wrote {len(rows)} cells to {RESULTS_PATH}")
+        rows = measure_pairs_on_modal(pairs(base))
+        out = results_path(args.variant)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(rows, indent=2) + "\n")
+        print(f"Wrote {len(rows)} cells to {out}")
 
 
 if __name__ == "__main__":
