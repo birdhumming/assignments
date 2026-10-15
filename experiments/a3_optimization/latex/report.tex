@@ -244,7 +244,13 @@ Why minibatch Adam behaves differently from full-batch gradient descent. Full-ba
 
 
 \subsection*{(c) Exploration}
-%P3C%
+
+\paragraph{Setup.} Ten minibatch AdamW runs that each change one thing from the 3(b) reference (614M tokens, constant learning rate after warmup, sharpness probed every 25 to 300 updates): peak learning rate $10^{-3}$ and $10^{-2}$, batch size 16 and 256, $\beta_1=0$ and $0.98$, no weight decay, 12.5\% warmup instead of 3\%, cosine decay instead of constant, and an embedding dimension cut to 16.
+
+Prediction. If the threshold $38/\eta$ is what caps the preconditioned sharpness, the three learning rates should land on three different plateaus of $\lmax^{\mathrm{pre}}$ but the same plateau of $\eta\lmax^{\mathrm{pre}}$; $\beta_1=0$ lowers the threshold to about 2 (plain RMSProp) so that run should sit far lower in $\eta\lmax^{\mathrm{pre}}$; and larger batches reduce gradient noise and should push the run closer to the edge for longer. Cosine decay should let $\lmax^{\mathrm{pre}}$ grow as $\eta$ falls (the quantity $\eta\lmax^{\mathrm{pre}}$ is what the edge constrains, not $\lmax^{\mathrm{pre}}$ alone).
+
+%P3C_RESULTS%
+
 
 %=====================================================================
 \section{Inside the Hessian}
