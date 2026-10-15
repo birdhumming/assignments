@@ -311,9 +311,21 @@ After step 61 the trace follows the same U shape as $\lmax$ (minimum 422 at step
 
 
 \subsection*{(b) Moving $\lmax$ without moving the loss}
-%P4B%
+
+\paragraph{Setup.} Two ways to move $\lmax$ at the final checkpoint. The first is a reparameterization that cannot change the loss: for a RMSNorm gain $g$ feeding a linear layer $W$, the map $(g, W)\to(g/4,\,4W)$ leaves every logit unchanged, because the normalized activation is multiplied by $g$ and then by $W$. We verified on a small model in float64 that applying it to the attention input norms (feeding $q,k,v$), the MLP input norms (feeding gate and up), the final norm (feeding the head) or all three changes no logit (maximum $|\Delta\text{logit}|=0.0$). The second way is to retrain the d8 model with a recipe change that ends in a flatter or sharper place: a constant learning rate instead of linear decay (wsd0.0), a 20\% decay tail (wsd0.2), cosine decay, no weight decay, and a lower peak learning rate $1.5\times10^{-3}$.
+
+Prediction before measuring. Scaling a weight by 4 divides its gradient by 4 and its Hessian block by 16; scaling the gain by $1/4$ multiplies the gain's block by 16. The top eigenvector at the end is 94\% in the output head, so the head rescaling should move $\lmax$ by up to a factor of 16 in one direction or the other at exactly the same loss, and the attention and MLP rescalings should move it much less. For the retrained runs, the Problem~3 picture says $\lmax$ settles near $38/\eta_{\mathrm{final}}$ in preconditioned units, so the run that ends at the full learning rate (wsd0.0) should be the flattest and the run with the lowest peak learning rate the sharpest, while the final losses differ by the 0.01 to 0.17 seen in Problem~2.
+
+%P4B_RESULTS%
+
 
 \subsection*{(c) Projected updates}
-%P4C%
+
+\paragraph{Setup.} Start from the course SGD-with-momentum checkpoint and continue training with three update rules: the full gradient step, the step projected onto the top $k$ Hessian eigenvectors, and the step with that top subspace removed. The top eigenspace is recomputed every $r$ steps with a Lanczos solver, and at every refresh we log the fraction of the gradient's squared norm that lies in the top subspace.
+
+Prediction: the gradient fraction in the top subspace will be small (the Problem~4(a) overlap with the top eigenvector is below 0.03), so removing the top subspace should barely slow the loss, and keeping only the top subspace should make almost no progress and may oscillate. This is the Gur-Ari ``gradient descent happens in a tiny subspace'' claim, tested directly.
+
+%P4C_RESULTS%
+
 
 \end{document}
