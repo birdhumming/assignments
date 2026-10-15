@@ -9,11 +9,15 @@ from pathlib import Path
 
 from experiments.a3_optimization.p2_river_valley import (
     EXPERIMENT_KEY as P2_KEY,
+)
+from experiments.a3_optimization.p2_river_valley import (
     HORIZON_FREE_RUNS,
     REWARM_RUNS,
 )
 from experiments.a3_optimization.p3_edge_of_stability import (
     EXPLORATION_RUNS as P3_EXPLORE,
+)
+from experiments.a3_optimization.p3_edge_of_stability import (
     RUNS as P3_CORE,
 )
 from train import TrainConfig, training_run_name

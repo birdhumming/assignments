@@ -10,7 +10,8 @@ EMAS = ("0.9", "0.99", "0.999", "0.9999")
 def load_runs(tag="a3-river-valley"):
     out = []
     for path in glob.glob(os.path.join(DATA_DIR, "runs", "*.json")):
-        d = json.load(open(path))
+        with open(path) as f:
+            d = json.load(f)
         if tag not in d["tags"]:
             continue
         step, lr, train, val = 0, None, [], []
