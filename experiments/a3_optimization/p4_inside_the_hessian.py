@@ -154,7 +154,7 @@ def main():
     if args.stage == "b-train":
         from modal_train import launch_training_jobs
 
-        launch_training_jobs(RUNS)
+        launch_training_jobs(RUNS, max_parallel_runs=args.max_parallel)
     elif args.stage == "fetch":
         print(fetch([j["name"] for jobs in STAGES.values() for j in jobs]))
     else:
