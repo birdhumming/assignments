@@ -50,8 +50,14 @@ def load_all(configs, refresh=False):
             except Exception as e:  # noqa: BLE001 - unfinished or missing run
                 print(f"skip {label(config)}: {type(e).__name__}: {e}")
                 continue
-            cache[name] = {"rows": list(rows), "losses": list(getattr(rows, "losses", []))}
-        out[name] = cache[name]
+            entry = {"rows": list(rows), "losses": list(getattr(rows, "losses", []))}
+            if getattr(rows, "state", "finished") == "finished":
+                cache[name] = entry
+            else:
+                print(f"not caching {label(config)}: run is {rows.state}")
+            out[name] = entry
+        else:
+            out[name] = cache[name]
     CACHE.parent.mkdir(exist_ok=True)
     CACHE.write_text(json.dumps(cache))
     return out

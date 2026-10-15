@@ -39,7 +39,64 @@
 
 %=====================================================================
 \section{Mode connectivity}
-%P1%
+
+\subsection*{(a) Setup and what we measured}
+
+Train the d8 model (AdamW, peak learning rate $3\times10^{-3}$, constant after a 3\% warmup so the two branches see the same learning rate) for a shared prefix of $x$ steps, save the model and optimizer state, then fork two branches that differ only in the order of the training data (data seeds 1 and 2) and train each for $y$ more steps. For every $(x,y)$ cell we evaluate on the same 64 validation batches: both endpoints, the 0.5/0.5 weight average, the average of the two models' predicted probabilities (the ensemble), and the full interpolation curve at $\alpha\in\{0,0.25,0.5,0.75,1\}$. The barrier is $B(x,y)=L(\text{average})-\tfrac12\big(L(\theta_1)+L(\theta_2)\big)$. The handout's rule is that averaging ``works'' when $B\le0.01$.
+
+Prediction before running: a longer shared prefix should make averaging work, because the branches start in the same basin and a few hundred steps of different data order will not move them to another one. Branches from a random initialization ($x=0$) should fail once they have trained long enough to pick different internal coordinates.
+
+\subsection*{(b) Results}
+
+\begin{table}[H]\centering\small
+\caption{Midpoint barrier $B(x,y)$ in nats. Rows: shared prefix $x$ steps. Columns: branch length $y$ steps. Bold cells fail the $B\le0.01$ criterion; the $(50,250)$ cell passes by 0.003 and is marked with a dagger.}
+\begin{tabular}{r|rrrrr}\toprule
+$x\backslash y$ & 25 & 50 & 100 & 250 & 500\\\midrule
+0 & $-0.026$ & $-0.034$ & $-0.026$ & $\mathbf{+0.225}$ & $\mathbf{+0.590}$\\
+50 & $-0.106$ & $-0.094$ & $-0.081$ & $+0.007^\dagger$ & $\mathbf{+0.141}$\\
+100 & $-0.100$ & $-0.123$ & $-0.104$ & $-0.053$ & $\mathbf{+0.026}$\\
+250 & $-0.093$ & $-0.109$ & $-0.105$ & $-0.085$ & $-0.053$\\
+500 & $-0.076$ & $-0.095$ & $-0.093$ & $-0.093$ & $-0.078$\\
+1000 & $-0.060$ & $-0.076$ & $-0.084$ & $-0.086$ & $-0.086$\\\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]\centering\small
+\caption{Mean endpoint loss (left), gain of the weight average over the mean endpoint (middle) and gain of the prediction ensemble over the mean endpoint (right). Positive gain means better than either branch on average.}
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{r|rrrrr|rrrrr|rrrrr}\toprule
+ & \multicolumn{5}{c|}{endpoint mean} & \multicolumn{5}{c|}{average gain} & \multicolumn{5}{c}{ensemble gain}\\
+$x\backslash y$ & 25 & 50 & 100 & 250 & 500 & 25 & 50 & 100 & 250 & 500 & 25 & 50 & 100 & 250 & 500\\\midrule
+0 & 6.45 & 5.65 & 5.03 & 4.31 & 3.75 & .03 & .03 & .03 & $-$.23 & $-$.59 & .04 & .07 & .11 & .11 & .11\\
+50 & 5.28 & 5.06 & 4.70 & 4.15 & 3.71 & .11 & .09 & .08 & $-$.01 & $-$.14 & .09 & .10 & .11 & .11 & .10\\
+100 & 4.83 & 4.69 & 4.47 & 3.99 & 3.66 & .10 & .12 & .10 & .05 & $-$.03 & .09 & .11 & .11 & .11 & .10\\
+250 & 4.24 & 4.15 & 3.98 & 3.75 & 3.58 & .09 & .11 & .11 & .09 & .05 & .08 & .09 & .10 & .10 & .09\\
+500 & 3.72 & 3.71 & 3.66 & 3.58 & 3.49 & .08 & .10 & .09 & .09 & .08 & .07 & .08 & .08 & .09 & .08\\
+1000 & 3.48 & 3.48 & 3.46 & 3.43 & 3.38 & .06 & .08 & .08 & .09 & .09 & .06 & .07 & .07 & .08 & .08\\\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]\centering\includegraphics[width=\linewidth]{p1_barrier.png}
+\caption{Left: barrier $B(x,y)$ against prefix length, one line per branch length, dashed line at the 0.01 criterion (symmetric log scale). Right: interpolation curves for the longest branches ($y=500$).}\end{figure}
+
+Averaging works in 26 of 30 cells. It fails only when the prefix is short and the branches are long: $(0,250)$, $(0,500)$, $(50,500)$ and $(100,500)$. In the failing cells the midpoint is much worse than either endpoint, up to 0.59 nats at $(0,500)$, and the interpolation curve has a clear hump (right panel, blue). Every other curve in that panel is flat or sags in the middle.
+
+Two things stood out that the prediction did not cover.
+
+First, the barrier is negative almost everywhere, and by a lot: around $-0.1$. The weight average is not just connected to the endpoints, it is better than both of them. The reason is the constant learning rate. Each branch is still bouncing across the river valley at the end of its $y$ steps, and the two branches are at different points of their bounce because they saw different data. Their average sits lower in the valley than either one. This is exactly the parameter averaging effect from Problem~2(b), with two independent samples instead of a running EMA.
+
+Second, when averaging works, it is about as good as ensembling. At $x\ge250$ the average gain (0.05 to 0.11) matches or beats the ensemble gain (0.08 to 0.10) at one third of the inference cost. Ensembling never fails, because it only needs the two models to make different mistakes, not to live in the same basin; its gain is a steady 0.04 to 0.11 across the whole grid. Averaging needs the stronger condition and gives the larger reward when the condition holds.
+
+The budget that buys connectivity is small. At $x=250$ every branch length up to 500 passes, and the loss is still 3.5 to 4.2, far from converged. The first few hundred updates fix the coordinate system of the network: which neuron plays which role, which direction in the residual stream encodes what. Once that is fixed, data order changes the weights by amounts small enough that a straight line between the two branches stays in the valley. At $x=0$ the two branches pick their coordinate systems independently and the straight line between them passes through a model that is neither.
+
+\subsection*{(c) Ensemble versus average}
+
+The ensemble is better where averaging fails and no better where averaging works. In the failing $x=0$ column the ensemble gains 0.11 while the average loses 0.23 to 0.59. At $x\ge250$ both gain roughly 0.09. So the choice is: if you have a shared prefix, average the weights and pay for one model at inference; if you do not, ensemble.
+
+\subsection*{(d) Does the training recipe change the basin?}
+
+%P1D%
+
 
 %=====================================================================
 \section{River valley dynamics}
@@ -64,13 +121,76 @@ Decaying the learning rate is worth 0.13 to 0.24 nats at the end, far more than 
 The best reference for the rest of the problem is linear decay at $3\times10^{-3}$, loss 2.9269.
 
 \subsection*{(b) Parameter averaging}
-%P2B%
+
+We kept an exponential moving average (EMA) of the weights with decay 0.9, 0.99, 0.999 and 0.9999, updated every step and evaluated on the validation set alongside the raw weights. The EMA never fed back into training.
+
+\begin{table}[H]\centering\small
+\caption{Final validation loss of raw weights versus EMA weights, peak learning rate $3\times10^{-3}$.}
+\begin{tabular}{lccccc}\toprule
+Schedule & Raw & EMA 0.9 & EMA 0.99 & EMA 0.999 & EMA 0.9999\\\midrule
+Constant & 3.0987 & 3.0609 & 2.9973 & \textbf{2.9735} & 4.43\\
+Linear decay & \textbf{2.9269} & 2.9269 & 2.9271 & 2.9309 & 4.39\\
+wsd0.2 & \textbf{2.9362} & 2.9363 & 2.9364 & 2.9456 & 4.42\\\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]\centering\includegraphics[width=0.78\linewidth]{p2_ema.png}
+\caption{Validation loss of raw and EMA weights over training for the constant and linear schedules.}\end{figure}
+
+Averaging closes most of the gap but not all of it. EMA 0.999 on the constant run goes from 3.099 to 2.974, recovering 0.125 of the 0.172 gap to linear decay. The remaining 0.047 does not go away. On the decayed schedules the EMA gains nothing: EMA 0.99 is within 0.0002 of the raw weights and EMA 0.999 is 0.004 to 0.009 worse, because it still carries weights from before the decay finished. The decay already averaged out the bounce: a shrinking step size is itself a weighted average of recent iterates.
+
+The decay constant has to match the time scale of the bounce. EMA 0.99 averages the last roughly 100 steps, which is too short to cancel oscillations that span several hundred steps, so it recovers 0.10 of the 0.17 gap where EMA 0.999 recovers 0.125. EMA 0.9999 averages the last 10,000 steps out of 9,375, so it is still dominated by early, bad weights and lands near 4.
+
+Why does a gap remain? Averaging removes the bounce across the valley but does not move the iterate further along the river. A decayed learning rate does both: as the step shrinks, the iterate stops bouncing and also keeps descending along the valley floor with small, well aimed steps. The EMA can only report where the center of the bounce was.
+
 
 \subsection*{(c) Learning rate dip}
-%P2C%
+
+Prediction before running: the dip would lower the loss while the learning rate is small, and the gain would disappear once the learning rate returned to the plateau. The iterate drops to the river bed during the dip and gets kicked back up the valley walls afterward.
+
+Setup: wsd0.2 at peak $3\times10^{-3}$. The dip run scales the learning rate by 0.1 between 40\% and 50\% of training, then rewarms to the plateau and follows the same decay tail as the control.
+
+\begin{table}[H]\centering\small
+\caption{Dip versus control at the key points. Validation loss, same tokens, same seed.}
+\begin{tabular}{lccc}\toprule
+ & Bottom of dip (step 4229) & Plateau after rewarm & Final\\\midrule
+Control (wsd0.2) & 3.189 & reference & 2.9362\\
+Dip (0.1$\times$ over 40--50\%) & \textbf{3.066} & $+0.008$ to $+0.011$ & 2.9394\\\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]\centering\includegraphics[width=0.78\linewidth]{p2_dip.png}
+\caption{Learning rate and validation loss for the dip run and its control.}\end{figure}
+
+The prediction held. At the bottom of the dip the loss is 0.12 below the control, which is about the same size as the final gap between constant and decayed schedules in part (a). After rewarming, the dip run sits slightly above the control for the rest of the plateau and finishes 0.003 worse. The two numbers are within noise of each other, so the honest statement is that the dip gained nothing by the end.
+
+Intuition: the dip is a temporary decay. It shows where the river bed is but does not change where the iterate is along the river. When the learning rate returns to the peak, the iterate climbs the walls again and the ten percent of training spent at a small learning rate made less progress along the valley than the control did at full speed. The result is a slight deficit, not a gain. Lowering the learning rate helps only if you do not raise it again, which is why the decay tail belongs at the end.
+
 
 \subsection*{(d) Horizon-free schedules}
-%P2D%
+
+Two schedules that need no total budget: inverse square root decay after warmup, and cosine with warm restarts every 2000 steps (SGDR). Both at peak $3\times10^{-3}$, compared with the horizon aware linear decay from part (a).
+
+\begin{table}[H]\centering\small
+\caption{Horizon-free schedules against the budget aware baselines. Validation loss at 25\%, 50\% and 100\% of 614M tokens, plus the EMA 0.999 value at the end.}
+\begin{tabular}{lcccc}\toprule
+Schedule & 25\% & 50\% & Final raw & Final EMA 0.999\\\midrule
+Linear decay (knows the horizon) & 3.2619 & 3.1110 & \textbf{2.9269} & 2.9309\\
+Cosine decay (knows the horizon) & 3.2693 & 3.1029 & 2.9339 & 2.9370\\
+Inverse square root & \textbf{3.2538} & 3.1270 & 3.0243 & 2.9900\\
+Cosine warm restarts (2000 steps) & 3.3913 & 3.2274 & 3.0394 & 2.9925\\\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]\centering\includegraphics[width=0.78\linewidth]{p2_horizon_free.png}
+\caption{Learning rate and validation loss for the horizon-free schedules and the linear baseline.}\end{figure}
+
+Horizon-free schedules lose about 0.1 at the end (3.024 and 3.039 versus 2.927). Inverse square root is actually the best schedule at 25\% of training (3.254 against 3.262 for linear and 3.269 for cosine), because it has already decayed a little while the others are still near their peak. By 50\% it has fallen behind, and the gap grows through the decay tail. Warm restarts are worse at every checkpoint: each restart throws the iterate back up the valley walls, and the loss is measured right after a restart as often as right before one.
+
+An EMA recovers most of the loss. EMA 0.999 brings inverse square root to 2.990 and warm restarts to 2.993, which leaves 0.06 on the table against linear decay. That is the same pattern as part (b): averaging takes care of the bounce, the missing decay tail takes care of the final descent, and only the schedule can do the latter.
+
+The practical recipe when the horizon is unknown is inverse square root plus a weight EMA, and switch to a short linear tail the moment you learn when training will stop. The wsd0.2 result from part (a) says the tail only needs to be about 20\% of training to get within 0.01 of the best schedule.
+
 
 %=====================================================================
 \section{Edge of stability}
@@ -101,7 +221,27 @@ Halving $\eta$ at 750 halves $\eta\lmax$ to 1.3 at once, because $\lmax$ does no
 The final losses (1.23, 2.25, 0.33) are training loss on 32 memorized sequences and say nothing about generalization. They do show that after the curvature adapts, the doubled learning rate trains much faster.
 
 \subsection*{(b) Minibatch AdamW}
-%P3B%
+
+Prediction: Adam's preconditioned sharpness $\eta\lmax^{\mathrm{pre}}$ should also rise to its stability threshold, which for $\beta_1=0.9$ is about 38, and hover there.
+
+Setup: the d8 model with the usual AdamW recipe (batch 64, peak learning rate $3\times10^{-3}$, 3\% warmup, constant afterwards) for 0.32 epochs of its 614M-token budget, which is 3,000 updates. Every 25 to 300 updates we estimated $\lmax$ of the preconditioned Hessian $P^{-1/2}HP^{-1/2}$, with $P$ the current Adam second-moment estimate, on a fixed probe batch.
+
+\begin{table}[H]\centering\small
+\caption{Preconditioned sharpness $\eta\lmax^{\mathrm{pre}}$ of the minibatch AdamW run against the threshold 38.}
+\begin{tabular}{lcccccc}\toprule
+update & 16 & 32 & 48--208 & 500 & 1000 & 1526--2746 (median) & 2700 (last)\\\midrule
+$\eta\lmax^{\mathrm{pre}}$ & 1847 & 98 & 35--48 & 33.7 & 27.3 & 24.2 & 20.4\\
+top eigenvector: embedding / MLP / attention & 1.0 / 0 / 0 & .98 / 0 / .02 & .1 / .5 / .4 & .04 / .41 / .53 & .02 / .40 / .56 & & .04 / .43 / .48\\\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]\centering\includegraphics[width=\linewidth]{p3_minibatch.png}
+\caption{Left: $\eta\lmax^{\mathrm{pre}}$ on a log scale with the threshold at 38 (dashed). Right: training loss. The orange run is the $10^{-3}$ exploration run, still in progress at the time of writing.}\end{figure}
+
+The sharpness reaches the edge but does not stay there. During warmup (293 updates) $\eta\lmax^{\mathrm{pre}}$ is enormous (1847 at update 16, with the top eigenvector entirely in the embedding table, the same picture as the step-0 checkpoint in Problem~4) and then collapses onto the threshold: from update 48 to about 210 it oscillates between 35 and 48 around the line at 38, which is the Adam version of the edge of stability. At the same moment the top eigenvector moves out of the embedding and into the MLP and attention blocks, where it stays. After warmup ends and the learning rate is constant, it drifts down to 24 by the middle of the run and 20 at the end, well below the threshold, while the loss keeps falling smoothly.
+
+Why minibatch Adam behaves differently from full-batch gradient descent. Full-batch gradient descent has nothing but the curvature to stop it, so it keeps sharpening until it hits the wall. Minibatch training adds gradient noise, and noise on a sharp direction is amplified by the curvature, so the optimizer is pushed off sharp regions before it reaches the deterministic threshold. The gap between 20 and 38 is how much room the noise claims. Adam adds a second effect: the preconditioner $P$ tracks the gradient variance, which grows in exactly the directions that are sharp, so the preconditioned Hessian is flattened as training goes on. Both effects say that for a realistic language model run the stability threshold is a ceiling you touch during warmup, not a line you ride.
+
 
 \subsection*{(c) Exploration}
 %P3C%
@@ -145,7 +285,30 @@ From step 153 on, the top eigenvector lives in the output head (93 to 97\% of it
 
 The gradient is nearly orthogonal to the top eigenvector after step 153 (overlap below 0.03). Progress happens in directions of low curvature; the sharp direction is where the iterate oscillates, not where it moves.
 
-%P4A_TRACE%
+
+\paragraph{Trace and normalized sharpness.} We also estimated $\operatorname{tr}(H)$ and $\operatorname{tr}(H^2)$ with 16 Hutchinson probes per checkpoint ($d=34.6$M parameters).
+
+\begin{table}[H]\centering\small
+\caption{Hutchinson estimates. $\operatorname{tr}(H)/d$ is the mean eigenvalue (standard error in parentheses, from the 16 probes). Normalized sharpness is $\lmax/(\operatorname{tr}(H)/d)$. The participation ratio $\operatorname{tr}(H)^2/(d\,\operatorname{tr}(H^2))$ is the fraction of directions that carry curvature; times $d$ it is an effective number of curved directions.}
+\begin{tabular}{rrrrrrr}\toprule
+Step & $\operatorname{tr}(H)/d$ & $\operatorname{tr}(H)$ & $\operatorname{tr}(H^2)/d$ & $\lmax$ & $\lmax/(\operatorname{tr}H/d)$ & effective directions\\\midrule
+0 & $-4.2\times10^{-4}$ (1.4e-4) & $-14{,}600$ & 8.2 & 1431 & --- & 0.8\\
+3 & $3.8\times10^{-3}$ (1.4e-4) & 132,000 & 4.4 & 1572 & $4.1\times10^{5}$ & 115\\
+15 & $6.2\times10^{-4}$ (1.8e-6) & 21,300 & $3.9\times10^{-3}$ & 53.4 & $8.7\times10^{4}$ & 3,400\\
+61 & $1.0\times10^{-4}$ (9.7e-7) & 3,510 & $2.0\times10^{-4}$ & 18.1 & $1.8\times10^{5}$ & 1,800\\
+153 & $3.0\times10^{-5}$ (2.0e-7) & 1,052 & $1.1\times10^{-5}$ & 6.50 & $2.1\times10^{5}$ & 2,900\\
+763 & $1.5\times10^{-5}$ (5.0e-8) & 509 & $1.6\times10^{-6}$ & 3.02 & $2.1\times10^{5}$ & 4,700\\
+1526 & $1.2\times10^{-5}$ (5.2e-8) & 422 & $1.0\times10^{-6}$ & 2.20 & $1.8\times10^{5}$ & 4,900\\
+3052 & $1.3\times10^{-5}$ (5.3e-8) & 440 & $1.4\times10^{-6}$ & 3.16 & $2.5\times10^{5}$ & 4,000\\
+6104 & $1.8\times10^{-5}$ (6.6e-8) & 632 & $2.8\times10^{-6}$ & 4.16 & $2.3\times10^{5}$ & 4,100\\
+9375 & $2.7\times10^{-5}$ (9.4e-8) & 947 & $6.1\times10^{-6}$ & 5.97 & $2.2\times10^{5}$ & 4,300\\\bottomrule
+\end{tabular}
+\end{table}
+
+At initialization the trace is negative: on average the loss curves down, not up, and the effective number of curved directions is below one, meaning a single embedding direction holds essentially all of $\operatorname{tr}(H^2)$. Three steps later the trace is $+132{,}000$, the largest value in the run, as the embedding block briefly becomes extremely sharp before AdamW flattens it.
+
+After step 61 the trace follows the same U shape as $\lmax$ (minimum 422 at step 1526, back to 947 at the end), and the ratio $\lmax/(\operatorname{tr}H/d)$ stays between $1.8\times10^{5}$ and $2.5\times10^{5}$. The top eigenvalue is about 200,000 times the mean eigenvalue and that ratio hardly moves, so the spectrum shrinks and regrows as a whole rather than a few outliers growing on their own. The number of effective curved directions is about 4,000 to 5,000 out of 34.6 million for the whole second half of training. The Hessian is extremely low rank: the loss is curved in roughly one direction in ten thousand and flat everywhere else, which is why the projected updates of part (c) are an interesting experiment.
+
 
 \subsection*{(b) Moving $\lmax$ without moving the loss}
 %P4B%

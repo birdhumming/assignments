@@ -23,6 +23,7 @@ THRESHOLDS = {"raw": 2.0, "pre": 38.0}
 
 class History(list):
     losses: list  # (update, training loss) at every update
+    state: str  # wandb run state ("finished", "running", ...)
 
 
 def history(config):
@@ -49,6 +50,7 @@ def history(config):
     for row in out:
         row["train_loss"] = losses.get(row["step"])
     out.losses = sorted(losses.items())
+    out.state = run.state
     return out
 
 
