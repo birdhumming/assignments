@@ -63,3 +63,5 @@ are in course-shipped files (unchanged).
 - Family-pair energy (step 7630): off-diagonal share 0.256; largest couplings attention-mlp (0.63) and embedding-attention/mlp (~0.39);
   head couples weakly to everything (<0.18).
 - Runtime: 13.5 min per checkpoint, 27 min with density; 13 jobs = ~3.3 GPU-h.
+- Step 9375 (final, 13/13 at 13:50 UTC): lambda_max 5.97 (2.7x the step-1526 minimum), lambda_min -0.08, head 94% of top eigenvector,
+  grad overlap -0.002. P4(a) total 3.3 GPU-h. Trace stage (Hutchinson) still to run.
