@@ -65,3 +65,13 @@ are in course-shipped files (unchanged).
 - Runtime: 13.5 min per checkpoint, 27 min with density; 13 jobs = ~3.3 GPU-h.
 - Step 9375 (final, 13/13 at 13:50 UTC): lambda_max 5.97 (2.7x the step-1526 minimum), lambda_min -0.08, head 94% of top eigenvector,
   grad overlap -0.002. P4(a) total 3.3 GPU-h. Trace stage (Hutchinson) still to run.
+
+## P4(b) rescaling check (13:58 UTC Oct 15)
+Verified on a tiny model in float64: gain / 4 with the fed linears * 4 (attention input norm -> q,k,v;
+MLP input norm -> gate,up; final norm -> lm_head; and all three together) changes no logit (max |delta| = 0.0).
+So any lambda_max change from b-rescale jobs is purely a reparameterization at identical loss.
+
+## Launch log
+- 13:37 p3_core (4 runs, parallel 1): full-batch run ~14 min each (sharpness every 25 updates, ~0.9 s/update), eta*lambda = 2.36 at update 1349.
+- 13:51 P1 prefix (1000 steps, done 13:55); 13:56 P1 branches (12 runs, parallel 1).
+- Queue: P1 measure -> P4 trace -> P4 b-rescale -> P4 b-train -> P3 explore -> P4 c -> P1(d) variants -> P2 wave 2.
