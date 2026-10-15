@@ -45,15 +45,53 @@ LOOK_JOBS = [
 # eigenvalue of each named tensor's own block, with its RMS and gradient norm.
 FINAL = {"extremes": True, "families": True}
 
+LAYERS = range(8)
+NORM_SCALE = 0.25  # gain / c and the linear it feeds * c leaves every logit unchanged
+
+
+def _rescale(label, pairs, tensors):
+    """pairs: (norm gain name, linear names fed by that gain) per layer template."""
+    scale = {}
+    for gain, linears in pairs:
+        for layer in LAYERS:
+            scale[gain.format(layer)] = NORM_SCALE
+            for lin in linears:
+                scale[lin.format(layer)] = 1 / NORM_SCALE
+    return {"name": f"b-rescale-{label}",
+            "measure": {"run": "adamw", "step": FINAL_STEP, **FINAL, "scale": scale,
+                        "tensors": [t.format(0) for t in tensors]}}
+
+
+ATTN_IN = ("model.layers.{}.input_layernorm.weight",
+           tuple(f"model.layers.{{}}.self_attn.{p}_proj.weight" for p in "qkv"))
+MLP_IN = ("model.layers.{}.post_attention_layernorm.weight",
+          ("model.layers.{}.mlp.gate_proj.weight", "model.layers.{}.mlp.up_proj.weight"))
+HEAD_IN = ("model.norm.weight", ("lm_head.weight",))
+WATCH = ("model.layers.{}.input_layernorm.weight", "model.layers.{}.self_attn.q_proj.weight",
+         "model.layers.{}.self_attn.v_proj.weight", "model.layers.{}.post_attention_layernorm.weight",
+         "model.layers.{}.mlp.up_proj.weight", "model.norm.weight", "lm_head.weight")
 RESCALE_JOBS = [
     {"name": "b-rescale-reference",
-     "measure": {"run": "adamw", "step": FINAL_STEP, **FINAL, "tensors": []}},
+     "measure": {"run": "adamw", "step": FINAL_STEP, **FINAL, "tensors": [t.format(0) for t in WATCH]}},
+    _rescale("attn-norm", [ATTN_IN], WATCH),
+    _rescale("mlp-norm", [MLP_IN], WATCH),
+    _rescale("head-norm", [(HEAD_IN[0].replace("{}", ""), HEAD_IN[1])], WATCH),
+    _rescale("all-norms", [ATTN_IN, MLP_IN, (HEAD_IN[0], HEAD_IN[1])], WATCH),
+    # QK-norm makes the scale of q_proj irrelevant on its own: only the linear moves.
+    {"name": "b-rescale-qproj-only",
+     "measure": {"run": "adamw", "step": FINAL_STEP, **FINAL,
+                 "scale": {f"model.layers.{l}.self_attn.q_proj.weight": 4.0 for l in LAYERS},
+                 "tensors": [t.format(0) for t in WATCH]}},
 ]
 
 # Part (b): training changes. A run takes about 11 minutes on an H200 (a little more on
 # an H100); measuring its final checkpoint about 12.
 RUNS = [
-    # TrainConfig(<setting>=<value>, wandb_tags=(EXPERIMENT_KEY,)),
+    TrainConfig(lr_schedule="wsd0.0", wandb_tags=(EXPERIMENT_KEY,)),  # ends at full LR: flatter
+    TrainConfig(lr_schedule="wsd0.2", wandb_tags=(EXPERIMENT_KEY,)),
+    TrainConfig(lr_schedule="cos", wandb_tags=(EXPERIMENT_KEY,)),
+    TrainConfig(weight_decay=0.0, wandb_tags=(EXPERIMENT_KEY,)),  # gains grow, linears flatten
+    TrainConfig(learning_rate=1.5e-3, wandb_tags=(EXPERIMENT_KEY,)),  # 38/eta: sharper
 ]
 
 FINAL_JOBS = [
@@ -71,6 +109,14 @@ START = {"run": "sgdm", "step": 1526, "k": 10, "steps": 300, "refresh": 25,
 SUBSPACE_JOBS = [
     {"name": f"c-{arm}", "continue": {**START, "transform": arm}}
     for arm in ("full", "top", "removed")
+] + [
+    {"name": "c-removed-k50", "continue": {**START, "transform": "removed", "k": 50}},
+    {"name": "c-top-k50", "continue": {**START, "transform": "top", "k": 50}},
+    {"name": "c-removed-lr0.3", "continue": {**START, "transform": "removed", "lr_scale": 0.3}},
+    {"name": "c-full-lr0.3", "continue": {**START, "transform": "full", "lr_scale": 0.3}},
+    {"name": "c-removed-refresh5", "continue": {**START, "transform": "removed", "refresh": 5}},
+    {"name": "c-removed-step305", "continue": {**START, "transform": "removed", "step": 305}},
+    {"name": "c-full-step305", "continue": {**START, "transform": "full", "step": 305}},
 ]
 
 

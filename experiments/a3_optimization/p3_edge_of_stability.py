@@ -77,6 +77,8 @@ def minibatch(batch_size=64, **changes):
 # Part (a): full-batch training.
 FULL_BATCH_RUNS = [
     full_batch(32, 1500, learning_rate=0.01),  # (a) i: the clean case
+    full_batch(32, 1500, learning_rate=0.01, lr_schedule="step750x0.5"),  # (a) ii: halve
+    full_batch(32, 1500, learning_rate=0.01, lr_schedule="step750x2"),  # (a) ii: double
 ]
 
 # Part (b): minibatch training.
@@ -85,6 +87,28 @@ MINIBATCH_RUNS = [
 ]
 
 RUNS = FULL_BATCH_RUNS + MINIBATCH_RUNS
+
+# Part (c): one knob per run against minibatch(); the first ten are the trimmed set.
+EXPLORATION_RUNS = [
+    minibatch(learning_rate=1e-3),
+    minibatch(learning_rate=1e-2),
+    minibatch(batch_size=16),
+    minibatch(batch_size=256),
+    minibatch(beta1=0.0),
+    minibatch(beta1=0.98),
+    minibatch(weight_decay=0.0),
+    minibatch(warmup_percent=0.125),
+    minibatch(lr_schedule="linear"),
+    minibatch(embedding_init_scale=16.0),
+    minibatch(grad_norm=None),
+    minibatch(qk_norm=False),
+    minibatch(weight_decay=0.3),
+    minibatch(learning_rate=6e-3),
+    full_batch(128, 1500, learning_rate=0.01),
+    full_batch(32, 1500, learning_rate=0.02),
+    full_batch(32, 1500, learning_rate=0.005),
+    full_batch(32, 1500, optimizer_name="adamw", learning_rate=1e-3),
+]
 
 
 # TODO: Part (a) ii: halve and double the learning rate mid-run

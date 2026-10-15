@@ -12,6 +12,10 @@ from experiments.a3_optimization.p2_river_valley import (
     HORIZON_FREE_RUNS,
     REWARM_RUNS,
 )
+from experiments.a3_optimization.p3_edge_of_stability import (
+    EXPLORATION_RUNS as P3_EXPLORE,
+    RUNS as P3_CORE,
+)
 from train import TrainConfig, training_run_name
 
 MANIFEST_DIR = Path(__file__).resolve().parent / "manifests"
@@ -30,12 +34,13 @@ def p2_schedule(lr_schedule, learning_rate):
 P2_WAVE1 = ([p2_schedule(s, lr) for lr in PEAK_LRS for s in SCHEDULES]
             + [replace(c, ema_decays=EMA_DECAYS) for c in REWARM_RUNS + HORIZON_FREE_RUNS])
 
-WAVES = {"p2_wave1": P2_WAVE1}
+WAVES = {"p2_wave1": P2_WAVE1, "p3_core": P3_CORE,
+         "p3_explore_trimmed": P3_EXPLORE[:10], "p3_explore_rest": P3_EXPLORE[10:]}
 
 
 def estimated_minutes(config):
-    tokens = config.num_epochs * 600_000 * 1024
-    steps_scale = 64 / config.batch_size
+    tokens = config.num_epochs * config.num_train_sequences * 1024
+    steps_scale = 64 / config.batch_size if config.num_train_sequences >= 600_000 else 1.0
     if config.stop_at_step is not None:
         tokens = min(tokens, config.stop_at_step * config.batch_size * 1024)
     return D8_MINUTES * tokens / (600_000 * 1024) * max(1.0, steps_scale ** 0.5)
