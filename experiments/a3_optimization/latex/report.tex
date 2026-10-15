@@ -322,7 +322,29 @@ After step 61 the trace follows the same U shape as $\lmax$ (minimum 422 at step
 
 Prediction before measuring. Scaling a weight by 4 divides its gradient by 4 and its Hessian block by 16; scaling the gain by $1/4$ multiplies the gain's block by 16. The top eigenvector at the end is 94\% in the output head, so the head rescaling should move $\lmax$ by up to a factor of 16 in one direction or the other at exactly the same loss, and the attention and MLP rescalings should move it much less. For the retrained runs, the Problem~3 picture says $\lmax$ settles near $38/\eta_{\mathrm{final}}$ in preconditioned units, so the run that ends at the full learning rate (wsd0.0) should be the flattest and the run with the lowest peak learning rate the sharpest, while the final losses differ by the 0.01 to 0.17 seen in Problem~2.
 
-%P4B_RESULTS%
+
+\paragraph{Result: the reparameterization.} The loss did not move at all and $\lmax$ moved by at most 31\%.
+
+\begin{table}[H]\centering\small
+\caption{Loss-invariant rescaling of the final AdamW checkpoint (gain $\times 1/4$, linear $\times 4$). Probe loss on a fixed 64-sequence batch; top eigenvector composition by family; $\lmax$ of the diagonal block of the single tensor named.}
+\begin{tabular}{lcccccc}\toprule
+rescaled pair & probe loss & $\|\nabla L\|$ & $\lmax$ & top eigvec. & \texttt{lm\_head} block & final-norm block\\\midrule
+none (reference) & 2.9474 & 0.130 & 5.97 & 94\% head & 5.64 & 0.30\\
+attention norms $\to q,k,v$ & 2.9474 & 0.120 & 5.88 & 96\% head & 5.64 & 0.30\\
+MLP norms $\to$ gate, up & 2.9474 & 0.123 & 6.46 & 75\% head, 21\% norm & 5.64 & 0.30\\
+final norm $\to$ head & 2.9474 & 0.106 & 5.51 & 89\% norm & 0.35 & 4.79\\
+all three & 2.9474 & 0.084 & 7.82 & 97\% norm & 0.35 & 4.79\\
+$q$ projection alone & 2.9474 & 0.128 & 5.97 & 94\% head & 5.64 & 0.30\\
+\bottomrule\end{tabular}\end{table}
+
+The head prediction was half right. Multiplying \texttt{lm\_head} by 4 did divide its block's curvature by 16 (5.64 to 0.35), exactly as the algebra says. But the gain it is paired with was divided by 4, so the final-norm block's curvature went up by 16 (0.30 to 4.79) and became the new top direction. The overall $\lmax$ only fell from 5.97 to 5.51, and the top eigenvector flipped from 94\% head to 89\% final norm. Rescaling all three pairs stacked the same effect and made the model sharper (7.82). Scaling $q$ alone did nothing because QK-norm removes the scale of $q$ before it matters, so that direction is flat to begin with.
+
+This is the honest answer to ``can you move $\lmax$ without moving the loss'': yes, by any factor you like, because $\lmax$ is a property of the coordinates and not of the function. Curvature is pushed from one side of a scale symmetry to the other. The gradient norm changes too (0.130 to 0.084), so neither $\lmax$ nor $\|\nabla L\|$ is a coordinate-free diagnostic; only ratios that the optimizer actually sees, such as Adam's preconditioned sharpness, survive this.
+
+Scale 4 overshoots. Balancing the two blocks needs $5.64/s^2 = 0.30\,s^2$, so $s\approx 2$ should give $\lmax\approx 1.4$ at the same loss, a 4$\times$ drop. %P4B_S2%
+
+%P4B_TRAIN%
+
 
 
 \subsection*{(c) Projected updates}
