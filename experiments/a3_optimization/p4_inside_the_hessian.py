@@ -140,6 +140,7 @@ def main():
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("stage", choices=(*STAGES, "b-train", "fetch"))
     parser.add_argument("--local", action="store_true", help="run on this machine's GPU")
+    parser.add_argument("--max-parallel", type=int, default=2, help="course cap: 2 GPUs")
     args = parser.parse_args()
     if args.stage == "b-train":
         from modal_train import launch_training_jobs
@@ -148,7 +149,7 @@ def main():
     elif args.stage == "fetch":
         print(fetch([j["name"] for jobs in STAGES.values() for j in jobs]))
     else:
-        launch(STAGES[args.stage], local=args.local)
+        launch(STAGES[args.stage], local=args.local, max_parallel=args.max_parallel)
 
 
 if __name__ == "__main__":
