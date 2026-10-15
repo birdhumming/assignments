@@ -48,3 +48,18 @@ core 0.1 h, explore_trimmed 0.7 h, explore_rest 0.4 h, before sharpness-measurem
 Revised total if everything else holds: Full ~20 GPU-h.
 A3 tests after P3/P4 edits: 34 OK (1 skipped). Ruff: own analysis files clean; 18 remaining findings
 are in course-shipped files (unchanged).
+
+## P4(a) results (12/13 at 13:40 UTC Oct 15; step 9375 pending)
+- lambda_max: 1431 (step 0) -> 1572 (3) -> 53 (15) -> 18 (61) -> 6.5 (153) -> 4.3 (305) -> 3.0 (763) -> 2.2 (1526, minimum)
+  -> 3.2 (3052) -> 3.7 -> 4.2 -> 5.3 (7630). Sharpness falls 650x in the first 1.5% of training, then RISES 2.4x
+  during the linear-decay phase as the learning rate shrinks (the step the optimizer can tolerate grows as eta falls).
+- lambda_min: -1410 at init (|min|/max 0.985: init is a saddle, as negative as positive) -> -602 (3) -> -17 (15)
+  -> below -0.1 from step 305 on; |min|/max < 0.03 after step 153. Negative curvature is gone early.
+- Top eigenvector: 99% embedding at steps 0-3, 71-88% embedding at 15-61, then 93-97% head from step 153 on.
+  Embedding block lambda_max 1414 -> 0.016 (collapses by 10^5); head block 0.1 -> 17 (step 15) -> 2-5 and is the
+  top block from step 153 to the end. Attention/MLP blocks grow 0.3 -> 1.0 / 0.1 -> 0.5 over the decay phase.
+- Top-5/top-1 ratio 0.82 at init -> 0.40-0.52 later: one outlier direction dominates late.
+- Gradient overlap with top eigenvector: +2.19 at step 3, |overlap| < 0.03 after step 153 (gradient lives off the top direction).
+- Family-pair energy (step 7630): off-diagonal share 0.256; largest couplings attention-mlp (0.63) and embedding-attention/mlp (~0.39);
+  head couples weakly to everything (<0.18).
+- Runtime: 13.5 min per checkpoint, 27 min with density; 13 jobs = ~3.3 GPU-h.
