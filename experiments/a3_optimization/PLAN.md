@@ -1,6 +1,8 @@
 # A3 run plan (max 2 H100s; d8 614M run ~11.5 min; Hessian hvp ~2 s)
 
-Status log (UTC): 2026-10-15 09:35 P2 wave 1 launched (15 runs, app ap-oemKixNr9ofTTvEDz3MP10). Scope decision pending: Full ~28 h / Trimmed ~23 h / Lean ~18 h.
+Calibration: d8 614M run with 4 EMAs = 16.5 min on H100 (val every ~94 steps); P3 minibatch run ~ 4 min train + ~32 sharpness probes x (10-16 hvps).
+
+Status log (UTC): 2026-10-15 09:35 P2 wave 1 launched (15 runs, app ap-oemKixNr9ofTTvEDz3MP10). 10:08 first 4 schedule runs finished (lr 3e-3): linear 2.927, cos 2.934, wsd0.2 2.936, constant 3.099. Scope decision pending: Full ~28 h / Trimmed ~23 h / Lean ~18 h.
 
 Order: P2 wave1 (running) -> P4 a (13 ckpts + 4 densities, pass max_parallel=2) -> P3 (a: 3 full-batch, b: 1 minibatch) -> P1 starter grid (prefix -> branches -> measure) -> P3 c exploration -> P4 b-rescale, b-train, c -> P2 wave2 (dip depth/duration + control, budget-tuned baselines) -> P1 d knobs.
 
