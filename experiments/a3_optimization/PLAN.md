@@ -94,3 +94,9 @@ So any lambda_max change from b-rescale jobs is purely a reparameterization at i
   ratio barely moves, so the whole spectrum shrinks and regrows together.
 - Participation ratio tr(H)^2 / (d tr(H^2)) = 1.1e-4 to 1.4e-4 after step 300, i.e. ~4,000-5,000 of the 34.6M directions
   carry the curvature. At init it is 2e-8 (a handful of directions in the embedding).
+
+## P3(b) minibatch AdamW reference (14:45 UTC Oct 15; lr 3e-3, bs 64, 3000 updates, warmup 293)
+- eta*lambda_pre: 1847 at update 16 (top eigvec 100% embedding), 98 at 32, then 35-48 from update 48 to 208 (oscillating around
+  the threshold 38; top eigvec now ~50% MLP / 40% attention), then drifts down: 33.7 @500, 27.3 @1000, median 24.2 over
+  100-180M tokens, 20.4 at the last probe (update 2700). Touches the edge during warmup, then sits below it. Final train loss 3.24.
+- Cache bug fixed: p3_tables cached a running run's partial history; now only finished runs are cached.
