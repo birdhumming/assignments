@@ -34,7 +34,29 @@ def p2_schedule(lr_schedule, learning_rate):
 P2_WAVE1 = ([p2_schedule(s, lr) for lr in PEAK_LRS for s in SCHEDULES]
             + [replace(c, ema_decays=EMA_DECAYS) for c in REWARM_RUNS + HORIZON_FREE_RUNS])
 
-WAVES = {"p2_wave1": P2_WAVE1, "p3_core": P3_CORE,
+def p2_dip(dip, learning_rate=3e-3):
+    return TrainConfig(lr_schedule="wsd0.2", learning_rate=learning_rate, lr_dip=dip,
+                       ema_decays=EMA_DECAYS, wandb_tags=(P2_KEY,))
+
+
+def p2_budget(num_epochs, lr_schedule="cos", learning_rate=3e-3):
+    return TrainConfig(lr_schedule=lr_schedule, learning_rate=learning_rate, num_epochs=num_epochs,
+                       ema_decays=EMA_DECAYS, wandb_tags=(P2_KEY,))
+
+
+# Dip depth / width / timing on wsd0.2 at the best peak LR, plus horizon-matched baselines
+# (cos tuned to 25% and 50% of the tokens) to score the horizon-free schedules.
+P2_WAVE2 = [
+    p2_dip((0.4, 0.45, 0.5, 0.3)),
+    p2_dip((0.4, 0.45, 0.5, 0.01)),
+    p2_dip((0.4, 0.5, 0.6, 0.1)),
+    p2_dip((0.2, 0.25, 0.3, 0.1)),
+    p2_dip((0.6, 0.65, 0.7, 0.1)),
+    p2_budget(0.25),
+    p2_budget(0.5),
+]
+
+WAVES = {"p2_wave1": P2_WAVE1, "p2_wave2": P2_WAVE2, "p3_core": P3_CORE,
          "p3_explore_trimmed": P3_EXPLORE[:10], "p3_explore_rest": P3_EXPLORE[10:]}
 
 
