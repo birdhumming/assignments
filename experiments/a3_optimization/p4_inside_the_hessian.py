@@ -40,6 +40,15 @@ LOOK_JOBS = [
     for step in CHECKPOINTS
 ]
 
+# Trace / normalized sharpness for every checkpoint: Hutchinson tr(H)/d and tr(H^2)/d only
+# (about 2 H100-minutes each). Launched as stage "trace" after stage "a".
+TRACE_JOBS = [
+    {"name": f"a-trace-{step}",
+     "measure": {"run": "adamw", "step": step, "extremes": False, "families": False,
+                 "hutchinson_probes": 16}}
+    for step in CHECKPOINTS
+]
+
 # Part (b): hand rescaling of the shipped final checkpoint (no training). `scale`
 # multiplies named parameters by constants before measuring; `tensors` reports the top
 # eigenvalue of each named tensor's own block, with its RMS and gradient norm.
@@ -132,7 +141,7 @@ SUBSPACE_JOBS = [
 # Options: k, refresh, steps, lr_scale (multiplies the run's schedule), reset_momentum,
 # and the starting step (any of STEPS; the run has optimizer state at each).
 
-STAGES = {"a": LOOK_JOBS, "b-rescale": RESCALE_JOBS, "b-measure": FINAL_JOBS, "c": SUBSPACE_JOBS}
+STAGES = {"a": LOOK_JOBS, "b-rescale": RESCALE_JOBS, "b-measure": FINAL_JOBS, "c": SUBSPACE_JOBS, "trace": TRACE_JOBS}
 
 
 def main():
