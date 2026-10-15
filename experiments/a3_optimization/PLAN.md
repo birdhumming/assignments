@@ -6,6 +6,12 @@ Status log (UTC): 2026-10-15 09:35 P2 wave 1 launched (15 runs, app ap-oemKixNr9
 
 Order: P2 wave1 (running) -> P4 a (13 ckpts + 4 densities, pass max_parallel=2) -> P3 (a: 3 full-batch, b: 1 minibatch) -> P1 starter grid (prefix -> branches -> measure) -> P3 c exploration -> P4 b-rescale, b-train, c -> P2 wave2 (dip depth/duration + control, budget-tuned baselines) -> P1 d knobs.
 
+## P2 wave 1 findings (15/15 finished 11:44)
+- Final val by schedule x peak LR (1.5e-3 / 3e-3 / 6e-3): linear 2.9475 / 2.9269 / 2.9395; cos 2.9553 / 2.9339 / 2.9448; wsd0.2 2.9372 / 2.9362 / 2.9679; constant 3.0609 / 3.0987 / 3.1839. Reference = linear 3e-3 (2.9269).
+- EMA: decay 0.999 is best for constant-LR runs and recovers 0.10-0.16 of the gap (constant 3e-3: 3.0987 -> 2.9735, still 0.047 behind linear). Decayed schedules gain nothing (<0.001): the schedule already did the averaging. 0.9999 is far too slow (4.0+).
+- Dip (wsd0.2, LR x0.1 over 40-50%): val drops 0.12 below control at the bottom (3.066 vs 3.189 at step 4229), then after rewarming sits 0.008-0.011 ABOVE control for the rest of the plateau and finishes 0.003 worse (2.9394 vs 2.9362). The gain does not survive; EMA0.99 shows the same crossover.
+- Horizon-free at 3e-3: invsqrt 3.0243 final (EMA0.999 2.9900), sgdr2000 3.0394 (EMA0.999 2.9925) vs linear 2.9269; at 25%/50% invsqrt is close to or better than cos (3.2538/3.1270 vs 3.2693/3.1029).
+
 ## P2 wave 2 (after wave 1 is read)
 - Reference = best final val among the 12 schedule x LR runs. Regret curves vs it.
 - Dips on wsd0.2 at the best LR: (0.4,0.45,0.5,0.1) [wave1], (0.4,0.45,0.5,0.3), (0.4,0.5,0.6,0.1), (0.2,0.25,0.3,0.1), (0.6,0.65,0.7,0.1). Control = plain wsd0.2 (same cooldown).
