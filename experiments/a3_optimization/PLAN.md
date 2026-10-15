@@ -39,3 +39,12 @@ Order: P2 wave1 (running) -> P4 a (13 ckpts + 4 densities, pass max_parallel=2) 
 - Step 3 (2M tokens): lambda_max 1572, lambda_min -602 (ratio 0.38), top eigenvector 98% embedding;
   family lambda_max: embedding 1554, attention 11.0, mlp 10.4, head 1.39, norm 0.022, qk_norm 0.008.
   Early curvature is all in the embedding table.
+
+## P3 cost correction (12:30 UTC Oct 15)
+The 10.5 GPU-h P3 estimate assumed 614M-token runs. Actual configs: full-batch runs are 1,500 updates
+of 32 sequences (49M tokens) and the minibatch runs are 0.32 epochs (196M tokens). Manifest estimates:
+core 0.1 h, explore_trimmed 0.7 h, explore_rest 0.4 h, before sharpness-measurement overhead
+(Lanczos on the probe every `every` updates). Plan: run all 22 P3 runs; calibrate overhead on p3_core.
+Revised total if everything else holds: Full ~20 GPU-h.
+A3 tests after P3/P4 edits: 34 OK (1 skipped). Ruff: own analysis files clean; 18 remaining findings
+are in course-shipped files (unchanged).
