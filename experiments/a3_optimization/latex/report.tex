@@ -135,7 +135,7 @@ wsd0.2 & \textbf{2.9362} & 2.9363 & 2.9364 & 2.9456 & 4.42\\\bottomrule
 \end{table}
 
 \begin{figure}[H]\centering\includegraphics[width=0.78\linewidth]{p2_ema.png}
-\caption{Validation loss of raw and EMA weights over training for the constant and linear schedules.}\end{figure}
+\caption{Final validation loss of the EMA weights as a function of the EMA decay, one line per run (raw weights at the left). The 0.9999 values are off scale above 4.}\end{figure}
 
 Averaging closes most of the gap but not all of it. EMA 0.999 on the constant run goes from 3.099 to 2.974, recovering 0.125 of the 0.172 gap to linear decay. The remaining 0.047 does not go away. On the decayed schedules the EMA gains nothing: EMA 0.99 is within 0.0002 of the raw weights and EMA 0.999 is 0.004 to 0.009 worse, because it still carries weights from before the decay finished. The decay already averaged out the bounce: a shrinking step size is itself a weighted average of recent iterates.
 
@@ -228,10 +228,10 @@ Setup: the d8 model with the usual AdamW recipe (batch 64, peak learning rate $3
 
 \begin{table}[H]\centering\small
 \caption{Preconditioned sharpness $\eta\lmax^{\mathrm{pre}}$ of the minibatch AdamW run against the threshold 38.}
-\begin{tabular}{lcccccc}\toprule
-update & 16 & 32 & 48--208 & 500 & 1000 & 1526--2746 (median) & 2700 (last)\\\midrule
+\setlength{\tabcolsep}{4pt}\footnotesize\begin{tabular}{lccccccc}\toprule
+update & 16 & 32 & 48--208 & 500 & 1000 & median 1526--2746 & 2700 (last)\\\midrule
 $\eta\lmax^{\mathrm{pre}}$ & 1847 & 98 & 35--48 & 33.7 & 27.3 & 24.2 & 20.4\\
-top eigenvector: embedding / MLP / attention & 1.0 / 0 / 0 & .98 / 0 / .02 & .1 / .5 / .4 & .04 / .41 / .53 & .02 / .40 / .56 & & .04 / .43 / .48\\\bottomrule
+top eigvec. emb./MLP/attn. & 1.0/0/0 & .98/0/.02 & .1/.5/.4 & .04/.41/.53 & .02/.40/.56 & & .04/.43/.48\\\bottomrule
 \end{tabular}
 \end{table}
 
