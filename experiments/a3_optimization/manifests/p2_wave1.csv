@@ -1,0 +1,16 @@
+run_name,lr_schedule,learning_rate,est_minutes
+model-d8-lr0.003-tok614M-wsd0.0-ema0.9-0.99-0.999-0.9999,wsd0.0,0.003,11.5
+model-d8-lr0.003-tok614M-ema0.9-0.99-0.999-0.9999,linear,0.003,11.5
+model-d8-lr0.003-tok614M-cos-ema0.9-0.99-0.999-0.9999,cos,0.003,11.5
+model-d8-lr0.003-tok614M-wsd0.2-ema0.9-0.99-0.999-0.9999,wsd0.2,0.003,11.5
+model-d8-lr0.0015-tok614M-wsd0.0-ema0.9-0.99-0.999-0.9999,wsd0.0,0.0015,11.5
+model-d8-lr0.0015-tok614M-ema0.9-0.99-0.999-0.9999,linear,0.0015,11.5
+model-d8-lr0.0015-tok614M-cos-ema0.9-0.99-0.999-0.9999,cos,0.0015,11.5
+model-d8-lr0.0015-tok614M-wsd0.2-ema0.9-0.99-0.999-0.9999,wsd0.2,0.0015,11.5
+model-d8-lr0.006-tok614M-wsd0.0-ema0.9-0.99-0.999-0.9999,wsd0.0,0.006,11.5
+model-d8-lr0.006-tok614M-ema0.9-0.99-0.999-0.9999,linear,0.006,11.5
+model-d8-lr0.006-tok614M-cos-ema0.9-0.99-0.999-0.9999,cos,0.006,11.5
+model-d8-lr0.006-tok614M-wsd0.2-ema0.9-0.99-0.999-0.9999,wsd0.2,0.006,11.5
+model-d8-lr0.003-tok614M-wsd0.2-dip0.4-0.45-0.5x0.1-ema0.9-0.99-0.999-0.9999,wsd0.2,0.003,11.5
+model-d8-lr0.003-tok614M-invsqrt-warmupsteps94-ema0.9-0.99-0.999-0.9999,invsqrt,0.003,11.5
+model-d8-lr0.003-tok614M-sgdr2000-warmupsteps94-minlr0.1-ema0.9-0.99-0.999-0.9999,sgdr2000,0.003,11.5

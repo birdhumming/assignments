@@ -1,0 +1,11 @@
+run_name,lr_schedule,learning_rate,est_minutes
+model-d8-lr0.001-epochs0.32-tok614M-warmup0.03125-wsd0.0,wsd0.0,0.001,3.7
+model-d8-lr0.01-epochs0.32-tok614M-warmup0.03125-wsd0.0,wsd0.0,0.01,3.7
+model-d8-lr0.003-bs16-epochs0.32-tok614M-warmup0.03125-wsd0.0,wsd0.0,0.003,7.4
+model-d8-lr0.003-bs256-epochs0.32-tok614M-warmup0.03125-wsd0.0,wsd0.0,0.003,3.7
+model-d8-lr0.003-epochs0.32-tok614M-warmup0.03125-b10.0-wsd0.0,wsd0.0,0.003,3.7
+model-d8-lr0.003-epochs0.32-tok614M-warmup0.03125-b10.98-wsd0.0,wsd0.0,0.003,3.7
+model-d8-lr0.003-epochs0.32-tok614M-wd0.0-warmup0.03125-wsd0.0,wsd0.0,0.003,3.7
+model-d8-lr0.003-epochs0.32-tok614M-warmup0.125-wsd0.0,wsd0.0,0.003,3.7
+model-d8-lr0.003-epochs0.32-tok614M-warmup0.03125,linear,0.003,3.7
+model-d8-lr0.003-epochs0.32-tok614M-emb16-warmup0.03125-wsd0.0,wsd0.0,0.003,3.7

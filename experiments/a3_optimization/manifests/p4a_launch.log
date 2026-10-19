@@ -1,0 +1,26 @@
+launch a-adamw-0
+launch a-adamw-3
+launch a-adamw-15
+launch a-adamw-61
+launch a-adamw-153
+launch a-adamw-305
+launch a-adamw-763
+launch a-adamw-1526
+launch a-adamw-3052
+launch a-adamw-4578
+launch a-adamw-6104
+launch a-adamw-7630
+launch a-adamw-9375
+✓ Initialized. View run at 
+https://modal.com/apps/cs312-f26/cs312-aleyang/ap-Z3EjcjkWE4KX3ksqUiWlFj
+✓ Created objects.
+├── 🔨 Created mount PythonPackage:experiments
+├── 🔨 Created mount /home/ubuntu/repos/alchemy
+└── 🔨 Created function _run_job_remote.
+Initializing native d8 modelInitializing native d8 model
+
+Loaded train_dataset dclm: 9,600,000 rows (9,830,400,000 tokens) from /root/shared_data/datasets/dclm_9p6m_ctx1024/train.
+Loaded train_dataset dclm: 9,600,000 rows (9,830,400,000 tokens) from /root/shared_data/datasets/dclm_9p6m_ctx1024/train.
+[modal-client] 2026-10-15T11:45:13+0000 Timed out waiting for final app logs.
+✓ App completed. View run at 
+https://modal.com/apps/cs312-f26/cs312-aleyang/ap-Z3EjcjkWE4KX3ksqUiWlFj

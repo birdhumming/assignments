@@ -1,0 +1,8 @@
+run_name,lr_schedule,learning_rate,est_minutes
+model-d8-lr0.003-tok614M-wsd0.2-dip0.4-0.45-0.5x0.3-ema0.9-0.99-0.999-0.9999,wsd0.2,0.003,11.5
+model-d8-lr0.003-tok614M-wsd0.2-dip0.4-0.45-0.5x0.01-ema0.9-0.99-0.999-0.9999,wsd0.2,0.003,11.5
+model-d8-lr0.003-tok614M-wsd0.2-dip0.4-0.5-0.6x0.1-ema0.9-0.99-0.999-0.9999,wsd0.2,0.003,11.5
+model-d8-lr0.003-tok614M-wsd0.2-dip0.2-0.25-0.3x0.1-ema0.9-0.99-0.999-0.9999,wsd0.2,0.003,11.5
+model-d8-lr0.003-tok614M-wsd0.2-dip0.6-0.65-0.7x0.1-ema0.9-0.99-0.999-0.9999,wsd0.2,0.003,11.5
+model-d8-lr0.003-epochs0.25-tok614M-cos-ema0.9-0.99-0.999-0.9999,cos,0.003,2.9
+model-d8-lr0.003-epochs0.5-tok614M-cos-ema0.9-0.99-0.999-0.9999,cos,0.003,5.8
