@@ -370,7 +370,25 @@ This is the honest answer to ``can you move $\lmax$ without moving the loss'': y
 
 Scale 4 overshoots. Balancing the two blocks needs $5.64/s^2 = 0.30\,s^2$, so $s\approx 2$ should give $\lmax\approx 1.4$ at the same loss, a 4$\times$ drop. We ran that job after writing the prediction down. The two blocks landed where the algebra said (\texttt{lm\_head} 1.41, final norm 1.20) but the full $\lmax$ came out at 2.35, not 1.4, with the top eigenvector split 44\% norm, 29\% head, 19\% MLP: once the two blocks are comparable, their off-diagonal coupling (the 28\% cross-family energy from part (a)) carries the top direction. So the loss-invariant rescaling cut $\lmax$ by 2.5$\times$ (5.97 to 2.35) at a probe loss of 2.9474 in both cases, and the block-diagonal estimate is a floor, not the answer.
 
-%P4B_TRAIN%
+\paragraph{Retrained variants.} The second way to move $\lmax$ is to train a different model. We measured the final checkpoint of five retrained d8 runs (the Problem~2 schedule runs plus a no-weight-decay run and a half-learning-rate run) with the same probe batches as the reference. Prediction, written before measuring: constant learning rate and no weight decay should both land at lower $\lmax$, because the Problem~4(a) curve shows $\lmax$ rising only during the decay phase, and weight decay is what keeps the norm gains and the head from shrinking their own curvature.
+
+\begin{table}[h]\centering\caption{Final-checkpoint Hessian of retrained d8 runs (614M tokens). Probe loss on the same batches as the rescaling table; reference is the course AdamW run (linear decay, lr $3\times10^{-3}$, wd 0.1).}
+\label{tab:p4b-train}
+\small\begin{tabular}{lcccccc}\toprule
+run & probe loss & $\Delta$ loss & $\|\nabla L\|$ & $\lmax$ & top eigvec. & head / norm / attn. block\\
+\midrule
+reference (linear) & 2.9474 & -- & 0.130 & 5.97 & 94\% head & 5.64 / 0.30 / 0.5\\
+cosine decay & 2.9532 & $+0.006$ & 0.118 & 5.62 & 95\% head & 5.34 / 0.52 / 1.12\\
+plateau then decay (wsd0.2) & 2.9592 & $+0.012$ & 0.094 & 4.39 & 95\% head & 4.19 / 0.68 / 0.56\\
+learning rate $1.5\times10^{-3}$ & 2.9674 & $+0.020$ & 0.175 & 5.56 & 91\% head & 5.12 / -- / 2.57\\
+no weight decay & 2.9751 & $+0.028$ & 0.072 & 2.83 & 75\% norm & 1.71 / 2.33 / 0.50\\
+constant learning rate & 3.1231 & $+0.176$ & 0.113 & 3.30 & 92\% head & 3.10 / 0.92 / 0.42\\
+\bottomrule\end{tabular}\end{table}
+
+Both predictions held. Constant learning rate ends at $\lmax=3.3$, close to the value the reference had before its decay began (3.2 at step 3052), so the rise to 6 in the part~(a) figure is the decay letting the iterate sink to the bottom of the valley, not training making the function sharper. But it costs 0.18 of loss, so it is not a way to ``move $\lmax$ without moving the loss''. No weight decay halves $\lmax$ (2.83) for $+0.028$ of loss, and the top direction moves from the head to the final RMSNorm gain, the same swap the rescaling produced: without decay the head weights grow, which is the $(g/s, sW)$ rescaling applied slowly by the optimizer. The plateau-then-decay schedule is the cheapest real change, $-26\%$ in $\lmax$ for $+0.012$ of loss. Halving the learning rate barely moves $\lmax$ at all.
+
+Putting the two methods together: training knobs move $\lmax$ by a factor of two at best and always move the loss along with it; a loss-invariant reparameterization moved it by $2.5\times$ at exactly zero loss change. Any claim that compares $\lmax$ across runs is therefore only meaningful if the runs share a parameterization and a weight-norm regime, and the fairer quantity to compare is the preconditioned sharpness of Problem~3, which divides out the scale that Adam divides out.
+
 
 
 
@@ -380,7 +398,35 @@ Scale 4 overshoots. Balancing the two blocks needs $5.64/s^2 = 0.30\,s^2$, so $s
 
 Prediction: the gradient fraction in the top subspace will be small (the Problem~4(a) overlap with the top eigenvector is below 0.03), so removing the top subspace should barely slow the loss, and keeping only the top subspace should make almost no progress and may oscillate. This is the Gur-Ari ``gradient descent happens in a tiny subspace'' claim, tested directly.
 
-%P4C_RESULTS%
+\paragraph{Results.} Starting point: the SGD-with-momentum checkpoint at step 1526 (validation loss 3.694, $\lmax=2.65$, $\eta=0.85$, momentum 0.9, so $\eta\lmax=2.25$; the heavy-ball stability threshold is $2(1+\beta)=3.8$). Each arm runs 300 updates with a fresh momentum buffer, $k=10$ eigenvectors refreshed every 25 steps unless stated. All ten jobs are in Table~\ref{tab:p4c}; Figure~\ref{fig:p4c} shows the three core arms and the $k=50$ pair.
+
+\begin{table}[h]\centering\caption{Projected-update continuation of the SGD+momentum run. ``top frac.'' is the fraction of the gradient's squared norm inside the current top-$k$ subspace, averaged over the 300 steps / at the last step. $\lmax$ at the first / last refresh.}
+\label{tab:p4c}
+\small\begin{tabular}{llccccccc}\toprule
+update & start & $k$ & refresh & lr scale & val. start $\to$ end & $\Delta$ val. & top frac. mean / last & $\lmax$\\
+\midrule
+full & 1526 & 10 & 25 & 1 & 3.694 $\to$ 3.583 & $-0.112$ & 0.093 / 0.100 & 2.65 $\to$ 2.96\\
+top subspace only & 1526 & 10 & 25 & 1 & 3.694 $\to$ 6.815 & $+3.121$ & 0.174 / 0.137 & 2.65 $\to$ 16.8\\
+top subspace removed & 1526 & 10 & 25 & 1 & 3.694 $\to$ 3.582 & $-0.112$ & 0.028 / 0.019 & 2.65 $\to$ 3.27\\
+top only & 1526 & 50 & 25 & 1 & 3.694 $\to$ 3.765 & $+0.070$ & 0.151 / 0.115 & 2.65 $\to$ 2.86\\
+removed & 1526 & 50 & 25 & 1 & 3.694 $\to$ 3.579 & $-0.116$ & 0.046 / 0.037 & 2.65 $\to$ 3.47\\
+full & 1526 & 10 & 25 & 0.3 & 3.694 $\to$ 3.579 & $-0.115$ & 0.044 / 0.018 & 2.65 $\to$ 3.33\\
+removed & 1526 & 10 & 25 & 0.3 & 3.694 $\to$ 3.579 & $-0.116$ & 0.016 / 0.013 & 2.65 $\to$ 3.41\\
+removed & 1526 & 10 & 5 & 1 & 3.694 $\to$ 3.584 & $-0.110$ & 0.073 / 0.004 & 2.65 $\to$ 69.3\\
+full & 305 & 10 & 25 & 1 & 4.807 $\to$ 4.196 & $-0.611$ & 0.178 / 0.085 & 3.35 $\to$ 3.14\\
+removed & 305 & 10 & 25 & 1 & 4.807 $\to$ 4.191 & $-0.615$ & 0.049 / 0.017 & 3.35 $\to$ 3.96\\
+\bottomrule\end{tabular}\end{table}
+
+\begin{figure}[h]\centering\includegraphics[width=\textwidth]{../figures/p4c_subspace.png}
+\caption{Left: training loss for the five arms started at step 1526 (the ``full'' curve is hidden under ``removed''). Middle: fraction of the gradient in the current top-$k$ subspace, log scale. Right: $\lmax$ at each refresh.}
+\label{fig:p4c}\end{figure}
+
+The prediction held, and more strongly than expected. The top 10 of 34.6M directions hold about 9\% of the gradient's energy under the full update (0.03 per direction when the overlap with the single top eigenvector in part (a) was below 0.03, so the next nine carry the rest). Removing them changes nothing: the loss after 300 steps is 3.582 against 3.583, and the two curves lie on top of each other in Figure~\ref{fig:p4c}. The same holds with $k=50$, with a third of the learning rate, and from the step-305 checkpoint where the top fraction is twice as large (0.18 at the start): the ``removed'' arm is never worse than the full one, and is a hair better in four of five pairs. Progress lives in the bulk of low-curvature directions, as the trace in part (a) already suggested (4,000--5,000 effective curved directions, but gradient energy spread far wider than that).
+
+Keeping only the top subspace does the opposite of training. With $k=10$ the loss climbs from 3.69 to 6.8 and $\lmax$ runs from 2.65 to 16.8, crossing the heavy-ball threshold ($\lmax=4.5$ at this $\eta$) around step 1700. The step projected onto the sharp directions is the oscillatory part of the update; without the drift along the valley floor that normally carries the iterate away from each bump, the oscillation feeds back on itself and sharpens the landscape until it diverges. With $k=50$ the top subspace is large enough to contain a little useful signal (15\% of the gradient), so it does not blow up, but it still drifts upward by 0.07.
+
+The most useful side result is the refresh-every-5 run. Removing the top 10 directions every 5 steps instead of every 25 leaves the loss untouched (3.584) but lets $\lmax$ grow steadily to 69, an $\eta\lmax$ of 56 that would be instantly divergent for a full step. The curvature in the sharp directions is held in check only because the optimizer keeps stepping into them and bouncing: that is the edge-of-stability feedback loop of Problem~3 seen from the other side. Refresh every 25 steps leaves a few steps per cycle in which newly sharpened directions get a full update, which is enough to keep $\lmax$ near 3; refresh every 5 steps removes that feedback and the sharpness runs away while the loss, which does not depend on those directions, is unaffected. Progress and stability are controlled by disjoint sets of directions.
+
 
 
 \end{document}

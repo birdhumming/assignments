@@ -119,3 +119,13 @@ So any lambda_max change from b-rescale jobs is purely a reparameterization at i
 - wd 0: 18.4/17.1 (loss 3.20, best of constant-lr runs); warmup 12.5%: 22.6/23.5 (same as 3%).
 - cosine decay: 10.8/5.4 -> eta*lambda_pre FALLS with eta, i.e. lambda_pre does not grow to compensate (prediction wrong).
 - emb16: 22.1/21.6 (same as reference). Final losses are training losses at 3000 updates.
+
+## P4(b) retrained variants (final-checkpoint Hessian, 21:50 UTC Oct 15; probe loss / lambda_max)
+- reference linear 2.9474 / 5.97; cos 2.9532 / 5.62; wsd0.2 2.9592 / 4.39; lr1.5e-3 2.9674 / 5.56; wd0 2.9751 / 2.83 (top eigvec 75% norm);
+  constant lr 3.1231 / 3.30. Predictions (constant lr and wd0 lowest lambda_max) held. Training knobs move lambda_max <=2x and always
+  move the loss; the s=2 rescaling moved it 2.5x at zero loss change.
+
+## P4(c) projected updates (SGDM step 1526, 300 steps, k=10, refresh 25; 21:50 UTC Oct 15)
+- full -0.112 val, removed -0.112, top-only +3.12 (diverges, lambda_max 2.65 -> 16.8, crosses heavy-ball threshold 3.8/eta ~ 4.5 near step 1700).
+- top fraction of grad energy: full 0.09, removed 0.03, k=50: 0.15 / 0.05. removed never worse than full (k50, lr0.3, step305 all the same).
+- removed with refresh 5: loss unchanged (3.584) but lambda_max runs to 69 (eta*lambda 56): curvature is regulated only by stepping in it.
