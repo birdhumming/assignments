@@ -1,0 +1,9 @@
+run_name,lr_schedule,learning_rate,est_minutes
+model-d8-lr0.003-epochs0.32-tok614M-warmup0.03125-nogradclip-wsd0.0,wsd0.0,0.003,3.7
+model-d8-lr0.003-epochs0.32-tok614M-warmup0.03125-noqknorm-wsd0.0,wsd0.0,0.003,3.7
+model-d8-lr0.003-epochs0.32-tok614M-wd0.3-warmup0.03125-wsd0.0,wsd0.0,0.003,3.7
+model-d8-lr0.006-epochs0.32-tok614M-warmup0.03125-wsd0.0,wsd0.0,0.006,3.7
+model-d8-lr0.01-bs128-epochs1500.0-tok131K-wd0.0-emb16-nogradclip-b10.0-sgd-constant,constant,0.01,3.7
+model-d8-lr0.02-bs32-epochs1500.0-tok32.8K-wd0.0-emb16-nogradclip-b10.0-sgd-constant,constant,0.02,0.9
+model-d8-lr0.005-bs32-epochs1500.0-tok32.8K-wd0.0-emb16-nogradclip-b10.0-sgd-constant,constant,0.005,0.9
+model-d8-lr0.001-bs32-epochs1500.0-tok32.8K-wd0.0-emb16-nogradclip-constant,constant,0.001,0.9

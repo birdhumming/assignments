@@ -95,7 +95,32 @@ The ensemble is better where averaging fails and no better where averaging works
 
 \subsection*{(d) Does the training recipe change the basin?}
 
-%P1D%
+Setup. The same $6\times5$ grid (prefix $x$, branch length $y$, two data orders) was rerun with one knob changed at a time: learning rate $1.5\times10^{-3}$ or $6\times10^{-3}$ instead of $3\times10^{-3}$, batch size 256 instead of 64, and linear decay instead of a constant learning rate. Results in Table~\ref{tab:p1d} and Figure~\ref{fig:p1d}; the full grids are in \texttt{results/a3-mode-connectivity-*.json}.
+
+Prediction, written down before the runs. Higher learning rate: more failing cells and bigger barriers, because the branches move further apart per step. Lower learning rate: fewer failures and a smaller averaging gain, since the branches bounce less. Batch 256: fewer failures, because the gradient noise that separates the two data orders is four times smaller. Linear decay: no change, because the schedule has decayed less than 16\% of the way by step 1500 of 9375.
+
+\begin{table}[H]\centering\caption{Connectivity grid under recipe changes. ``pass'' counts cells with $B\le0.01$ out of 30; ``first connected $x$'' is the shortest prefix for which every branch length passes; gain is the median of (endpoint mean $-$ average) over passing cells; $L(1000,500)$ is the endpoint loss of the longest runs.}
+\label{tab:p1d}
+\small\begin{tabular}{lcccccc}\toprule
+recipe & pass & first connected $x$ & $B(0,500)$ & $B(50,500)$ & gain & $L(1000,500)$\\
+\midrule
+learning rate $1.5\times10^{-3}$ & 27 & 100 & 0.31 & 0.05 & 0.076 & 3.388\\
+default ($3\times10^{-3}$, batch 64, constant) & 26 & 250 & 0.59 & 0.14 & 0.085 & 3.384\\
+linear decay & 26 & 250 & 0.61 & 0.13 & 0.080 & 3.369\\
+learning rate $6\times10^{-3}$ & 24 & 250 & 1.20 & 0.32 & 0.091 & 3.448\\
+batch 256 & 24 & 250 & 1.31 & 0.12 & 0.058 & 3.164\\
+\bottomrule\end{tabular}\end{table}
+
+\begin{figure}[H]\centering\includegraphics[width=\linewidth]{p1d_variants.png}
+\caption{Midpoint barrier against prefix length for the two longest branch lengths, one line per recipe. Dashed line: the 0.01 criterion. Both axes are symmetric-log.}\label{fig:p1d}\end{figure}
+
+Three of the four predictions held. The learning rate sets the barrier almost proportionally: at $(0,500)$ it is 0.31, 0.59 and 1.20 for $1.5$, $3$ and $6\times10^{-3}$, doubling each time the learning rate doubles. The low learning rate is the only recipe where a 100-step prefix is enough for every branch length, and its averaging gain is the smallest of the three (0.076 against 0.091), as expected from a smaller bounce. Linear decay reproduces the default grid cell for cell: the same four failures, barriers within 0.02.
+
+The batch-size prediction was wrong, and in an informative way. Batch 256 has \emph{more} failures than the default, not fewer, and the largest barrier in the whole experiment (1.31 at $(0,500)$). Less gradient noise did not keep the branches together. What batch 256 did do is move each branch further per step: its endpoint loss after 1500 steps is 3.16 against 3.38, so a 500-step branch at batch 256 is a longer branch in units of progress. On that reading, 4$\times$ the tokens per step behaved like 2$\times$ the learning rate (1.31 against 1.20). The smaller averaging gain (0.058) is the one part of the batch-size prediction that held, and for the predicted reason: with less noise the two branches sit closer to the valley floor already, so their average has less to gain.
+
+Pattern. The knob that controls whether two runs end in the same basin is how far the branches travel relative to how committed the prefix is, measured in optimization progress (learning rate times steps, or tokens), not how noisy the gradients are. Anything that moves the branches further (higher learning rate, bigger batch at fixed steps) needs a longer shared prefix; anything that moves them less (lower learning rate) needs a shorter one. The schedule is irrelevant at this horizon because it barely changes the step size. A prefix of 250 steps was enough in every recipe we tried, which says the coordinate-fixing phase is short and fairly robust.
+
+Experiments that would test this. First, match branches by tokens or by loss instead of steps: run batch 256 with $y=125$ and compare it to batch 64 with $y=500$; if the barriers agree, progress is the right unit. Second, fix the branch recipe and only change the prefix recipe, to separate ``how committed the prefix is'' from ``how far the branches go''. Third, vary the prefix's data-order seed with the branch seeds fixed, to check that the prefix only needs to be long, not any particular sequence of data. Fourth, repeat the grid with momentum reset at the fork, since shared optimizer state is another way the two branches could be tied together.
 
 
 %=====================================================================

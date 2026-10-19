@@ -120,12 +120,31 @@ So any lambda_max change from b-rescale jobs is purely a reparameterization at i
 - cosine decay: 10.8/5.4 -> eta*lambda_pre FALLS with eta, i.e. lambda_pre does not grow to compensate (prediction wrong).
 - emb16: 22.1/21.6 (same as reference). Final losses are training losses at 3000 updates.
 
-## P4(b) retrained variants (final-checkpoint Hessian, 21:50 UTC Oct 15; probe loss / lambda_max)
+## P4(b) retrained variants (final-checkpoint Hessian, 21:50 UTC Oct 19; probe loss / lambda_max)
 - reference linear 2.9474 / 5.97; cos 2.9532 / 5.62; wsd0.2 2.9592 / 4.39; lr1.5e-3 2.9674 / 5.56; wd0 2.9751 / 2.83 (top eigvec 75% norm);
   constant lr 3.1231 / 3.30. Predictions (constant lr and wd0 lowest lambda_max) held. Training knobs move lambda_max <=2x and always
   move the loss; the s=2 rescaling moved it 2.5x at zero loss change.
 
-## P4(c) projected updates (SGDM step 1526, 300 steps, k=10, refresh 25; 21:50 UTC Oct 15)
+## P4(c) projected updates (SGDM step 1526, 300 steps, k=10, refresh 25; 21:50 UTC Oct 19)
 - full -0.112 val, removed -0.112, top-only +3.12 (diverges, lambda_max 2.65 -> 16.8, crosses heavy-ball threshold 3.8/eta ~ 4.5 near step 1700).
 - top fraction of grad energy: full 0.09, removed 0.03, k=50: 0.15 / 0.05. removed never worse than full (k50, lr0.3, step305 all the same).
 - removed with refresh 5: loss unchanged (3.584) but lambda_max runs to 69 (eta*lambda 56): curvature is regulated only by stepping in it.
+
+## P1(d) recipe variants: prediction locked 22:15 UTC Oct 19 (branch runs training, nothing measured yet)
+- Same 6x5 grid as default (lr 3e-3, bs 64, constant lr). Variants: lr6e-3, lr1.5e-3, bs256, linear decay.
+- lr6e-3: more failing cells (expect x=100,y=250 and x=250,y=500 to join the four default failures); larger negative barrier where it works (bigger bounce).
+- lr1.5e-3: fewer failures (only the x=0 column), smaller averaging gain (~half the default -0.1).
+- bs256: fewer failures (data-order noise /4 at the same step count); smaller averaging gain. Higher endpoint loss at equal steps is not the point; the grid compares cells within a variant.
+- linear decay: identical to default to within noise. The schedule has decayed <16% of the way by step 1500 of 9375, so the branches see nearly the same lr as the constant run.
+
+## P1(d) results (22:52 UTC Oct 19; lr1.5e-3 still running). pass = cells with B<=0.01 of 30; gain = median averaging gain where it works
+- default 26/30, fails (0,250)(0,500)(50,500)(100,500), worst B 0.59, gain 0.085, L(1000,500) 3.384
+- linear  26/30, same four failing cells, worst 0.61, gain 0.080, L 3.369 -> identical to default (prediction held)
+- lr6e-3  24/30, adds (0,100)=+0.040 and (50,250)=+0.073; worst (0,500)=1.20 (2x default), gain 0.091, L 3.448
+- bs256   24/30, adds (0,50)=+0.022 and (0,100)=+0.214; worst (0,500)=1.31; gain 0.058 (smaller bounce, as predicted); L 3.164
+  Prediction WRONG on failures: less data noise did not help; bs256 branches travel further per step (4x tokens), so a 500-step
+  branch is a longer branch in progress units. x=250 is the first fully-connected prefix in every variant.
+- Pattern: the knob that matters is how far the branches move relative to the prefix (lr x steps, or tokens), not gradient noise.
+  Further tests: match branches by tokens (bs256 y=125 vs bs64 y=500) or by loss reached; vary the data-order seeds for the prefix.
+- lr1.5e-3 (23:12 UTC) 27/30, fails (0,250)(0,500)(50,500); worst (0,500)=0.31; gain 0.076; L 3.388. First fully connected prefix x=100.
+  B(0,500) vs lr: 0.31 / 0.59 / 1.20 at 1.5e-3 / 3e-3 / 6e-3: barrier roughly proportional to the learning rate.

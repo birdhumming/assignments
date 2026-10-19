@@ -119,8 +119,11 @@ def main():
     parser.add_argument("stage", choices=("prefix", "branches", "measure"))
     parser.add_argument("--variant", choices=sorted(VARIANTS), default="default")
     parser.add_argument("--max-parallel-runs", type=int, default=2)
+    parser.add_argument("--offline", action="store_true", help="train without W&B (checkpoints only)")
     args = parser.parse_args()
     base = VARIANTS[args.variant]
+    if args.offline:
+        base = replace(base, wandb_online=False)
     if args.stage == "prefix":
         from modal_train import launch_training_jobs
 

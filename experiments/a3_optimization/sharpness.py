@@ -50,7 +50,7 @@ def history(config):
     for row in out:
         row["train_loss"] = losses.get(row["step"])
     out.losses = sorted(losses.items())
-    out.state = run.state
+    out.state = getattr(run, "state", "finished")
     return out
 
 
