@@ -40,3 +40,4 @@ P2 rnn1 4.0326@3e-3 | rnn4 4.0809@1e-3 (6.875 at >=2e-3) | modern rnn 3.5160@2e-
   no-reset, reset-only, normgate x1. Merge check: a1 modal_train fixes (orphaned W&B close, GPU memory release) survived the a4 merge.
 - 11:42 UTC: lane A1 got its A100 container after 13 min -> 2 concurrent GPUs OK; it was capacity, not a limit. GRU 3e-3 at 43%, val 3.431 at step 4042.
 - 11:55 UTC: d8 runs take ~1 h on A100 (vs 11 min H100). Reordered every lane to run all center-LR variants first (stop early = still a full grid); stopped A1 and relaunched reordered on A100; watcher restarted. GRU 3e-3 52%, val 3.387.
+- 11:52 UTC: lane A1 (reordered, A100) app ap-ISYOEYaTCZC0nFbMVhno5I. Watcher restarted (measure -> B-p4 -> A2-rnn-p3).
