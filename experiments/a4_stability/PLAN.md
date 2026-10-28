@@ -22,3 +22,7 @@ P2 rnn1 4.0326@3e-3 | rnn4 4.0809@1e-3 (6.875 at >=2e-3) | modern rnn 3.5160@2e-
 - Student variants in student.py (registered in sweeps.VARIANTS): d8-hybrid / rnn-hybrid (P3d: additive stream + attention-routed branch input),
   gru-no-reset, gru-reset-only, gru-input-gate (P4a ablations), normgate (P4b: no reset, RMSNorm(h) in candidate, update bias -1), normgate-b0.
   CPU smoke test + 15 a4 tests pass. Launch with sweeps.launch((name,), rates=(...)); max_parallel_runs=min(2, n) per call.
+- analysis/p12_tables.py -> P1/P2 best-loss table + figures/p12_lr_curves.png (from manifest). measure_supplied.py -> one Modal H100 job
+  measuring init/early/final for the 20 best-LR supplied runs (d8-no-residual has no checkpoints) into results/a4_stability/<run>/<stage>.json
+  (results/ is gitignored; keep JSON locally, regenerate figures with analysis scripts).
+- 10:36-10:55 UTC: both calibration apps sat at 0 containers (H100 capacity wait).
