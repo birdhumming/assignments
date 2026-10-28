@@ -97,3 +97,10 @@ P2 rnn1 4.0326@3e-3 | rnn4 4.0809@1e-3 (6.875 at >=2e-3) | modern rnn 3.5160@2e-
   Reasoning: block2 = full shows the useful freedom is per-layer re-weighting; grouping adds per-feature freedom at 8x the router
   parameters (still <0.1M). Risk: hybrid (my first design) lost 0.012 to full attention, so "more structure" is not automatically better.
   Lane A3-d8-grouped (2 runs, ~45 min) is queued ahead of A2-rnn-p3; rnn-grouped appended to the RNN lane (runs last; may be cut).
+
+20:30 UTC. d8 lane 15/16 done (block4 .006 finishing). Final d8 lr .006 column: attention 2.9106, block2 2.9075, half 2.9408,
+uniform 2.9410, ema09 2.9689, hybrid 2.9305, ema01 6.8747. Every scheme is worse at .006 than .003; the ranking is unchanged.
+P4 at lr .003: gru-no-reset 3.2846 (+0.097 vs GRU), gru-reset-only 3.4040 (-0.112 vs tanh, +0.217 vs GRU), normgate 3.3768
+(-0.139 vs tanh, +0.189 vs GRU). Prediction check: "update gate >> reset gate" holds (0.22 vs 0.10) but "reset-only within 0.05
+of tanh" was wrong (reset alone buys 0.11), and NormGate loses to the GRU it was derived from, so dropping the reset gate
+(-0.10) is not recovered by the RMSNorm'd candidate. Remaining P4 runs: normgate .0015 (running), gru-input-gate, normgate-bias0.

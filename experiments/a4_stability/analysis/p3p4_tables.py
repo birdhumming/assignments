@@ -8,6 +8,21 @@ ROOT = Path(__file__).resolve().parents[1]
 PROJECT = "aleyang-stanford-university/assignments"
 UNIFORM = 8.0  # ln(4096) ~ 8.32; anything above 6.5 is "learned nothing"
 BASE = {"d8": 2.9265, "rnn": 3.5160}  # supplied additive baselines (manifest, best LR)
+MANIFEST = Path("experiments/a4_stability/results/manifest.json")
+
+
+def supplied_losses():
+    """{family: {lr: validation_loss}} for the supplied additive baselines (d8 transformer, modern RNN)."""
+    rows = json.loads(MANIFEST.read_text())
+    rows = rows if isinstance(rows, list) else list(rows.get("runs", rows.values()))
+    out = {"d8": {}, "rnn": {}}
+    for r in rows:
+        if r.get("variant") in out and r.get("status") == "complete":
+            out[r["variant"]][float(r["lr"])] = float(r["validation_loss"])
+    return out
+
+
+SUPPLIED = supplied_losses()
 P3_ROWS = [
     ("additive (supplied)", None), ("half-and-half", "half"), ("depth EMA $\\beta=0.1$", "ema01"),
     ("depth EMA $\\beta=0.9$", "ema09"), ("uniform routing", "uniform"), ("full attention", "attention"),
@@ -45,7 +60,9 @@ def table(runs, rows, family, rates, caption, label):
              "variant & " + " & ".join(f"lr {lr:g}" for lr in rates) + " & best $-$ additive \\\\\\midrule"]
     for label_, key in rows:
         if key is None:
-            lines.append(f"{label_} & " + " & ".join("--" for _ in rates) + f" & {BASE[family]:.4f} \\\\")
+            cells = [f"{SUPPLIED[family][r]:.4f}" if r in SUPPLIED[family] else "--" for r in rates]
+            tail = "--" if any(r in SUPPLIED[family] for r in rates) else f"{BASE[family]:.4f}"
+            lines.append(f"{label_} & " + " & ".join(cells) + f" & {tail} \\\\")
             continue
         cells = [cell(runs, f"{family}-{key}" if family == "d8" or not key.startswith("gru") and not key.startswith("normgate") else key, lr) for lr in rates]
         finite = [float(c) for c in cells if c.replace(".", "").isdigit()]
