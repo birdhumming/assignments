@@ -14,7 +14,9 @@ P4 cells (carry only h across time):
 """
 import torch
 from torch import nn
+
 from modeling import LlamaRMSNorm
+
 from .p1_transformer_depth import Transformer
 from .p2_rnn_depth import ModernRNN
 from .p3_attention_residuals import AttentionDepth, AttentionMix

@@ -33,14 +33,14 @@ def cell(runs, name, lr):
     rec = runs.get((name, lr))
     if rec is None:
         return "--"
-    state, loss, step = rec
+    state, loss, _step = rec
     if state != "finished" or loss is None:
         return f"\\textit{{{loss:.3f}}}$^{{*}}$" if loss else "--"
     return "div." if loss > UNIFORM - 1.5 else f"{loss:.4f}"
 
 
 def table(runs, rows, family, rates, caption, label):
-    lines = [f"\\begin{{table}}[H]\\centering\\small", f"\\caption{{{caption}}}\\label{{{label}}}",
+    lines = ["\\begin{table}[H]\\centering\\small", f"\\caption{{{caption}}}\\label{{{label}}}",
              "\\begin{tabular}{l" + "r" * len(rates) + "r}\\toprule",
              "variant & " + " & ".join(f"lr {lr:g}" for lr in rates) + " & best $-$ additive \\\\\\midrule"]
     for label_, key in rows:
