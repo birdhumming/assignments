@@ -31,3 +31,4 @@ P2 rnn1 4.0326@3e-3 | rnn4 4.0809@1e-3 (6.875 at >=2e-3) | modern rnn 3.5160@2e-
   lane A1 d8 P3 (16 runs: 7 schemes x {3e-3, 6e-3} + block2 {4.5e-3, 9e-3}), lane B P4 (8 runs: gru 1.5e-3/6e-3, normgate 3e-3/1.5e-3,
   no-reset/reset-only/input-gate 3e-3, normgate-b0 3e-3), lane A2 RNN P3 (16 runs: 8 schemes x {1e-3, 2e-3}). Each lane = one app, 1 container.
   Next lane launches when < 2 ephemeral apps. Then: measure_supplied (P1/P2 checkpoints) and the same driver on our P3/P4 checkpoints (user volume).
+- 11:05 UTC lane A1 app ap-cSqdhMO9UzbXII7Jf03d2l (16 d8 P3 runs). Watcher in 'watch' mode: measure -> B-p4 -> A2-rnn-p3 (log /tmp/a4_lanes_watch.log). Restart: setsid nohup uv run python -m experiments.a4_stability.launch_plan watch &

@@ -29,7 +29,7 @@ LANES = {
              ('gru-reset-only', .003), ('gru-input-gate', .003), ('normgate', .0015), ('normgate-b0', .003)],
     'A2-rnn-p3': runs(RNN_P3, (.001, .002)),
 }
-ORDER = ['A1-d8-p3', 'B-p4', 'A2-rnn-p3']
+ORDER = ['A1-d8-p3', 'measure', 'B-p4', 'A2-rnn-p3']
 
 
 def ephemeral_apps():
@@ -38,6 +38,10 @@ def ephemeral_apps():
 
 
 def launch_lane(lane):
+    if lane == 'measure':  # blocking: holds one GPU slot until the supplied-checkpoint probes finish
+        print(time.strftime('%H:%M'), 'measuring supplied checkpoints', flush=True)
+        subprocess.run(['uv', 'run', 'python', '-m', 'experiments.a4_stability.measure_supplied'], check=False)
+        return
     from modal_train import launch_training_jobs
     configs = [config(name, lr) for name, lr in LANES[lane]]
     print(time.strftime('%H:%M'), 'launching lane', lane, len(configs), 'runs', flush=True)
