@@ -43,3 +43,8 @@ P2 rnn1 4.0326@3e-3 | rnn4 4.0809@1e-3 (6.875 at >=2e-3) | modern rnn 3.5160@2e-
 - 11:52 UTC: lane A1 (reordered, A100) app ap-ISYOEYaTCZC0nFbMVhno5I. Watcher restarted (measure -> B-p4 -> A2-rnn-p3).
 - 12:39 UTC RESULT gru lr3e-3: final val 3.1874 (tanh modern RNN 3.5160 -> -0.33; prediction >=0.10 held, far exceeded). Lane A1 run 2 (d8-half 3e-3) started; d8 runs ~40 min on A100.
 - 12:40 UTC RESULT d8-attention lr3e-3: final val 2.9036 (d8 additive 2.9265 -> -0.023; prediction 'within +-0.02' slightly beaten). Next: d8-half 3e-3.
+- 12:41 UTC: watcher launched the measure lane (measure_supplied, app ap-jWMvntVWK4zxJfDjsPNwY3, H100; blocking subprocess in the watcher,
+  writes results/a4_stability/<run>/{init,early,final}.json for 20 supplied best-LR runs). After it: lane B (P4, 8 runs) then A2 (RNN P3, 16 runs).
+  Lane A1 (A100, ap-ISYOEYaTCZC0nFbMVhno5I) running d8-half 3e-3 (run 2/16, ~40 min each -> lane ends ~22:00 UTC).
+  Our run checkpoints live on the user volume at /root/data/ckpts/<run_name> (final) with step_100.pt inside; measure them with
+  measure_runs(jobs, root=Path('/root/data/ckpts')) once the early-checkpoint layout is confirmed (the supplied runs use <run>/early/).
