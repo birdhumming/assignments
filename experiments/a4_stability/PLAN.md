@@ -60,3 +60,10 @@ P2 rnn1 4.0326@3e-3 | rnn4 4.0809@1e-3 (6.875 at >=2e-3) | modern rnn 3.5160@2e-
   keep 256 ~ 0 -> d8 uses ~64-256 tokens. Modern RNN: last-token hidden grad falls 1e-19 (t=0) .. 6e-5 (t=896): strong vanishing; tanh saturation 0.14-0.67.
   NEXT: analysis/p12_diagnostics.py -> figures (depth act/grad per variant, attention first/self mass vs uniform, RNN time curves, context curve),
   then report. Lane B (P4) app ap-JSGDYvghlcemV8GGfkDxov waiting for H200 container; lane A1 at run 3/16 (d8-ema09).
+- 13:05 UTC analysis/p12_diagnostics.py runs (figures p1_depth.png, p2_time.png, p12_context.png). Key supplied-run findings (final ckpts):
+  d8 act RMS x11.7 across depth, grad ratio bottom/top 4.4; postnorm x1.4 growth but grad ratio 0.3 (gradients shrink toward input) and
+  worst loss; no-prenorm grad ratio 11, first-token attention mass 0.44 (sink); d8 first mass 0.17, self 0.075, uniform baseline 0.5.
+  RNN: modern rnn sat 0.15-0.68, no-prenorm/rope layers 3-4 saturate ~0.99 (rms 1.0); no-residual adjacent cos ~0. Context: d8 uses
+  ~64-256 tokens (K16 +0.53 with BOS); RNNs flat beyond K16-64 (K16 +0.1-0.2). BOS-dropped K1 for rnn/rnn-rope explodes (+29..+680):
+  state without BOS reset is out of distribution -> report as the 'preserve first token' control.
+  TODO: temporal_summary reach metric is wrong (always 1023; should find first t where grad < 1e-3*final scanning backwards, use np.where).
