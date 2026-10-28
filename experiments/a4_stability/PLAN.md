@@ -76,3 +76,7 @@ P2 rnn1 4.0326@3e-3 | rnn4 4.0809@1e-3 (6.875 at >=2e-3) | modern rnn 3.5160@2e-
   lag 176; no-final-norm first 0.275. p2_time.png now has 4 panels (full-loss L grad is flat ~1e-5 across t; L_T grad decays ~exponentially,
   modern rnn ~ 1e-19 at t=0 vs 1e-1 at t=1023, rnn1/rnn4/rope/no-prenorm fall off a cliff within ~200 steps).
   Report skeleton next: experiments/a4_stability/latex/report.tex (copy A3 preamble).
+- 13:30 UTC report draft experiments/a4_stability/latex/report.tex compiles (tectonic, 7 pages): P1 (a)(b) and P2 (a)-(f) written with tables
+  tab:p1depth, tab:p2, tab:ctx and figures lr/depth/attn/time/ctx. Placeholders %P3% and %P4% remain; %GPUHOURS% placeholder in Setup.
+  P3/P4 still need: results tables from W&B/Modal (lanes A1, B, A2), checkpoint diagnostics of our runs (measure_default.py), routing-weight
+  inspection for attention residuals, prediction-vs-outcome table from the locked predictions above.

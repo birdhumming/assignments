@@ -1,0 +1,220 @@
+\documentclass[10pt,letterpaper]{article}
+\usepackage[margin=0.75in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage[font=small,labelfont=bf,skip=3pt]{caption}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xcolor}
+\usepackage{parskip}
+\usepackage{float}
+\setlength{\parskip}{4pt}
+\setlist{nosep,leftmargin=*}
+\graphicspath{{../figures/}}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\renewcommand{\arraystretch}{1.08}
+\captionsetup[table]{skip=2pt}
+
+\title{\vspace{-1.6em}CS 312 --- Assignment 4: Transformers vs RNNs\vspace{-0.4em}}
+\author{Sandra Yang (\texttt{aleyang})}
+\date{\vspace{-0.6em}}
+
+\begin{document}
+\maketitle
+\vspace{-2em}
+
+\paragraph{Setup.} Code: \texttt{experiments/a4\_stability/} on branch \texttt{a4-experiments} of the fork \texttt{birdhumming/assignments}. Problems 1 and 2 use the course-supplied sweeps and checkpoints (105 runs, 21 architectures $\times$ 5 learning rates); we measured them and never retrained them. Problems 3 and 4 are our own 614M-token runs on Modal (at most two GPUs at a time), logged to W\&B project \texttt{assignments}, tags \texttt{a4-*}. All probes run in FP32 and eval mode on the same 32 held-out sequences of length 1024, with gradients enabled. %GPUHOURS%
+
+\paragraph{How to read the numbers.} ``Loss'' is final validation loss in nats. For the d8 transformer the seed-to-seed standard deviation is about 0.002 (Assignment 1), so a gap below 0.005 is noise, 0.01--0.03 is small but real, and 0.1 separates regimes. We did not seed-sweep the RNNs; we treat RNN gaps below 0.01 as noise. ``Depth step'' indexes the depth stream: 0 is the embedding, odd steps are after an attention (or recurrent) branch, even steps after an MLP. $L$ is the mean next-token loss over the sequence and $L_T$ the loss on the last token only.
+
+%=====================================================================
+\section*{Problem 1: Transformer depth components}
+
+\subsection*{(a) The default d8 transformer}
+
+\textbf{Learning-rate sweep.} The supplied five rates give a flat optimum: 2.9265 at $3\times10^{-3}$, with $1.5\times10^{-3}$ and $6\times10^{-3}$ both within 0.02 and the two extremes ($7.5\times10^{-4}$, $1.2\times10^{-2}$) about 0.04--0.07 worse (Figure~\ref{fig:lr}, left). No d8 run diverged. Parameters: 34.6M.
+
+\textbf{(i) Depth diagnostics} (Figure~\ref{fig:depth}, Table~\ref{tab:p1depth}). Three things to take from the final checkpoint:
+\begin{enumerate}
+\item Activation RMS grows monotonically with depth, from 2.1 after the first block to 24 at the top, a factor of 11.7. The pre-norm residual stream is never renormalized, so each branch adds to it and the scale compounds. The final RMSNorm absorbs this before the logits.
+\item Gradient RMS with respect to the stream shrinks going \emph{up}: it is 4.4$\times$ larger at the bottom than at the top for $L$, and the same for $L_T$. Why the bottom? The gradient of the final norm is divided by the stream scale (24), so a given logit error becomes a small gradient on the top of the stream, and lower blocks additionally collect gradient from everything above them through the identity path. The ratio is modest (4.4 over 16 steps), i.e. the stream is neither vanishing nor exploding.
+\item Adjacent-step cosine similarity of the stream is 0.89 on average: each block changes the direction of the stream by only a few degrees. That is what a residual network with a large stream and small branch updates looks like.
+\end{enumerate}
+
+\textbf{(ii) Attention patterns} (Figure~\ref{fig:attn}). The uniform-causal baseline is the key control: a query at position $q$ that attends uniformly over its allowed prefix puts $1/(q{+}1)$ on the first token and on itself, and has mean lag $q/2$. At $q=512$ that is 0.002, 0.002 and 264.
+\begin{itemize}
+\item \emph{First-token sink.} d8 puts 0.13 of its mass on the first token at $q=512$, about 70$\times$ the uniform value, and it is not a mask artifact because the uniform curve falls to 0.002 while the learned curve plateaus around 0.1 (Figure~\ref{fig:attn}, left). The sink grows with depth: per-layer first-token mass is $[0.04, 0.00, 0.08, 0.15, 0.05, 0.23, 0.22, 0.28]$. Within layer 7, seven of eight heads put 0.2--0.44 on the first token and one head puts 0.01, so the sink is a per-head choice, not a property of the layer.
+\item \emph{Current token.} Mass on the query's own position is 0.06 on average and nearly flat in $q$, 30$\times$ the uniform value, so heads keep a stable amount of ``copy myself'' mixing.
+\item \emph{Distance.} The mean lag grows roughly linearly with $q$ but at about half the uniform slope (140 vs 264 at $q=512$): attention is biased toward recent tokens but still reaches hundreds of positions back. Early layers are the most local (layer 4 has mean lag $\approx 3$ at $q=33$).
+\end{itemize}
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{p12_lr_curves.png}
+\caption{Supplied learning-rate sweeps. Left: P1 transformer variants. Right: P2 RNN variants. Missing points are divergent or non-finite runs. Note the y-ranges differ.}\label{fig:lr}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{p1_depth.png}
+\caption{P1 depth diagnostics on final checkpoints (thick red = d8). Left: activation RMS of the depth stream. Middle and right: RMS of $\partial L/\partial x$ and $\partial L_T/\partial x$ at each depth step.}\label{fig:depth}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{p1_attention.png}
+\caption{Attention on the final d8 checkpoint versus the uniform-causal baseline (dashed). Left: mass on the first token for each of the 64 heads (thin, darker = deeper) and their mean (black). Middle: mass on the current token. Right: mean lag to the attended token, for four variants.}\label{fig:attn}
+\end{figure}
+
+\subsection*{(b) The nine variants}
+
+\begin{table}[H]\centering\small
+\caption{Supplied P1 variants: best of five learning rates, depth and attention diagnostics on the best final checkpoint. ``Growth'' is top/bottom activation RMS; ``grad ratio'' is bottom/top gradient RMS for $L$; ``sink'' is first-token mass at $q=512$ (uniform: 0.002); ``lag'' is mean attended lag at $q=512$ (uniform: 264).}\label{tab:p1depth}
+\begin{tabular}{lrrrrrrrl}
+\toprule
+variant & best loss & vs d8 & best LR & growth & grad ratio & cos & sink & lag / diverged at \\
+\midrule
+d8 (baseline)     & 2.9265 & ---    & 0.003   & 11.7 & 4.4  & 0.89 & 0.13 & 140 \\
+gated residuals   & 2.9096 & $-$0.017 & 0.003 & 12.5 & 7.9  & 0.87 & 0.09 & 137 \\
+gated attention   & 2.9174 & $-$0.009 & 0.006 & 11.6 & 4.5  & 0.89 & 0.02 & 79 \\
+gated norm        & 2.9385 & $+$0.012 & 0.00225 & 11.6 & 5.6 & 0.90 & 0.15 & 151 \\
+no QK norm        & 2.9511 & $+$0.025 & 0.003 & 9.7  & 4.0  & 0.90 & 0.07 & 90; diverged at 0.006, 0.012 \\
+no final norm     & 2.9561 & $+$0.030 & 0.003 & 2.4  & 3.6  & 0.92 & 0.28 & 219 \\
+no RoPE           & 3.0654 & $+$0.139 & 0.003 & 10.5 & 3.1  & 0.88 & 0.09 & 139 \\
+no pre-norm       & 3.0685 & $+$0.142 & 0.001 & 7.3  & 11.0 & 0.93 & 0.41 & 268; diverged at 0.002, 0.004 \\
+post-norm         & 3.1449 & $+$0.218 & 0.001 & 1.4  & 0.3  & 0.82 & 0.03 & 176; diverged at 0.004 \\
+no residuals      & diverged & ---  & ---     & ---  & ---  & ---  & ---  & all five rates non-finite \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{What improves loss.} Only the two output-side gates: gated residuals ($-0.017$) and gated attention ($-0.009$). Both are real gaps (8$\times$ and 4$\times$ the seed noise) but small. Gated norm is slightly worse ($+0.012$). Everything removed from the baseline hurts, in the order QK norm (0.025) $<$ final norm (0.030) $\ll$ RoPE $\approx$ pre-norm (0.14) $<$ post-norm (0.22) $\ll$ no residuals (diverges at every rate).
+
+\textbf{What the diagnostics explain, step by step.}
+\begin{enumerate}
+\item \emph{No residuals} has no identity path, so the stream must be rebuilt from scratch by each block. It is non-finite at all five rates (the supplied runs record NaN losses), which is the depth-stability failure the handout predicts. This is the strongest causal evidence in the table: one change, total failure, no learning rate rescues it.
+\item \emph{Post-norm} is the only variant whose gradient \emph{shrinks} toward the input: the bottom/top gradient ratio is 0.3 instead of 4.4. Each post-norm divides the gradient by the scale of $x + F(x)$, and 16 such divisions compound. Lower layers learn slowly, loss is 0.22 worse, and the best rate drops to 0.001 with divergence at 0.004. Here the diagnostic and the mechanism match: we see the gradient attenuation that the formula predicts.
+\item \emph{No pre-norm} does the opposite: branches see the raw, growing stream, so the gradient ratio is 11 and the stream grows 7$\times$ from a tiny start (0.05). It also produces the flattest attention we measured: mean lag 268 is the uniform value and 0.41 of the mass sits on the first token. The unnormalized queries and keys make the softmax nearly flat (except on the sink), so attention stops selecting. This explains why it costs as much as removing RoPE: in both cases attention loses positional selectivity.
+\item \emph{No RoPE} keeps all scales healthy (growth 10.5, ratio 3.1, sink 0.09): the loss of 0.14 is not a stability problem, it is missing information. The context-removal experiment in Problem 2(f) confirms this (its loss does not depend on prefix length once the first token is kept).
+\item \emph{No final norm} forces the model to keep the stream small (growth 2.4 instead of 11.7) because the logits read it directly. It compensates with a bigger sink (0.28) and costs 0.03.
+\item \emph{No QK norm} is fine at the best rate but diverges at the two highest rates: the diagnostic is the learning-rate curve itself (Figure~\ref{fig:lr}). QK norm bounds the logits of the softmax, and without it a high learning rate lets attention logits blow up.
+\item \emph{Gated attention} changes the attention statistics more than anything else that still trains well: the sink drops from 0.13 to 0.02 and the mean lag halves (79). The per-head gate can switch a head off for a token, which is the job the sink was doing. This is consistent with Qiu et al.\ (2025), but in our data it is a correlation: a smaller sink co-occurs with a better loss; we did not intervene on the sink directly.
+\item \emph{Gated residuals} give the best loss while keeping every scale near the baseline (growth 12.5, cos 0.87), with a larger bottom/top gradient ratio (7.9). The gain is not visible in any depth statistic we measured; the most likely mechanism is per-token control of how much each block writes, which these averaged diagnostics cannot see.
+\end{enumerate}
+
+\textbf{Correlation versus mechanism.} Divergence of no-residual and post-norm at modest rates, and the gradient-ratio inversion of post-norm, are mechanistic: the diagnostic is the quantity the architectural change alters, and the failure follows. The sink/loss relation across gated attention, baseline and no-pre-norm is correlational: we observe the three points, not the counterfactual.
+
+%=====================================================================
+\section*{Problem 2: Depth-stabilizing tools for stacked RNNs}
+
+\subsection*{(a) Plain 1-layer and 4-layer RNNs}
+
+Best losses: 1-layer 4.0326 at LR 0.003, 4-layer 4.0809 at LR 0.001 (Table~\ref{tab:p2}). Adding three layers makes the plain RNN \emph{worse} and more fragile: the 4-layer sweep diverges at 0.002 and 0.004, and its three finite points slope downward toward the lowest rate, so its optimum is at or below 0.001. The 1-layer model is stable across all five rates (3.4--4.4). Both are about 0.5 worse than the modern RNN and 1.1 worse than d8. The 4-layer model has 4.5M recurrent parameters versus 1.1M for the 1-layer model and 19M for the modern RNN; the extra capacity is wasted without a depth path.
+
+\subsection*{(b) Diagnostics for the plain RNNs}
+
+Figure~\ref{fig:time} and Table~\ref{tab:p2} show the final checkpoints. For the 4-layer plain RNN:
+\begin{itemize}
+\item \emph{Depth.} Adjacent-layer cosine similarity is 0.02, i.e. each layer's state is unrelated in direction to the one below it. Without residuals, nothing forces layers to agree, and the top layer sees a signal that has passed through four tanh nonlinearities.
+\item \emph{Time.} The last-token gradient $\partial L_T/\partial h_t$ falls below $10^{-3}$ of its final value only 12--15 steps back for layers 2--4 (204 for layer 1); the plain tanh recurrence forgets exponentially fast. The 1-layer model reaches back 119 steps.
+\item \emph{Saturation.} Layers 2--4 of rnn4 have 49--58\% of units with $|h|>0.95$ (rnn1: 34\%), hidden RMS 0.84--0.88. More than half the units sit where $\tanh'$ is below 0.1, which is the low-derivative regime that kills the gradient above.
+\end{itemize}
+The full-sequence gradient $\partial L/\partial h_t$ is flat in $t$ at about $10^{-5}$ for all models (Figure~\ref{fig:time}, left): it is dominated by the loss at position $t{+}1$, so it says little about long-range credit. The last-token gradient is the informative one.
+
+\subsection*{(c) The modern 4-layer RNN}
+
+Best 3.5160 at LR 0.002; all five rates finite, a U-shaped curve from 3.76 (0.00025) to 3.68 (0.004). Pre-norm, depth residuals and the MLP branches take the 4-layer model from 4.08 to 3.52 and remove the divergence. Diagnostically: adjacent-layer cosine goes from 0.02 to 0.73 (the identity path makes the layers agree), top-layer saturation drops to 52\% (layer 3 68\%), and the last-token gradient reaches back 156--158 steps in layers 1--2 but only 6--10 steps in layers 3--4. So the modern RNN still forgets quickly at the top; the gain comes from making depth trainable, not from longer memory.
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{p2_time.png}
+\caption{P2 temporal diagnostics of the top recurrent layer on final checkpoints, 32 held-out sequences (thick purple = modern RNN). Left to right: $\|\partial L/\partial h_t\|_{\mathrm{rms}}$, $\|\partial L_T/\partial h_t\|_{\mathrm{rms}}$ (log scale), hidden-state RMS, saturation $\Pr(|h_t|>0.95)$.}\label{fig:time}
+\end{figure}
+
+\subsection*{(d) The eight ablations}
+
+\begin{table}[H]\centering\small
+\caption{Supplied P2 sweeps: best of five rates, plus diagnostics on the best final checkpoint. ``cos'' is adjacent-layer cosine; ``sat'' is the saturation fraction per layer; ``reach'' is how many steps back $\|\partial L_T/\partial h_t\|$ stays above $10^{-3}$ of its value at $t=T$, per layer.}\label{tab:p2}
+\begin{tabular}{lrrrrlll}
+\toprule
+variant & best loss & vs modern & best LR & cos & sat (layers 1--4) & reach (layers 1--4) & diverged at \\
+\midrule
+plain 1-layer (rnn1) & 4.0326 & $+$0.517 & 0.003 & --- & 0.34 & 119 & \\
+plain 4-layer (rnn4) & 4.0809 & $+$0.565 & 0.001 & 0.02 & .01/.49/.58/.57 & 204/15/12/12 & 0.002, 0.004 \\
+modern 4-layer (rnn) & 3.5160 & ---      & 0.002 & 0.73 & .15/.26/.68/.52 & 156/158/10/6 & \\
+no pre-norm        & 3.4822 & $-$0.034 & 0.002 & 0.58 & .00/.00/.99/1.0 & 476/325/2/3 & 0.004 \\
+gated residuals    & 3.4956 & $-$0.020 & 0.001 & 0.77 & .19/.11/.24/.20 & 151/218/240/124 & \\
+gated norm         & 3.5059 & $-$0.010 & 0.001 & 0.73 & .01/.13/.47/.36 & 183/110/9/9 & \\
+post-norm          & 3.5124 & $-$0.004 & 0.001 & 0.73 & .00/.46/.32/.39 & 471/61/95/60 & \\
+gated output       & 3.5125 & $-$0.003 & 0.001 & 0.76 & .19/.17/.23/.21 & 145/174/148/100 & \\
+final norm         & 3.5213 & $+$0.005 & 0.001 & 0.74 & .26/.11/.24/.30 & 136/165/166/141 & \\
+RoPE-style input   & 3.5664 & $+$0.050 & 0.002 & 0.64 & .05/.93/.99/1.0 & 182/14/2/2 & \\
+no depth residuals & 3.5813 & $+$0.065 & 0.001 & 0.00 & .37/.31/.15/.10 & 131/131/144/143 & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Which interventions matter.} Compared with the transformer, every RNN effect is smaller and several signs flip:
+\begin{enumerate}
+\item \emph{Removing depth residuals} costs 0.065 for the RNN but is fatal for d8. Four blocks is survivable without an identity path; sixteen sublayers is not. The diagnostic that tracks this is adjacent-layer cosine: 0.00 without residuals (layers unrelated), 0.73 with.
+\item \emph{Removing pre-norm} \emph{helps} the RNN by 0.034 (it costs d8 0.14), but at a price: layers 3--4 are 99--100\% saturated with hidden RMS 1.0, and the last-token gradient at the top dies within 2--3 steps. The model turned its top two layers into near-binary units and still improved, because the lower two layers (reach 476 and 325 steps, the longest we measured) carry the memory. It also diverges at 0.004, so the win is fragile. This is the clearest case in the assignment where a diagnostic looks terrible and the loss is fine: saturation is not harmful if the saturated layer is not the one doing the remembering.
+\item \emph{Gated residuals} help both families (RNN $-0.020$, d8 $-0.017$) and are the only RNN change that gives every layer a long reach (124--240 steps) with low saturation (0.11--0.24). The gate lets a block write little to the depth stream when its branch is uninformative, which keeps the stream from saturating the next block's input.
+\item \emph{RoPE-style rotation} of the recurrent input costs 0.050 and saturates layers 2--4 (0.93--1.0). Rotating a normalized vector by a position-dependent angle hands the recurrence an input that spins every step, and the tanh cell saturates trying to track it. For d8, RoPE is where position information comes from; for an RNN, position is implicit in the recurrence, so the rotation is pure noise.
+\item \emph{Post-norm, gated output, final norm, gated norm} are within $\pm0.010$ of the baseline; post-norm in particular is harmless for the RNN (reach 471 in layer 1) while it costs d8 0.22. With four blocks, the compounding gradient division that hurts d8 is only four factors deep.
+\end{enumerate}
+The diagnostics that carry the comparison are adjacent-layer cosine (depth path intact or not) and the per-layer saturation and reach (which layer is doing the remembering). Loss alone would not have told us that no-pre-norm wins by sacrificing its top two layers.
+
+\subsection*{(e) A competitive RNN and transformer side by side}
+
+We compare gated-residual d8 (2.9096, 34.6M parameters) with gated-residual RNN (3.4956, 19M). Across \emph{layers}, both have high adjacent cosine (0.87 vs 0.77) and growing activation RMS (12.5$\times$ vs 5.5$\times$). Across \emph{positions}, the RNN's top-layer hidden state has cosine similarity only 0.10 at lag 1, 0.07 at lag 4 and 0.06 at lag 64 with itself (modern baseline); the state changes almost completely every step. The transformer's stream is dominated by the token embedding and its position-independent residual, so adjacent positions are far less similar than adjacent layers.
+
+High similarity does not imply removability. Adjacent d8 layers have cosine 0.87, yet removing a block is not a 13\% change in loss: the branch update is small in norm but points in the direction the next block reads from. The cleanest evidence against ``similar means skippable'' is the no-pre-norm RNN above: its top two layers are saturated, nearly constant in time, and still contribute (loss improves 0.034 with them). Similarity measures what fraction of the vector is shared, not whether the unshared part carries the prediction.
+
+\subsection*{(f) How much context do the models use?}
+
+\textbf{Design.} We score the same 32 final tokens with the prefix truncated to the last $K \in \{1,4,16,64,256,512\}$ tokens. For the RNN we reset the hidden state at the truncation point (the model literally sees only $K$ tokens). For the transformer we keep the original position offsets, so RoPE angles are unchanged and only the attended set shrinks. Separately, we either drop or keep the true first token (BOS) at the front of the truncated prefix, since Problem 1 showed the first token is a sink.
+
+\begin{table}[H]\centering\small
+\caption{Last-token loss increase versus full context when only the last $K$ tokens are kept (BOS dropped / BOS kept). Full-context last-token loss: d8 4.44, modern RNN 5.07.}\label{tab:ctx}
+\begin{tabular}{lrrrrrr}
+\toprule
+ & $K{=}1$ & 4 & 16 & 64 & 256 & 512 \\
+\midrule
+d8                 & 4.94 / 5.24 & 2.79 / 2.31 & 0.97 / 0.53 & 0.31 / 0.16 & $-$0.10 / 0.03 & $-$0.08 / 0.03 \\
+d8 gated residuals & 4.38 / 4.43 & 3.77 / 2.70 & 0.64 / $-$0.02 & $-$0.28 / $-$0.19 & $-$0.36 / $-$0.23 & $-$0.41 / $-$0.23 \\
+d8 no RoPE         & 3.94 / 2.00 & 3.56 / 1.15 & 3.58 / $-$0.11 & 3.67 / 0.07 & 3.58 / $-$0.05 & 3.56 / $-$0.08 \\
+modern RNN         & 29.1 / 1.71 & 81.5 / 0.77 & 15.5 / 0.16 & 53.2 / 0.06 & 51.4 / 0.00 & 87.1 / 0.00 \\
+RNN gated residuals& 2.14 / 1.61 & 0.57 / 0.67 & 0.09 / 0.20 & 0.02 / 0.02 & 0.00 / 0.01 & 0.00 / 0.00 \\
+plain 1-layer      & 1.03 / 0.76 & 0.22 / 0.32 & $-$0.06 / $-$0.05 & 0.00 / 0.00 & 0.00 / 0.00 & 0.00 / 0.00 \\
+plain 4-layer      & 2.31 / 0.56 & 0.86 / 0.21 & 0.00 / $-$0.02 & 0.01 / 0.01 & $-$0.02 / 0.00 & 0.00 / 0.00 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]\centering
+\includegraphics[width=.6\textwidth]{p12_context.png}
+\caption{Loss increase versus tokens kept, BOS preserved.}\label{fig:ctx}
+\end{figure}
+
+\textbf{Results, step by step.}
+\begin{enumerate}
+\item \emph{Transformers use far more context than RNNs.} With BOS kept, d8 still loses 0.53 at $K=16$ and 0.16 at $K=64$, reaching full-context quality only around 256 tokens. The modern RNN is within 0.16 of full context at $K=16$ and within 0.06 at $K=64$; the plain RNNs are fully recovered by $K=16$. So the RNN's useful context is about 16--64 tokens, the transformer's about 256.
+\item \emph{The BOS control matters for both families, for different reasons.} For d8, dropping BOS costs an extra 0.4 at $K=16$ and 0.5 at $K=4$: the sink token is part of how the model computes, not just a position it ignores. For the modern RNN, dropping BOS is catastrophic (loss increases of 15--87 nats): its hidden state after a hard reset onto a mid-sequence token is far outside anything seen in training, and the saturated top layers amplify it. Keeping BOS gives the RNN its training-time initial state, and the curve becomes sensible. This is why the handout asks for the control.
+\item \emph{No RoPE confirms the Problem 1 reading.} With BOS kept, its loss does not change with $K$ at all beyond 16 (and even improves slightly), while dropping BOS costs a constant 3.6 at every $K$: without position information the model can only tell ``is the sink present'' and not ``how far back is that token''.
+\item \emph{Gated residuals} shift the transformer's curve left: it is at full quality by $K=16$ with BOS and \emph{better} than full context at $K\ge64$ (by 0.2--0.4). The model has learned to use the sink plus recent tokens and finds the long tail of context mildly distracting.
+\end{enumerate}
+
+\textbf{Useful context versus gradient reach.} The last-token gradient of the modern RNN's top layer dies within 6--10 steps and its lower layers within $\sim$160 steps; useful context is 16--64 tokens. For d8, the gradient reaches every position (attention is one hop) while useful context is $\sim$256. The two need not agree because they measure different things. Gradient reach is a \emph{local} derivative: how much the prediction changes under an infinitesimal change in $h_t$. Useful context is a \emph{global} counterfactual: what happens if the tokens are removed entirely. A saturated unit can have zero derivative and still hold a bit that matters (remove the token and the bit flips); conversely, attention can have nonzero gradient to a position it never uses. In the RNN the gradient underestimates context because of saturation; in the transformer it overestimates because the mask lets gradient flow everywhere.
+
+%=====================================================================
+\section*{Problem 3: Attention residuals across depth}
+%P3%
+
+%=====================================================================
+\section*{Problem 4: Improved recurrent hidden-state updates}
+%P4%
+
+\end{document}
