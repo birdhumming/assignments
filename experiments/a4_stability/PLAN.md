@@ -32,3 +32,4 @@ P2 rnn1 4.0326@3e-3 | rnn4 4.0809@1e-3 (6.875 at >=2e-3) | modern rnn 3.5160@2e-
   no-reset/reset-only/input-gate 3e-3, normgate-b0 3e-3), lane A2 RNN P3 (16 runs: 8 schemes x {1e-3, 2e-3}). Each lane = one app, 1 container.
   Next lane launches when < 2 ephemeral apps. Then: measure_supplied (P1/P2 checkpoints) and the same driver on our P3/P4 checkpoints (user volume).
 - 11:05 UTC lane A1 app ap-cSqdhMO9UzbXII7Jf03d2l (16 d8 P3 runs). Watcher in 'watch' mode: measure -> B-p4 -> A2-rnn-p3 (log /tmp/a4_lanes_watch.log). Restart: setsid nohup uv run python -m experiments.a4_stability.launch_plan watch &
+- 11:18 UTC: lane A1 on H200 got no container in 12 min (second H200 never schedules); stopped it and relaunched lane A1 on H100: app ap-FAcMZFxxNgMz8FlaHVIiBi.
