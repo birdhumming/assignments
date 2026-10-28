@@ -42,7 +42,7 @@ def main(runs, out="p4_time.png"):
         axes[0].plot(np.array(s["last"]["hidden_gradient_rms"])[-1], label=label(run), lw=lw)
         axes[1].plot(np.array(s["full"]["hidden_rms"])[-1], label=label(run), lw=lw)
         axes[2].plot(np.array(s["full"]["fraction_abs_gt_095"])[-1], label=label(run), lw=lw)
-    axes[0].set_yscale("log"); axes[0].set_title("top-layer hidden-gradient RMS, last-token loss")
+    axes[0].set_yscale("log"); axes[0].set_ylim(bottom=1e-12); axes[0].set_title("top-layer hidden-gradient RMS, last-token loss")
     axes[1].set_title("top-layer hidden-state RMS"); axes[2].set_title("top-layer saturation Pr(|h|>0.95)")
     for ax in axes:
         ax.set_xlabel("position t"); ax.grid(alpha=.3)

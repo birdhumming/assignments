@@ -15,7 +15,16 @@ Per channel, $z_t$ interpolates between copying the old state and writing a new 
 \item \textbf{input-only update gate} ($z_t=\sigma(W_z x_t)$): the cell still has a keep path, but the decision to keep or write cannot look at the state. Tests how much the \emph{content-dependence} of the gate is worth.
 \end{itemize}
 Locked prediction: update gate $\gg$ reset gate; reset-only ends within 0.05 of tanh; input-only gating loses a few hundredths.
-%P4ABL%
+Three ablations at lr 0.003, each removing one piece of the GRU (Table~\ref{tab:p4}):
+
+\begin{enumerate}[nosep]
+\item \textbf{No reset gate} ($r_t\equiv 1$): 3.285, i.e.\ 0.10 worse than the full GRU but still 0.23 better than tanh.
+\item \textbf{Reset gate only} ($z_t\equiv 1$, no keep path): 3.404, 0.22 worse than the GRU, 0.11 better than tanh.
+\item \textbf{Input-only update gate} ($z_t=\sigma(W_z x_t)$, no $U_z h_{t-1}$ term): %P4INPUT%
+\end{enumerate}
+
+Reading the table: the keep path $(1-z_t)\odot h_{t-1}$ is the big piece (removing it costs 0.22), the reset gate is the smaller piece (0.10), and they are not independent, since the sum of the two costs (0.32) is about the whole GRU-minus-tanh gap (0.33). The order matches my prediction; the size of the reset-gate cost does not. I expected reset-only to be within 0.05 of tanh, and it is 0.11 better, so a gate that only decides how much of the old state the candidate may read already buys a third of the GRU's gain. The reason, in hindsight: the tanh cell's problem is not just that it overwrites $h$, it is that the recurrent input $Uh_{t-1}$ is whatever scale $h$ happens to have, so the candidate saturates (Problem 2 measured 52\% of top-layer units at $|h|>0.95$). A reset gate can shrink that input to zero whenever it would saturate; the keep path cannot do that by itself.
+
 
 \paragraph{(c) Diagnostics.} %P4DIAG%
 
