@@ -29,7 +29,7 @@ if __name__ == '__main__':
     print(len(jobs), 'runs:', [j[0] for j in jobs])
     probe = app.function(image=build_image(), volumes=VOLUME_MOUNTS, gpu=os.environ.get('A4_MEASURE_GPU', 'H100'), timeout=3*3600)(measure_runs)
     with modal.enable_output(), app.run(environment_name=MODAL_ENVIRONMENT):
-        results = probe.remote(jobs, str(OWN_ROOT))
+        results = probe.remote(jobs, str(OWN_ROOT), early='step_100.pt')
     for run, stages in results.items():
         for stage, stats in stages.items():
             save(RESULTS/run/f'{stage}.json', stats)
