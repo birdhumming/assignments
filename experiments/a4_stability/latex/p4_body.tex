@@ -1,0 +1,25 @@
+\paragraph{What the problem is about.} The modern tanh RNN from Problem 2 updates its state as $h_t = \tanh(W x_t + U h_{t-1} + b)$: every step \emph{overwrites} $h$. Nothing in the cell says ``keep what you had''; information only survives if $U$ happens to preserve it, and every step pushes it through a saturating nonlinearity. That is the time-direction analogue of the no-residual transformer in Problem 1, and the Problem 2 diagnostics showed the consequence: the last-token gradient of the modern RNN reaches back 156 and 158 tokens in layers 1--2 but only 10 and 6 tokens in layers 3--4, and the top layers run at 50--70\% tanh saturation.
+
+A GRU adds the missing ``keep'' path. With $z_t=\sigma(W_z x_t+U_z h_{t-1})$ and $r_t=\sigma(W_r x_t+U_r h_{t-1})$,
+\[ h_t = (1-z_t)\odot h_{t-1} + z_t\odot \tanh\big(W x_t + U (r_t\odot h_{t-1}) + b\big). \]
+Per channel, $z_t$ interpolates between copying the old state and writing a new one, so a channel with $z\approx 0$ is a residual connection through time. The reset gate $r_t$ decides how much of the old state the \emph{candidate} is allowed to see. Everything else (4 layers, depth residuals, pre-norm, MLP after every recurrent layer) is identical to the supplied modern RNN; only $h$ is carried across time.
+
+\paragraph{(a) GRU vs.\ tanh.} Table~\ref{tab:p4} has the numbers. The GRU reaches 3.187 at lr 0.003 and 3.183 at 0.006, against 3.516 for the tuned tanh RNN: a 0.33 improvement, more than the entire spread of the eight Problem-2 interventions (3.48--3.58) and bigger than I predicted (locked prediction: $\geq 0.10$). The best rate is also higher (0.003--0.006 vs.\ 0.001--0.002 for the tanh variants), which fits the mechanism: the keep path makes the recurrence contractive by construction, so the cell tolerates larger steps without the recurrent Jacobian blowing up.
+
+\input{p4_losses.tex}
+
+\paragraph{(b) Which part of the GRU matters.} Three ablations, each at lr 0.003, each removing one ingredient:
+\begin{itemize}\setlength\itemsep{0pt}
+\item \textbf{no reset gate} ($r\equiv 1$): the candidate always sees the whole old state. Tests whether $r$ does anything beyond what $z$ already does.
+\item \textbf{reset gate only} ($z\equiv 1$): a tanh RNN whose recurrent input is gated, but with no keep path. If the keep path is the point, this should land near the tanh baseline.
+\item \textbf{input-only update gate} ($z_t=\sigma(W_z x_t)$): the cell still has a keep path, but the decision to keep or write cannot look at the state. Tests how much the \emph{content-dependence} of the gate is worth.
+\end{itemize}
+Locked prediction: update gate $\gg$ reset gate; reset-only ends within 0.05 of tanh; input-only gating loses a few hundredths.
+%P4ABL%
+
+\paragraph{(c) Diagnostics.} %P4DIAG%
+
+\paragraph{(d) My update: NormGate.} Design, fixed before training: keep the GRU's update gate, drop the reset gate (per (b) it should be the cheap part), normalize the state before it enters the candidate, and bias the gate towards keeping:
+\[ h_t = (1-z_t)\odot h_{t-1} + z_t\odot\tanh\big(W x_t + U\,\mathrm{RMSNorm}(h_{t-1}) + b\big),\qquad z_t=\sigma(W_z x_t+U_z h_{t-1} - 1). \]
+The RMSNorm attacks the saturation problem directly: the candidate's recurrent input has unit scale no matter how large $h$ has grown, so $\tanh$ stays in its linear range longer. The $-1$ bias starts every channel at $z\approx 0.27$ (keep 73\%), the usual trick for long memory at initialization. A control with the bias at 0 separates the two ideas. Still only $h$ crosses time steps.
+%P4D%
