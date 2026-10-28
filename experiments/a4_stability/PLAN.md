@@ -34,3 +34,7 @@ P2 rnn1 4.0326@3e-3 | rnn4 4.0809@1e-3 (6.875 at >=2e-3) | modern rnn 3.5160@2e-
 - 11:05 UTC lane A1 app ap-cSqdhMO9UzbXII7Jf03d2l (16 d8 P3 runs). Watcher in 'watch' mode: measure -> B-p4 -> A2-rnn-p3 (log /tmp/a4_lanes_watch.log). Restart: setsid nohup uv run python -m experiments.a4_stability.launch_plan watch &
 - 11:18 UTC: lane A1 on H200 got no container in 12 min (second H200 never schedules); stopped it and relaunched lane A1 on H100: app ap-FAcMZFxxNgMz8FlaHVIiBi.
 - 11:28 UTC: H100 lane A1 also got no container in 11 min; stopped it, relaunched lane A1 on A100-80GB: app ap-2JNlaZ9MVx9vIXHPBrNqxn. GRU 3e-3 at 28%, ETA 12:45 UTC.
+- 11:32 UTC: second container never schedules on H200, H100 or A100-80GB while the GRU app holds one GPU -> environment concurrency
+  limit looks like 1 right now (README promises 2). Lane A1 (A100 app ap-2JNlaZ9MVx9vIXHPBrNqxn) is pending; definitive test = does it
+  start when GRU finishes (~12:45 UTC). If limit stays 1: trim P3 to 1 LR per scheme (+2nd LR for attention/hybrid only), P4 to gru x2,
+  no-reset, reset-only, normgate x1. Merge check: a1 modal_train fixes (orphaned W&B close, GPU memory release) survived the a4 merge.
