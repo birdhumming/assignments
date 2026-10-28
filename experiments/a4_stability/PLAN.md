@@ -80,3 +80,12 @@ P2 rnn1 4.0326@3e-3 | rnn4 4.0809@1e-3 (6.875 at >=2e-3) | modern rnn 3.5160@2e-
   tab:p1depth, tab:p2, tab:ctx and figures lr/depth/attn/time/ctx. Placeholders %P3% and %P4% remain; %GPUHOURS% placeholder in Setup.
   P3/P4 still need: results tables from W&B/Modal (lanes A1, B, A2), checkpoint diagnostics of our runs (measure_default.py), routing-weight
   inspection for attention residuals, prediction-vs-outcome table from the locked predictions above.
+- 17:25 UTC W&B check (project aleyang-stanford-university/assignments, names a4-*). d8 P3 finals (lr .003 unless noted):
+  attention 2.9036 (.006: 2.9106), block2 2.9031, block4 2.9140, hybrid 2.9159, uniform 2.9259, half 2.9355 (.006: 2.9408),
+  ema09 2.9482, ema01 6.8746 (uniform-loss failure, same as supplied no-residual). Supplied additive d8 = 2.9265.
+  Lane A1 remaining at .006: ema09 (running), uniform, block4, ema01, hybrid, block2; d8 runs take 22 min on A100 -> lane done ~19:45 UTC.
+  P4: gru .0015 3.2312, .003 3.1874, .006 3.1829 (best at edge; consider .012 extension if time); normgate .003 running (85%, val 3.433,
+  clearly worse than GRU). Recurrent runs take ~70 min on H200 (not 1.7 h) -> lane B done ~22:30 UTC. Lane A2 (RNN P3) auto-starts ~19:45.
+  Prediction check so far: EMA .1 = no-residual (correct), EMA .9 slightly worse than additive (+0.022, correct), half close to additive
+  (+0.009, correct), uniform worse for d8 (-0.001: wrong, it matched), attention residual close to additive (-0.023: better than expected),
+  blocked between full and additive (block2 = full, block4 in between: partly), hybrid >= attention (wrong: +0.012 worse), GRU >= .10 better (yes, .33).
