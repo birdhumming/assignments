@@ -69,3 +69,10 @@ P2 rnn1 4.0326@3e-3 | rnn4 4.0809@1e-3 (6.875 at >=2e-3) | modern rnn 3.5160@2e-
   TODO: temporal_summary reach metric is wrong (always 1023; should find first t where grad < 1e-3*final scanning backwards, use np.where).
 - 13:03 UTC lane B (P4, ap-JSGDYvghlcemV8GGfkDxov) got its H200 container after ~8 min; both GPUs busy (A1 d8 on A100, B on H200).
   Watcher (pid 100527) will launch A2-rnn-p3 when one lane finishes. ETA: A1 ~4 h (16 d8 runs x ~15 min), B ~14 h (8 recurrent runs x ~1.7 h).
+- 13:20 UTC attention analysis (analysis/p1_attention.py -> figures/p1_attention.png). At query 512 (uniform baseline first=self=0.0019, lag 264):
+  d8 first-token mass 0.129 (~70x uniform: a learned sink), self 0.058, mean lag 140; per-layer first mass [0.04,0.00,0.08,0.15,0.05,0.23,0.22,0.28]
+  (sink grows with depth), layer-7 heads [0.27,0.44,0.40,0.39,0.22,0.01,0.25,0.25] (one head ignores the sink). gated-attention: first 0.023, lag 79
+  (gates replace the sink, attention more local); no-prenorm: first 0.41, lag 268 ~ uniform (attention nearly flat -> poor loss 3.07); postnorm first 0.03,
+  lag 176; no-final-norm first 0.275. p2_time.png now has 4 panels (full-loss L grad is flat ~1e-5 across t; L_T grad decays ~exponentially,
+  modern rnn ~ 1e-19 at t=0 vs 1e-1 at t=1023, rnn1/rnn4/rope/no-prenorm fall off a cliff within ~200 steps).
+  Report skeleton next: experiments/a4_stability/latex/report.tex (copy A3 preamble).

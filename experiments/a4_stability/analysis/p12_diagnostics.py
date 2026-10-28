@@ -103,21 +103,23 @@ def main():
         ax.set_title(t); ax.set_xlabel("depth step (0 = embedding, odd = after attention)"); ax.set_yscale("log")
     axes[0].legend(fontsize=7)
     fig.tight_layout(); fig.savefig(FIG / "p1_depth.png", dpi=150)
-    fig, axes = plt.subplots(1, 3, figsize=(14, 4))
+    fig, axes = plt.subplots(1, 4, figsize=(18, 4))
     for run, stages in data.items():
         v = variant(run)
         if not v.startswith("rnn") or "final" not in stages:
             continue
         s = stages["final"]
-        hg = np.array(s["last"]["hidden_gradient_rms"])[-1]
-        axes[0].plot(hg, label=v, lw=2 if v == "rnn" else 1)
-        axes[1].plot(np.array(s["full"]["hidden_rms"])[-1], label=v, lw=2 if v == "rnn" else 1)
-        axes[2].plot(np.array(s["full"]["fraction_abs_gt_095"])[-1], label=v, lw=2 if v == "rnn" else 1)
-    axes[0].set_yscale("log"); axes[0].set_title("top-layer hidden-gradient RMS, last-token loss")
-    axes[1].set_title("top-layer hidden-state RMS"); axes[2].set_title("top-layer tanh saturation Pr(|h|>0.95)")
+        lw = 2 if v == "rnn" else 1
+        axes[0].plot(np.array(s["full"]["hidden_gradient_rms"])[-1], label=v, lw=lw)
+        axes[1].plot(np.array(s["last"]["hidden_gradient_rms"])[-1], label=v, lw=lw)
+        axes[2].plot(np.array(s["full"]["hidden_rms"])[-1], label=v, lw=lw)
+        axes[3].plot(np.array(s["full"]["fraction_abs_gt_095"])[-1], label=v, lw=lw)
+    axes[0].set_yscale("log"); axes[0].set_title("top-layer hidden-gradient RMS, full loss L")
+    axes[1].set_yscale("log"); axes[1].set_title("top-layer hidden-gradient RMS, last-token loss L_T")
+    axes[2].set_title("top-layer hidden-state RMS"); axes[3].set_title("top-layer tanh saturation Pr(|h|>0.95)")
     for ax in axes:
         ax.set_xlabel("position t")
-    axes[0].legend(fontsize=7)
+    axes[2].legend(fontsize=7, ncol=2, loc="lower center")
     fig.tight_layout(); fig.savefig(FIG / "p2_time.png", dpi=150)
     fig, ax = plt.subplots(figsize=(6, 4))
     for run, stages in data.items():
