@@ -56,7 +56,10 @@ def temporal_summary(stats):
     sat = np.array(stats["full"]["fraction_abs_gt_095"])
     hr = np.array(stats["full"]["hidden_rms"])
     T = hg.shape[1]
-    reach = [int(T - np.argmax(hg[l][::-1] > hg[l][-1] * 1e-3)) if hg[l][-1] > 0 else 0 for l in range(hg.shape[0])]
+    def steps_back(g):
+        below = np.where(g[::-1] < g[-1] * 1e-3)[0]
+        return int(below[0]) if len(below) else int(T)
+    reach = [steps_back(hg[l]) if hg[l][-1] > 0 else 0 for l in range(hg.shape[0])]
     return dict(reach_1e3=reach, sat_mean=sat.mean(1).round(3).tolist(), hidden_rms_end=hr[:, -1].round(2).tolist(),
                 hidden_rms_start=hr[:, 1].round(2).tolist())
 
