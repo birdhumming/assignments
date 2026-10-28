@@ -26,3 +26,8 @@ P2 rnn1 4.0326@3e-3 | rnn4 4.0809@1e-3 (6.875 at >=2e-3) | modern rnn 3.5160@2e-
   measuring init/early/final for the 20 best-LR supplied runs (d8-no-residual has no checkpoints) into results/a4_stability/<run>/<stage>.json
   (results/ is gitignored; keep JSON locally, regenerate figures with analysis scripts).
 - 10:36-10:55 UTC: both calibration apps sat at 0 containers (H100 capacity wait).
+- 10:56 UTC: no H100 container in 19 min; stopped both H100 apps and relaunched on H200: gru 3e-3 ap-tRYCpvAMQ6IYuW69STCO7T, rnn-attention 1e-3 ap-JzDXYMDUdergprAVxzq5zd (launch_training_jobs(..., gpu="H200")).
+- Calibration (H200): GRU 3e-3 runs ~94 steps/min -> ~1.7 h per GRU-type run. Queue = launch_plan.py (watcher nohup, log /tmp/a4_lanes.log):
+  lane A1 d8 P3 (16 runs: 7 schemes x {3e-3, 6e-3} + block2 {4.5e-3, 9e-3}), lane B P4 (8 runs: gru 1.5e-3/6e-3, normgate 3e-3/1.5e-3,
+  no-reset/reset-only/input-gate 3e-3, normgate-b0 3e-3), lane A2 RNN P3 (16 runs: 8 schemes x {1e-3, 2e-3}). Each lane = one app, 1 container.
+  Next lane launches when < 2 ephemeral apps. Then: measure_supplied (P1/P2 checkpoints) and the same driver on our P3/P4 checkpoints (user volume).
