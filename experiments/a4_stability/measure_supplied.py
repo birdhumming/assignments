@@ -30,7 +30,8 @@ def best_runs(variants=None):
 
 def measure_stage(model, tokens):
     import torch
-    from experiments.a4_stability.diagnostics import profile, context_loss
+
+    from experiments.a4_stability.diagnostics import context_loss, profile
     stats = profile(model, tokens)
     with torch.no_grad():
         full = context_loss(model, tokens, keep=tokens.shape[1]-1)
@@ -45,10 +46,11 @@ def measure_runs(jobs, root=REFERENCE_ROOT, device='cuda', batch=8, early='early
     """jobs: list of (run_name, variant, lr). Returns {run_name: {stage: stats}}.
     `early` is the step-100 checkpoint relative to the run dir: `early/` (supplied) or `step_100.pt` (ours)."""
     import torch
+
     from data import dclm_val_dataset, load_token_dataset
+    from experiments.a4_stability.sweeps import config
     from model_io import load_model
     from train import build_model
-    from experiments.a4_stability.sweeps import config
     validation = load_token_dataset(dclm_val_dataset(), role='val', data_seed=42)
     tokens = torch.tensor(validation[:batch]['input_ids'].astype('int64'), device=device)
     out = {}
@@ -78,7 +80,9 @@ def measure_runs(jobs, root=REFERENCE_ROOT, device='cuda', batch=8, early='early
 
 if __name__ == '__main__':
     import modal
-    from modal_utils import app, build_image, VOLUME_MOUNTS, MODAL_ENVIRONMENT
+
+    from modal_utils import MODAL_ENVIRONMENT, VOLUME_MOUNTS, app, build_image
+
     from .diagnostics import save
     variants = sys.argv[1:] or None
     jobs = [(r['run_name'], v, r['lr']) for v, r in sorted(best_runs(variants).items())]
