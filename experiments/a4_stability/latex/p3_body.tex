@@ -1,0 +1,41 @@
+\paragraph{What we trained.} The supplied models use additive residuals: at every depth step, $x \leftarrow x + F(\mathrm{Norm}(x))$, where $F$ is an attention, recurrent, or MLP branch. The d8 transformer has 16 steps (8 attention + 8 MLP), the modern RNN has 8 (4 recurrent + 4 MLP). Problem 3 replaces the ``$x +$'' with other ways of combining the branch output with what came before:
+\begin{itemize}
+\item \textbf{depth EMA}: $x \leftarrow \beta x + F(\mathrm{Norm}(x))$. With $\beta=0.1$ the stream forgets 90\% of itself at every step; with $\beta=0.9$ it forgets 10\%.
+\item \textbf{half-and-half}: the new residual is the mean of the previous two stream states, $x_{j+1} = \tfrac12(x_j + x_{j-1}) + F(\mathrm{Norm}(x_j))$.
+\item \textbf{uniform routing}: each branch reads the \emph{mean} of all sources so far (embedding plus every earlier branch output), and the output head reads the mean of all of them.
+\item \textbf{full attention residuals}: same sources, but each branch (and the output head) has its own router: a learned query scores the RMS-normalized sources, a softmax over sources gives per-token weights, and the branch reads the weighted sum. Queries start at zero, so every router starts as uniform routing.
+\item \textbf{blocked attention residuals} ($B=2,4$): the sources are the embedding and the \emph{sums} of $B$ consecutive branch outputs (plus the partial current block), so the routers choose among fewer, coarser sources. $B=2$ groups one layer's attention and MLP outputs; $B=4$ groups two layers.
+\end{itemize}
+Everything else (branch norms, RoPE, QK-norm, the RNN's recurrence) is unchanged. We trained each d8 variant at learning rates 0.003 and 0.006 and each RNN variant at 0.001 and 0.002, bracketing the supplied best rates (0.003 and 0.002). Table~\ref{tab:p3d8} and Table~\ref{tab:p3rnn} give the final losses.
+
+\input{p3_losses.tex}
+
+\paragraph{How to think about the mixing rules.} With pre-norm, the branch only sees $\mathrm{Norm}(x)$, so the \emph{overall scale} of the stream does not matter; what matters is the \emph{relative} weight that each earlier source carries into the stream at depth $j$. Writing the stream as a weighted sum of sources, $x_j = \sum_{i \le j} w_{ij}\, s_i$ with $s_0$ the embedding and $s_i$ the $i$-th branch output:
+\begin{itemize}
+\item additive: $w_{ij} = 1$ for every source. Nothing is forgotten, and the stream RMS grows with depth (2.1 to 24 in P1) because late branches write large updates on top of everything earlier.
+\item uniform routing: $w_{ij} = 1/(j+1)$ for every source. These are the additive weights divided by a constant, and pre-norm removes constants, so the branch inputs are the \emph{same functions} as in the additive model. The output head reads the mean instead of the sum, and the final RMSNorm removes that constant too. Uniform routing is additive routing in disguise.
+\item depth EMA: $w_{ij} = \beta^{\,j-i}$. With $\beta=0.9$ the embedding reaches the d8 output head with weight $0.9^{16} = 0.19$, a mild down-weighting of early content. With $\beta=0.1$ the previous step keeps 10\% and anything two steps back keeps 1\%: each branch sees essentially only the previous branch's raw output. That is the ``no residual'' network of P1(b) with a 10\% skip connection.
+\item half-and-half: a source added at step $i$ has weights that follow $w_{j} = \tfrac12(w_{j-1}+w_{j-2})$, which converges to a constant ($\approx 2/3$) rather than decaying. It is additive with a one-step smoothing, and every source still reaches the top.
+\end{itemize}
+
+\subsection*{(a) Fixed mixing patterns}
+The d8 results match this picture almost exactly.
+\begin{itemize}
+\item \textbf{EMA $\beta=0.1$ fails} (loss 6.87 at lr 0.003, the uniform-prediction loss, identical to the supplied no-residual d8). The model never gets below ``predict the unigram''. Forgetting 90\% of the stream per step removes the identity path that lets gradients and the embedding reach across 16 steps, and the network behaves like a 16-layer plain net.
+\item \textbf{EMA $\beta=0.9$ costs 0.022} (2.948 vs 2.927). Everything trains, but early content is down-weighted by up to $5\times$ by the time it reaches the head, and the network has to spend capacity re-copying it forward. At lr 0.006 it is on course for a much worse loss (3.5 mid-run), so the $\beta=0.9$ stream is also less tolerant of a high learning rate.
+\item \textbf{Half-and-half costs 0.009} at both learning rates (2.936, 2.941). Small but real: the smoothing blurs each branch's write across two steps.
+\item \textbf{Uniform routing matches additive} (2.9259 vs 2.9265). We predicted it would be worse; it is not, for the reason above. This is the cleanest confirmation that, under pre-norm, only relative source weights matter. %P3UNI006%
+\end{itemize}
+%P3RNN_A%
+
+\subsection*{(b) Full attention residuals}
+\textbf{Full attention residuals are the best scheme we trained: 2.9036 at lr 0.003 (0.023 below additive) and 2.9106 at lr 0.006.} A gap of 0.02 is about ten seed standard deviations for d8, and it also beats every P1 architectural tweak (the best, gated residuals, got 2.9096). The routers add 17 queries of width 512 (under 10k parameters), so this is not a capacity effect. It is a \emph{read-weighting} effect: additive residuals force every layer and the output head to read the sum of all previous outputs with equal weight, and since late outputs have the largest RMS they dominate that sum. A router lets each layer, per token, read a weighted combination instead.
+%P3ROUTING%
+%P3RNN_B%
+
+\subsection*{(c) Blocked attention residuals}
+\textbf{$B=2$ keeps the whole gain (2.9031, within noise of full routing); $B=4$ keeps half of it (2.9140).} The mental model predicts this ordering. Routing helps because it lets a reader re-weight \emph{layers}; summing a layer's attention and MLP outputs into one source ($B=2$) loses almost nothing, because those two outputs are read together anyway. Summing two layers ($B=4$) removes the ability to weight layer $\ell$ differently from layer $\ell+1$, and half the benefit goes with it. The results support the model: the useful degree of freedom is per-layer weighting, not per-branch weighting.
+%P3RNN_C%
+
+\subsection*{(d) Our own scheme}
+%P3D%

@@ -1,0 +1,12 @@
+\begin{table}[H]\centering\small
+\caption{P4, recurrent cells (4 layers, same depth residuals, pre-norm and MLPs as the modern RNN): final validation loss.}\label{tab:p4}
+\begin{tabular}{lrrrr}\toprule
+variant & lr 0.0015 & lr 0.003 & lr 0.006 & best $-$ additive \\\midrule
+modern tanh RNN (supplied) & -- & -- & -- & 3.5160 \\
+GRU & 3.2312 & 3.1874 & 3.1829 & -0.3331 \\
+GRU, no reset gate & -- & -- & -- & -- \\
+GRU, reset gate only & -- & -- & -- & -- \\
+GRU, input-only update gate & -- & -- & -- & -- \\
+NormGate (ours) & -- & \textit{3.415}$^{*}$ & -- & -- \\
+NormGate, zero update bias & -- & -- & -- & -- \\
+\bottomrule\end{tabular}\end{table}

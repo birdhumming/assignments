@@ -17,7 +17,7 @@ from torch import nn
 from modeling import LlamaRMSNorm
 from .p1_transformer_depth import Transformer
 from .p2_rnn_depth import ModernRNN
-from .p3_attention_residuals import AttentionDepth
+from .p3_attention_residuals import AttentionDepth, AttentionMix
 from .p4_recurrent_updates import GRUCell
 
 
@@ -33,6 +33,35 @@ class HybridDepth(AttentionDepth):
             x = x + update
             sources.append(update)
         return x
+
+
+class GroupedAttentionMix(AttentionMix):
+    """Attention residual with one routing distribution per group of channels.
+
+    Full AttnRes gives every channel the same depth weights at a token. Here the
+    width is split into `groups` contiguous channel groups and each group gets its
+    own softmax over sources, so different feature groups can read different depths.
+    Zero-initialized query => uniform weights at init, exactly like AttentionMix.
+    """
+    groups = 8
+
+    def forward(self, sources):
+        values = torch.stack(sources)
+        scores = (self.key_norm(values.float()) * self.query).unflatten(-1, (self.groups, -1)).sum(-1)
+        weights = self.softmax(scores).repeat_interleave(values.shape[-1] // self.groups, dim=-1)
+        return (values * weights.to(values.dtype)).sum(0)
+
+
+class GroupedDepth(AttentionDepth):
+    mix_type = GroupedAttentionMix
+
+
+class GroupedTransformer(GroupedDepth, Transformer):
+    pass
+
+
+class GroupedRNN(GroupedDepth, ModernRNN):
+    pass
 
 
 class HybridTransformer(HybridDepth, Transformer):
@@ -122,6 +151,7 @@ class NormGateGRU0(NormGateGRU):
 
 # name -> (problem, model, lr center)
 MODELS = {'d8-hybrid': (3, HybridTransformer, .003), 'rnn-hybrid': (3, HybridRNN, .001),
+          'd8-grouped': (3, GroupedTransformer, .003), 'rnn-grouped': (3, GroupedRNN, .001),
           'gru-no-reset': (4, NoResetGRU, .003), 'gru-reset-only': (4, ResetOnlyGRU, .003),
           'gru-input-gate': (4, InputGateGRU, .003), 'normgate': (4, NormGateGRU, .003),
           'normgate-b0': (4, NormGateGRU0, .003)}

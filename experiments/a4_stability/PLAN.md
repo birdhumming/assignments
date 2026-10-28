@@ -89,3 +89,11 @@ P2 rnn1 4.0326@3e-3 | rnn4 4.0809@1e-3 (6.875 at >=2e-3) | modern rnn 3.5160@2e-
   Prediction check so far: EMA .1 = no-residual (correct), EMA .9 slightly worse than additive (+0.022, correct), half close to additive
   (+0.009, correct), uniform worse for d8 (-0.001: wrong, it matched), attention residual close to additive (-0.023: better than expected),
   blocked between full and additive (block2 = full, block4 in between: partly), hybrid >= attention (wrong: +0.012 worse), GRU >= .10 better (yes, .33).
+- 17:30 UTC. Cancelled the queued d8-ema01 lr .006 job (job 13 of lane A1; ema01 at .003 already sat at the uniform loss, so the
+  second rate cannot inform anything). New P3(d) scheme, locked before any run: **grouped attention residuals** (`d8-grouped`,
+  `rnn-grouped`; `GroupedAttentionMix` in student.py): full AttnRes routers, but the 512 channels are split into 8 groups and each
+  group has its own softmax over sources, so different feature groups can read different depths. Zero-init query -> uniform at init.
+  Prediction: d8-grouped beats full attention (2.9036) by 0.003-0.010 at lr .003; the RNN version gains <=0.01 over rnn-attention.
+  Reasoning: block2 = full shows the useful freedom is per-layer re-weighting; grouping adds per-feature freedom at 8x the router
+  parameters (still <0.1M). Risk: hybrid (my first design) lost 0.012 to full attention, so "more structure" is not automatically better.
+  Lane A3-d8-grouped (2 runs, ~45 min) is queued ahead of A2-rnn-p3; rnn-grouped appended to the RNN lane (runs last; may be cut).
