@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from . import p1_transformer_depth as p1, p2_rnn_depth as p2
 from . import p3_attention_residuals as p3, p4_recurrent_updates as p4
 from .common import training_config
+from . import student
 
 LR_FACTORS = (.25, .5, 1., 2., 4.)
 PUBLIC_PROJECT = 'hashimoto-group/public-alchemy-a4'
@@ -43,6 +44,9 @@ for key, model in p4.MODELS.items():
         continue  # Reuse the modern tanh RNN.
     name = 'gru' if key == 'gru' else 'gru-' + key.replace('_', '-')
     VARIANTS[name] = Variant(4, model, .003)
+
+for name, (problem, model, center) in student.MODELS.items():
+    VARIANTS[name] = Variant(problem, model, center)
 
 PROVIDED_VARIANTS = tuple(name for name, variant in VARIANTS.items() if variant.problem in (1, 2))
 
