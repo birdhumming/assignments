@@ -23,11 +23,16 @@ def runs(names, rates):
 
 D8_P3 = ['d8-attention', 'd8-half', 'd8-ema09', 'd8-uniform', 'd8-block4', 'd8-ema01', 'd8-hybrid']
 RNN_P3 = ['rnn-attention', 'rnn-half', 'rnn-ema09', 'rnn-uniform', 'rnn-block2', 'rnn-block4', 'rnn-ema01', 'rnn-hybrid']
+def ordered(names, rates):
+    """All variants at the first rate, then the second rate: stop the lane early and still have a full grid."""
+    return [(n, lr) for lr in rates for n in names]
+
+
 LANES = {
-    'A1-d8-p3': runs(D8_P3, (.003, .006)) + runs(['d8-block2'], (.0045, .009)),
+    'A1-d8-p3': ordered(D8_P3 + ['d8-block2'], (.003, .006)),
     'B-p4': [('gru', .0015), ('gru', .006), ('normgate', .003), ('gru-no-reset', .003),
-             ('gru-reset-only', .003), ('gru-input-gate', .003), ('normgate', .0015), ('normgate-b0', .003)],
-    'A2-rnn-p3': runs(RNN_P3, (.001, .002)),
+             ('gru-reset-only', .003), ('normgate', .0015), ('gru-input-gate', .003), ('normgate-b0', .003)],
+    'A2-rnn-p3': ordered(RNN_P3, (.001, .002)),
 }
 ORDER = ['A1-d8-p3', 'measure', 'B-p4', 'A2-rnn-p3']
 
