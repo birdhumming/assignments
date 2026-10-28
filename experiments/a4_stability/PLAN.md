@@ -67,3 +67,5 @@ P2 rnn1 4.0326@3e-3 | rnn4 4.0809@1e-3 (6.875 at >=2e-3) | modern rnn 3.5160@2e-
   ~64-256 tokens (K16 +0.53 with BOS); RNNs flat beyond K16-64 (K16 +0.1-0.2). BOS-dropped K1 for rnn/rnn-rope explodes (+29..+680):
   state without BOS reset is out of distribution -> report as the 'preserve first token' control.
   TODO: temporal_summary reach metric is wrong (always 1023; should find first t where grad < 1e-3*final scanning backwards, use np.where).
+- 13:03 UTC lane B (P4, ap-JSGDYvghlcemV8GGfkDxov) got its H200 container after ~8 min; both GPUs busy (A1 d8 on A100, B on H200).
+  Watcher (pid 100527) will launch A2-rnn-p3 when one lane finishes. ETA: A1 ~4 h (16 d8 runs x ~15 min), B ~14 h (8 recurrent runs x ~1.7 h).
