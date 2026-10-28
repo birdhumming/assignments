@@ -52,3 +52,11 @@ P2 rnn1 4.0326@3e-3 | rnn4 4.0809@1e-3 (6.875 at >=2e-3) | modern rnn 3.5160@2e-
 - 12:50 UTC: measure_supplied running on A100 (scheduled immediately), ~1 min per run; watcher (lanes B-p4, A2-rnn-p3) waits for <2 ephemeral apps.
 - 12:58 UTC: measure_supplied DONE: results/a4_stability/<run>/{init,early,final}.json for 20 runs (gitignored; local only). Watcher then launches lane B (P4) on H200.
 - 12:59 UTC RESULT d8-half lr3e-3: final val 2.9355 (+0.009 vs additive 2.9265; prediction 'half ~ additive +-0.02' held). Lane B app ap-JSGDYvghlcemV8GGfkDxov (H200) launched by watcher, waiting for container. Next in A1: d8-ema09 3e-3.
+- 13:00 UTC JSON layout (results/a4_stability/<run>/<stage>.json): keys full/last (loss, depth[17 rows for d8 / 9 for rnn: activation_rms,
+  gradient_rms, raw_branch_input_ratio, adjacent_cosine], hidden_rms[layer][t], hidden_gradient_rms[layer][t], fraction_abs_gt_095[layer][t]),
+  attention{layer: query_positions, first_mass, self_mass, uniform_first_self, mean_lag}, routing, temporal_cosine[layer]{lag: cos},
+  context_loss_increase{'<keep>_first_<bool>': mean dLoss}, full_last_loss, num_params.
+  d8 final: act rms grows 0.15 -> 24 across depth; grad rms shrinks 1.3e-5 -> 3e-7 (full L). Context: keep 16 costs +0.97 (+0.53 with BOS kept);
+  keep 256 ~ 0 -> d8 uses ~64-256 tokens. Modern RNN: last-token hidden grad falls 1e-19 (t=0) .. 6e-5 (t=896): strong vanishing; tanh saturation 0.14-0.67.
+  NEXT: analysis/p12_diagnostics.py -> figures (depth act/grad per variant, attention first/self mass vs uniform, RNN time curves, context curve),
+  then report. Lane B (P4) app ap-JSGDYvghlcemV8GGfkDxov waiting for H200 container; lane A1 at run 3/16 (d8-ema09).
