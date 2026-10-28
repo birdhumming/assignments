@@ -48,3 +48,4 @@ P2 rnn1 4.0326@3e-3 | rnn4 4.0809@1e-3 (6.875 at >=2e-3) | modern rnn 3.5160@2e-
   Lane A1 (A100, ap-ISYOEYaTCZC0nFbMVhno5I) running d8-half 3e-3 (run 2/16, ~40 min each -> lane ends ~22:00 UTC).
   Our run checkpoints live on the user volume at /root/data/ckpts/<run_name> (final) with step_100.pt inside; measure them with
   measure_runs(jobs, root=Path('/root/data/ckpts')) once the early-checkpoint layout is confirmed (the supplied runs use <run>/early/).
+- 12:50 UTC: measure lane H100 container never scheduled (9 min); stopped it, rerunning measure_supplied on A100-80GB (nohup, log /tmp/a4_measure.log). Watcher restarted with explicit lanes B-p4 A2-rnn-p3.

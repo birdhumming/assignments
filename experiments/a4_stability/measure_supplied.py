@@ -82,7 +82,7 @@ if __name__ == '__main__':
     variants = sys.argv[1:] or None
     jobs = [(r['run_name'], v, r['lr']) for v, r in sorted(best_runs(variants).items())]
     print(len(jobs), 'runs:', [j[0] for j in jobs])
-    probe = app.function(image=build_image(), volumes=VOLUME_MOUNTS, gpu='H100', timeout=3*3600)(measure_runs)
+    probe = app.function(image=build_image(), volumes=VOLUME_MOUNTS, gpu=os.environ.get('A4_MEASURE_GPU', 'H100'), timeout=3*3600)(measure_runs)
     with modal.enable_output(), app.run(environment_name=MODAL_ENVIRONMENT):
         results = probe.remote(jobs)
     for run, stages in results.items():

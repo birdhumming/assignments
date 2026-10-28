@@ -69,8 +69,8 @@ def watch(pending):
 
 
 if __name__ == '__main__':
-    if sys.argv[1:] == ['watch']:
-        watch(ORDER[1:])
+    if sys.argv[1:2] == ['watch']:
+        watch(sys.argv[2:] or ORDER[1:])
     elif sys.argv[1:] == ['dry']:
         for lane, items in LANES.items():
             print(lane, len(items), [config(n, lr).run_name for n, lr in items][:3], '...')
