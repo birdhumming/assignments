@@ -1,0 +1,77 @@
+\paragraph{What we trained.} The supplied models use additive residuals: at every depth step, $x \leftarrow x + F(\mathrm{Norm}(x))$, where $F$ is an attention, recurrent, or MLP branch. The d8 transformer has 16 steps (8 attention + 8 MLP), the modern RNN has 8 (4 recurrent + 4 MLP). Problem 3 replaces the ``$x +$'' with other ways of combining the branch output with what came before:
+\begin{itemize}
+\item \textbf{depth EMA}: $x \leftarrow \beta x + F(\mathrm{Norm}(x))$. With $\beta=0.1$ the stream forgets 90\% of itself at every step; with $\beta=0.9$ it forgets 10\%.
+\item \textbf{half-and-half}: the new residual is the mean of the previous two stream states, $x_{j+1} = \tfrac12(x_j + x_{j-1}) + F(\mathrm{Norm}(x_j))$.
+\item \textbf{uniform routing}: each branch reads the \emph{mean} of all sources so far (embedding plus every earlier branch output), and the output head reads the mean of all of them.
+\item \textbf{full attention residuals}: same sources, but each branch (and the output head) has its own router: a learned query scores the RMS-normalized sources, a softmax over sources gives per-token weights, and the branch reads the weighted sum. Queries start at zero, so every router starts as uniform routing.
+\item \textbf{blocked attention residuals} ($B=2,4$): the sources are the embedding and the \emph{sums} of $B$ consecutive branch outputs (plus the partial current block), so the routers choose among fewer, coarser sources. $B=2$ groups one layer's attention and MLP outputs; $B=4$ groups two layers.
+\end{itemize}
+Everything else (branch norms, RoPE, QK-norm, the RNN's recurrence) is unchanged. We trained each d8 variant at learning rates 0.003 and 0.006 and each RNN variant at 0.001 and 0.002, bracketing the supplied best rates (0.003 and 0.002). Table~\ref{tab:p3d8} and Table~\ref{tab:p3rnn} give the final losses.
+
+\input{p3_losses.tex}
+
+\paragraph{How to think about the mixing rules.} With pre-norm, the branch only sees $\mathrm{Norm}(x)$, so the \emph{overall scale} of the stream does not matter; what matters is the \emph{relative} weight that each earlier source carries into the stream at depth $j$. Writing the stream as a weighted sum of sources, $x_j = \sum_{i \le j} w_{ij}\, s_i$ with $s_0$ the embedding and $s_i$ the $i$-th branch output:
+\begin{itemize}
+\item additive: $w_{ij} = 1$ for every source. Nothing is forgotten, and the stream RMS grows with depth (2.1 to 24 in P1) because late branches write large updates on top of everything earlier.
+\item uniform routing: $w_{ij} = 1/(j+1)$ for every source. These are the additive weights divided by a constant, and pre-norm removes constants, so the branch inputs are the \emph{same functions} as in the additive model. The output head reads the mean instead of the sum, and the final RMSNorm removes that constant too. Uniform routing is additive routing in disguise.
+\item depth EMA: $w_{ij} = \beta^{\,j-i}$. With $\beta=0.9$ the embedding reaches the d8 output head with weight $0.9^{16} = 0.19$, a mild down-weighting of early content. With $\beta=0.1$ the previous step keeps 10\% and anything two steps back keeps 1\%: each branch sees essentially only the previous branch's raw output. That is the ``no residual'' network of P1(b) with a 10\% skip connection.
+\item half-and-half: a source added at step $i$ has weights that follow $w_{j} = \tfrac12(w_{j-1}+w_{j-2})$, which converges to a constant ($\approx 2/3$) rather than decaying. It is additive with a one-step smoothing, and every source still reaches the top.
+\end{itemize}
+
+\subsection*{(a) Fixed mixing patterns}
+The d8 results match this picture almost exactly.
+\begin{itemize}
+\item \textbf{EMA $\beta=0.1$ fails} (loss 6.87 at lr 0.003, the uniform-prediction loss, identical to the supplied no-residual d8). The model never gets below ``predict the unigram''. Forgetting 90\% of the stream per step removes the identity path that lets gradients and the embedding reach across 16 steps, and the network behaves like a 16-layer plain net.
+\item \textbf{EMA $\beta=0.9$ costs 0.022} (2.948 vs 2.927). Everything trains, but early content is down-weighted by up to $5\times$ by the time it reaches the head, and the network has to spend capacity re-copying it forward. At lr 0.006 the gap widens (2.969 vs 2.943 for additive at the same rate), so the $\beta=0.9$ stream is also less tolerant of a high learning rate.
+\item \textbf{Half-and-half costs 0.009} at both learning rates (2.936, 2.941). Small but real: the smoothing blurs each branch's write across two steps.
+\item \textbf{Uniform routing matches additive} (2.9259 vs 2.9265). We predicted it would be worse; it is not, for the reason above. This is the cleanest confirmation that, under pre-norm, only relative source weights matter. The same holds at lr 0.006: uniform 2.941 vs additive 2.943, and half-and-half 2.941 too, so at the higher rate the three ``spread the weight evenly'' schemes are indistinguishable while the learned-routing schemes keep their lead (attention 2.911, block-2 2.908).
+\end{itemize}
+\paragraph{The RNN half of this problem.} The modern-RNN lane ran last and only partly: at the supplied best learning rate (0.002) full attention residuals reached 3.5398 (+0.024 vs.\ additive), uniform routing 3.5509 (+0.035 vs.\ additive) and depth EMA $\beta=0.9$ 3.5107 (-0.005 vs.\ additive) (Table~\ref{tab:p3rnn}); half-and-half, EMA 0.1, the blocked variants and my two schemes were not trained for the RNN, and no second learning rate was run, so the RNN rows are single-seed, single-rate numbers and differences under about 0.01 are within the run-to-run noise I would expect. My locked predictions (\texttt{PLAN.md}) were: uniform roughly matching additive, full attention slightly improving it, EMA 0.9 slightly worse. Outcome: full attention did not improve on additive (+0.024); uniform lost to additive (+0.035); EMA 0.9 came in at -0.005. With only 8 depth sources instead of 16 and a recurrent branch whose output is dominated by the hidden state rather than by the stream, the RNN has less to gain from re-weighting depth sources than d8, which is the direction every number here points.
+
+\subsection*{(b) Full attention residuals}
+\textbf{Full attention residuals are the best scheme we trained: 2.9036 at lr 0.003 (0.023 below additive) and 2.9106 at lr 0.006.} A gap of 0.02 is about ten seed standard deviations for d8, and it also beats every P1 architectural tweak (the best, gated residuals, got 2.9096). The routers add 17 queries of width 512 (under 10k parameters), so this is not a capacity effect. It is a \emph{read-weighting} effect: additive residuals force every layer and the output head to read the sum of all previous outputs with equal weight, and since late outputs have the largest RMS they dominate that sum. A router lets each layer, per token, read a weighted combination instead.
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{p3_d8_depth.png}
+\caption{P3 depth statistics on the final d8 checkpoints (lr 0.003), measured in FP32 on 8 validation sequences. Top left: activation RMS of each depth-stream slot. Top right: activation-gradient RMS under the full loss (solid) and the last-token loss (dashed). Bottom: branch-output / branch-input RMS ratio, and cosine between adjacent stream slots.}\label{fig:p3depth}
+\end{figure}
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{p3_d8_routing.png}
+\caption{Learned routing weights (softmax over depth sources, averaged over positions) for the four routed schemes. Row $j$ is the router feeding branch $j$ (last row: the router feeding the output head); column $k$ is source $k$ (0 = embedding).}\label{fig:p3routing}
+\end{figure}
+
+\paragraph{What the checkpoints show (Figure~\ref{fig:p3depth}).} The routing schemes change the depth statistics completely, not slightly:
+\begin{itemize}[nosep]
+\item \textbf{Stream growth is gone.} The additive stream's RMS climbs from 0.15 at the embedding to 24.1 at slot 16; with full attention it ends at 1.6, block-2 at 2.8, block-4 at 4.7, uniform at 1.4. The mixing schemes that keep a forward stream grow like additive (half 16.8, EMA 0.9 12.3), and so does hybrid (24.7), which keeps the additive stream and only routes the branch inputs.
+\item \textbf{The gradient profile is flat.} The full-loss gradient RMS at the bottom of the stack is 43$\times$ the top for additive; it is 2.0$\times$ for full attention, 2.9$\times$ for block-2, 6.4$\times$ for block-4, 2.5$\times$ for uniform, and still 25$\times$ for hybrid. A softmax mix is a convex combination, so a source's gradient is its routing weight times the reader's gradient; nothing accumulates across depth.
+\item \textbf{Branches are relatively larger.} The mean branch-output / branch-input RMS ratio goes from 1.25 (additive) to 4--5.4 (routed schemes), because the branch input is now a unit-scale mix instead of a 10--20 RMS sum. Adjacent-slot cosine stays at 0.83--0.89 for every scheme: routing does not make consecutive slots less similar, it changes what each reader sees.
+\end{itemize}
+This is the correlation-vs-cause point from Problem 1 again, now with an intervention: the schemes that remove stream growth and flatten the gradient profile (attention, block-2) are the ones that improve the loss, but uniform routing removes both just as well and gains nothing. Flat gradients and bounded activations are therefore \emph{not} what buys the 0.023; the read-side freedom is.
+
+\paragraph{Routing weights (Figure~\ref{fig:p3routing}).} Three regularities, the same in attention, block-2 and block-4:
+\begin{enumerate}[nosep]
+\item \textbf{Router 1 is a copy.} The first MLP reads the embedding with weight 0.97 (block-2: 0.95); the first attention output gets 0.03. The first MLP wants the raw token, not the first attention layer's mix.
+\item \textbf{Everything after that is close to uniform with a recency bump.} Normalized entropy is 0.86--0.99 for routers 2--16 (1.0 = uniform). The newest source gets 2--3$\times$ its uniform share (0.17--0.35 where uniform would be 0.06--0.10) and the embedding's weight decays smoothly from 0.41 at router 2 to 0.07 at the head. Sources 1--9 fall to 0.01--0.04 each by the top of the stack.
+\item \textbf{The head reads the top of the stack.} The output router puts 0.27 on layer 8's attention output, 0.10 on its MLP output, and 0.70 of its mass on the last five sources; block-2's head reads the last block with 0.37. The head is the reader with the most to gain, and it is the reader whose mix the additive stream fixes most badly (16 equal-weight sources).
+\end{enumerate}
+Hybrid's routers look the same (entropy 0.87--0.99, recency bump), but hybrid has no head router and keeps the additive stream, so it gets the branch-side benefit and none of the head-side benefit. That is consistent with its loss sitting halfway between additive and full attention.
+
+
+
+\subsection*{(c) Blocked attention residuals}
+\textbf{$B=2$ keeps the whole gain (2.9031, within noise of full routing); $B=4$ keeps half of it (2.9140).} The mental model predicts this ordering. Routing helps because it lets a reader re-weight \emph{layers}; summing a layer's attention and MLP outputs into one source ($B=2$) loses almost nothing, because those two outputs are read together anyway. Summing two layers ($B=4$) removes the ability to weight layer $\ell$ differently from layer $\ell+1$, and half the benefit goes with it. The results support the model: the useful degree of freedom is per-layer weighting, not per-branch weighting.
+
+
+\subsection*{(d) Our own scheme}
+\paragraph{Design (locked before training).} Two schemes, both for the d8 transformer, both built on the mental model from (a)--(c): what routing buys is the ability of each \emph{reader} to re-weight the depth sources, and the additive stream's weakness is that every reader sees the same mix.
+
+\begin{enumerate}[nosep]
+\item \textbf{Hybrid}: keep the plain additive stream as the thing that flows forward (so the stream itself is never re-weighted), but let each branch's \emph{input} be a routed mix of all previous branch outputs. Prediction: at least as good as full attention residuals, since it has the same read-side freedom and a cleaner forward path.
+\item \textbf{Grouped attention}: full attention residuals, but the 512 channels are split into 8 groups of 64 and each group gets its own softmax over depth sources (the router query is zero-initialized, so training starts from uniform routing). Prediction: 0.003--0.010 better than full attention, because different channel groups carry different kinds of features and should be allowed to read different layers.
+\end{enumerate}
+
+\paragraph{Results.} \textbf{Hybrid: 2.9159 at lr 0.003 and 2.9305 at lr 0.006; better than additive (2.9265) but 0.012 behind full attention (2.9036), so the prediction was wrong.} \textbf{Grouped attention: 2.9152 at lr 0.003 and 2.9146 at lr 0.006, also 0.012 behind full attention at lr 0.003 and within 0.001 of hybrid.} Both predictions were wrong in the same direction, and by the same amount. One small thing grouped routing did buy: it is flat in the learning rate (the two rates differ by 0.0006, versus 0.007 for full attention and 0.015 for hybrid), so at lr 0.006 it trails full attention by only 0.004.
+
+\paragraph{What I take from two misses.} Both of my schemes gave each reader \emph{more} freedom than full attention residuals (hybrid: a routed input decoupled from the forward stream; grouped: eight independent softmaxes per reader instead of one), and both landed at the same loss, about halfway between additive and full attention. The simplest reading is that one softmax per reader already captures what source selection has to offer at this depth (16 sources), and the extra degrees of freedom are paid for in optimization. In the grouped scheme each router is trained only by the gradient flowing through its own 64 channels, an 8$\times$ smaller signal than the full router gets, so it starts from uniform (zero-initialized query) and moves away from it more slowly; uniform routing itself is worth nothing over additive (2.9259), so a router that stays near uniform for longer forfeits part of the gain. In the hybrid scheme the forward stream is still the additive one, so the stream statistics (Figure~\ref{fig:p3depth}: RMS 24.7, gradient ratio 25$\times$) are those of the additive model; what it gained (0.011) is the read-side selection, what it lacks relative to full attention is a routed read for the output head and a bounded stream. The match with the (a)--(c) picture is the useful part: routing's benefit is source selection by the reader, it saturates quickly, and it does not need more capacity to deliver it. A follow-up I would run with more GPU time: grouped attention with a non-zero (copied from the full router) initialization, to separate ``slower to learn'' from ``worse at convergence''.
+
+Why hybrid lost to full attention: it routes only what goes \emph{into} a branch, while the head still reads the plain sum of all 16 outputs. Full attention residuals route the head's read too (the 17th router), and the head is the one reader that must weigh all 16 sources at once. The lr-0.006 result (hybrid loses 0.015 to its lr-0.003 run, full attention only 0.007) also says the routed branch input is less stable at high learning rate, presumably because the branch input is now a 16-way softmax mix whose weights move on every step.

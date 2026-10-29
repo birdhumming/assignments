@@ -1,0 +1,24 @@
+\begin{table}[H]\centering\small
+\caption{P3, d8 transformer: final validation loss. ``div.'' = stuck at the uniform-prediction loss ($\approx 6.87$); italics$^*$ = still training when the table was built.}\label{tab:p3d8}
+\begin{tabular}{lrrr}\toprule
+variant & lr 0.003 & lr 0.006 & best $-$ additive \\\midrule
+additive (supplied) & 2.9265 & 2.9434 & -- \\
+half-and-half & 2.9355 & 2.9408 & +0.0090 \\
+depth EMA $\beta=0.1$ & div. & div. & -- \\
+depth EMA $\beta=0.9$ & 2.9482 & 2.9689 & +0.0217 \\
+uniform routing & 2.9259 & 2.9410 & -0.0006 \\
+full attention & 2.9036 & 2.9106 & -0.0229 \\
+blocked $B=2$ & 2.9031 & 2.9075 & -0.0234 \\
+blocked $B=4$ & 2.9140 & 2.9198 & -0.0125 \\
+hybrid (ours) & 2.9159 & 2.9305 & -0.0106 \\
+grouped attention (ours) & 2.9152 & 2.9146 & -0.0119 \\
+\bottomrule\end{tabular}\end{table}
+\begin{table}[H]\centering\small
+\caption{P3, modern 4-layer RNN: final validation loss.}\label{tab:p3rnn}
+\begin{tabular}{lrrr}\toprule
+variant & lr 0.001 & lr 0.002 & best $-$ additive \\\midrule
+additive (supplied) & 3.5234 & 3.5160 & -- \\
+depth EMA $\beta=0.9$ & -- & 3.5107 & -0.0053 \\
+uniform routing & -- & 3.5509 & +0.0349 \\
+full attention & -- & 3.5398 & +0.0238 \\
+\bottomrule\end{tabular}\end{table}
