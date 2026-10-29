@@ -35,7 +35,7 @@ LANES = {
     'A3-d8-grouped': [('d8-grouped', .003), ('d8-grouped', .006)],
     'A2-rnn-p3': ordered(RNN_P3, (.001, .002)),
 }
-ORDER = ['A1-d8-p3', 'measure', 'B-p4', 'A2-rnn-p3']
+ORDER = ['A1-d8-p3', 'measure', 'B-p4', 'A3-d8-grouped', 'A2-rnn-p3']
 
 
 def ephemeral_apps():
