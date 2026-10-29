@@ -1,6 +1,6 @@
 """Use the native training recipe; measure detailed diagnostics afterwards."""
-from dataclasses import replace
 import sys
+from dataclasses import replace
 
 from model_config import MODEL_CONFIGS
 from train import TrainConfig

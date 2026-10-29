@@ -11,6 +11,7 @@ import math
 import torch
 from torch import nn
 from torch.nn import functional as F
+
 from .p1_transformer_depth import Attention
 from .p2_rnn_depth import Recurrent
 

@@ -7,7 +7,8 @@ BEFORE the candidate's recurrent projection; torch.nn.GRU uses a different form.
 """
 import torch
 from torch import nn
-from .p2_rnn_depth import TanhCell, ModernRNN
+
+from .p2_rnn_depth import ModernRNN, TanhCell
 
 
 class Gate(nn.Module):

@@ -3,13 +3,22 @@
     uv run python -m experiments.a4_stability.p2_rnn_depth
 """
 import math
+
 import torch
 from torch import nn
+
 from modeling import LlamaRMSNorm, rotate_half
 
 from . import _runtime
-from .p1_transformer_depth import (Residual, NoResidual, NoPreNorm, PostNorm,
-                                   GatedResidual, GatedNorm, MLP)
+from .p1_transformer_depth import (
+    MLP,
+    GatedNorm,
+    GatedResidual,
+    NoPreNorm,
+    NoResidual,
+    PostNorm,
+    Residual,
+)
 
 
 class TanhCell(nn.Module):

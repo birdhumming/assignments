@@ -6,8 +6,16 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
-from modeling import (AutoregressiveLM, LlamaAttention, LlamaMLP, LlamaRMSNorm,
-                      apply_rotary_pos_emb, causal_attention_mask, repeat_kv, initialize_model)
+from modeling import (
+    AutoregressiveLM,
+    LlamaAttention,
+    LlamaMLP,
+    LlamaRMSNorm,
+    apply_rotary_pos_emb,
+    causal_attention_mask,
+    initialize_model,
+    repeat_kv,
+)
 
 
 class Residual(nn.Module):

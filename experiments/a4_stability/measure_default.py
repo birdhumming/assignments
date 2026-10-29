@@ -7,6 +7,7 @@ then writes the returned measurements locally; it does not train a model.
 """
 import os
 from pathlib import Path
+
 import torch
 
 RUN = 'a4-d8-lr0.003'
@@ -16,8 +17,8 @@ OUTPUT = Path('results/a4_stability') / f'{RUN}.json'
 
 def measure(run=RUN, root=REFERENCE_ROOT, device='cuda'):
     from data import dclm_val_dataset, load_token_dataset
+    from experiments.a4_stability.diagnostics import context_loss, profile
     from model_io import load_model
-    from experiments.a4_stability.diagnostics import profile, context_loss
     model = load_model(Path(root)/run, device=device, precision='fp32')
     validation = load_token_dataset(dclm_val_dataset(), role='val', data_seed=42)
     tokens = torch.tensor(validation[:1]['input_ids'].astype('int64'), device=device)
@@ -31,7 +32,9 @@ def measure(run=RUN, root=REFERENCE_ROOT, device='cuda'):
 
 if __name__ == '__main__':
     import modal
-    from modal_utils import app, build_image, VOLUME_MOUNTS, MODAL_ENVIRONMENT
+
+    from modal_utils import MODAL_ENVIRONMENT, VOLUME_MOUNTS, app, build_image
+
     from .diagnostics import save
     probe = app.function(image=build_image(), volumes=VOLUME_MOUNTS, gpu='H100')(measure)
     with modal.enable_output(), app.run(environment_name=MODAL_ENVIRONMENT):

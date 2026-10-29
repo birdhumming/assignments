@@ -47,6 +47,8 @@ def measure_runs(jobs, root=REFERENCE_ROOT, device='cuda', batch=8, early='early
     `early` is the step-100 checkpoint relative to the run dir: `early/` (supplied) or `step_100.pt` (ours)."""
     import torch
 
+    from experiments.a4_stability import _runtime
+    _runtime.DISABLE_COMPILE = True
     from data import dclm_val_dataset, load_token_dataset
     from experiments.a4_stability.sweeps import config
     from model_io import load_model

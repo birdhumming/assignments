@@ -5,9 +5,11 @@ and cell.step(); state is never detached between chunks. Probes run eagerly.
 """
 import torch
 from torch import nn
+
 from module_rms_logging import log_module_rms
 
 CHUNK_SIZE = 16
+DISABLE_COMPILE = False  # probes set this: eager cells, no recompile-limit failures
 
 
 @torch.compiler.disable
@@ -43,7 +45,7 @@ def recurrence(sequence, x):
         sequence.states = []
         return steps(sequence.cell, projected, h, sequence.states)[0]
     # Sampling uses eager cell calls so the native module hooks see each step.
-    compiled = x.is_cuda and not (log_module_rms.capture and sequence.training)
+    compiled = x.is_cuda and not DISABLE_COMPILE and not (log_module_rms.capture and sequence.training)
     if compiled and not hasattr(sequence, '_compiled'):
         sequence._compiled = torch.compile(sequence.cell_steps, mode='default', fullgraph=True)
     runner = sequence._compiled if compiled else sequence.cell_steps

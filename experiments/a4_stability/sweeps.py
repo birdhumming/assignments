@@ -5,10 +5,12 @@ Students use their own W&B project from utils.py, as usual.
 """
 from dataclasses import dataclass
 
-from . import p1_transformer_depth as p1, p2_rnn_depth as p2
-from . import p3_attention_residuals as p3, p4_recurrent_updates as p4
-from .common import training_config
+from . import p1_transformer_depth as p1
+from . import p2_rnn_depth as p2
+from . import p3_attention_residuals as p3
+from . import p4_recurrent_updates as p4
 from . import student
+from .common import training_config
 
 LR_FACTORS = (.25, .5, 1., 2., 4.)
 PUBLIC_PROJECT = 'hashimoto-group/public-alchemy-a4'

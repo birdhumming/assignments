@@ -4,8 +4,10 @@
 """
 import torch
 from torch import nn
+
 from modeling import LlamaRMSNorm
-from .p1_transformer_depth import Transformer, NoResidual
+
+from .p1_transformer_depth import NoResidual, Transformer
 from .p2_rnn_depth import ModernRNN
 
 

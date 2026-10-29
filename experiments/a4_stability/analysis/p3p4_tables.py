@@ -26,7 +26,7 @@ SUPPLIED = supplied_losses()
 P3_ROWS = [
     ("additive (supplied)", None), ("half-and-half", "half"), ("depth EMA $\\beta=0.1$", "ema01"),
     ("depth EMA $\\beta=0.9$", "ema09"), ("uniform routing", "uniform"), ("full attention", "attention"),
-    ("blocked $B=2$", "block2"), ("blocked $B=4$", "block4"), ("hybrid (ours)", "hybrid"),
+    ("blocked $B=2$", "block2"), ("blocked $B=4$", "block4"), ("hybrid (ours)", "hybrid"), ("grouped attention (ours)", "grouped"),
 ]
 P4_ROWS = [
     ("modern tanh RNN (supplied)", None), ("GRU", "gru"), ("GRU, no reset gate", "gru-no-reset"),
@@ -66,6 +66,8 @@ def table(runs, rows, family, rates, caption, label):
             continue
         cells = [cell(runs, f"{family}-{key}" if family == "d8" or not key.startswith("gru") and not key.startswith("normgate") else key, lr) for lr in rates]
         finite = [float(c) for c in cells if c.replace(".", "").isdigit()]
+        if not finite and all(c == "--" for c in cells):
+            continue
         delta = f"{min(finite) - BASE[family]:+.4f}" if finite else "--"
         lines.append(f"{label_} & " + " & ".join(cells) + f" & {delta} \\\\")
     lines += ["\\bottomrule\\end{tabular}\\end{table}"]
