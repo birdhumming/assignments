@@ -11,18 +11,11 @@ full attention & 2.9036 & 2.9106 & -0.0229 \\
 blocked $B=2$ & 2.9031 & 2.9075 & -0.0234 \\
 blocked $B=4$ & 2.9140 & 2.9198 & -0.0125 \\
 hybrid (ours) & 2.9159 & 2.9305 & -0.0106 \\
+grouped attention (ours) & 2.9152 & -- & -0.0113 \\
 \bottomrule\end{tabular}\end{table}
 \begin{table}[H]\centering\small
 \caption{P3, modern 4-layer RNN: final validation loss.}\label{tab:p3rnn}
 \begin{tabular}{lrrr}\toprule
 variant & lr 0.001 & lr 0.002 & best $-$ additive \\\midrule
 additive (supplied) & 3.5234 & 3.5160 & -- \\
-half-and-half & -- & -- & -- \\
-depth EMA $\beta=0.1$ & -- & -- & -- \\
-depth EMA $\beta=0.9$ & -- & -- & -- \\
-uniform routing & -- & -- & -- \\
-full attention & -- & -- & -- \\
-blocked $B=2$ & -- & -- & -- \\
-blocked $B=4$ & -- & -- & -- \\
-hybrid (ours) & -- & -- & -- \\
 \bottomrule\end{tabular}\end{table}
