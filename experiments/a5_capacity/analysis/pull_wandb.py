@@ -12,8 +12,14 @@ OUT = Path('results/a5_capacity/runs.json')
 
 def main():
     api = wandb.Api(timeout=120)
+    prev = json.loads(OUT.read_text()) if OUT.exists() else {}
+    seen = {v['id']: name for name, v in prev.items()}
     out = {}
     for r in api.runs(PROJECT, filters={'display_name': {'$regex': '^a5-'}}):
+        # a later run that resumed this run id (checkpoint-derived ids collided) overwrites the record: skip it
+        cfg_name = r.config.get('run_name')
+        if (cfg_name and cfg_name != r.name) or seen.get(r.id, r.name) != r.name:
+            print('skipping contaminated record', r.id, r.name, '<-', cfg_name or seen.get(r.id)); continue
         s = dict(r.summary)
         # keys= needs every key in the same row, and val_loss rows carry no train_loss, so pull the two series separately
         hist = r.history(samples=400, keys=['optimizer_step', 'val_loss'], pandas=False)

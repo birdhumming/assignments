@@ -1,6 +1,6 @@
 """P3 MoE: loss table with router diagnostics, loss curves, and own-router comparison."""
 import json
-from .common import load, run, final_loss, curve, fmt, save, plt
+from .common import load, run, final_loss, curve, fmt, save, plt, tag
 
 CENTRAL = [('dense', 'dense FFN'), ('moe-random', 'random top-1'), ('moe-frozen', 'frozen top-1'),
            ('moe-learned', 'learned top-1'), ('moe-unit', 'unit top-1 (matched combine)'), ('moe-full', 'all four experts')]
@@ -16,7 +16,7 @@ def row(runs, meas, key, label):
     r = run(runs, key)
     m = meas.get(f'a5-{key}-d8-w512-lr0.003', {})
     rt = m.get('routers') or {}
-    return dict(label=label, key=key, loss=final_loss(r), state=(r or {}).get('state', 'missing'),
+    return dict(label=tag(label, r), key=key, loss=final_loss(r), state=(r or {}).get('state', 'missing'),
                 load_cv=rt.get('load_cv'), entropy=rt.get('entropy'), max_p=rt.get('mean_max_probability'),
                 params=m.get('parameters'))
 

@@ -11,8 +11,18 @@ PLOTS = Path('plots/a5_capacity')
 PLOTS.mkdir(parents=True, exist_ok=True)
 
 
+# W&B records overwritten when a later run resumed the same run id (summary values copied from the earlier pull).
+LOST = {'a5-moe-hash-d8-w512-lr0.003': dict(state='finished', val_loss=2.9312479496002197, step=9374, history=[]),  # record later resumed by moe-all
+        'a5-unique-reset-d8-w512-lr0.003': dict(state='finished', val_loss=3.0017778873443604, step=9374, history=[])}
+
+
 def load():
     runs = json.loads(RUNS.read_text()) if RUNS.exists() else {}
+    runs = {**LOST, **runs}
+    meas = json.loads(MEASURES.read_text()) if MEASURES.exists() else {}
+    for name, m in meas.items():  # W&B record lost but the final checkpoint exists: use its held-out NLL (marked in tables)
+        if m.get('nll') is not None and runs.get(name, {}).get('val_loss') is None:
+            runs[name] = dict(runs.get(name, {}), state='finished', val_loss=m['nll'], from_ckpt=True, history=[])
     for r in runs.values():  # a cancelled Modal call exits cleanly, so W&B marks it finished without a val_loss
         if r.get('state') == 'finished' and r.get('val_loss') is None:
             r['state'] = 'cancelled'
@@ -35,6 +45,10 @@ def curve(r):
     h = [x for x in (r or {}).get('history', []) if x.get('val_loss') is not None and x.get('optimizer_step') is not None]
     h.sort(key=lambda x: x['optimizer_step'])
     return [x['optimizer_step'] for x in h], [x['val_loss'] for x in h]
+
+
+def tag(label, r):
+    return label + r'$^\dagger$' if (r or {}).get('from_ckpt') else label
 
 
 def fmt(x, nd=4):

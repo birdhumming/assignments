@@ -1,4 +1,7 @@
 """Short editable experiment definitions. Use the native recipe for local GPU or Modal runs."""
+import hashlib
+import json
+import pathlib
 from dataclasses import replace
 from copy import deepcopy
 from train import TrainConfig
@@ -113,6 +116,12 @@ def run(config):
         data = training_config(config.model_config.vocab_size, config.model_config.hidden_size,
                                root='/tmp/a5_capacity/spam')
         config = replace(config, train_dataset=data.train_dataset, val_dataset=data.val_dataset)
+    run_dir = pathlib.Path(MODAL_MODEL_DIR) / config.run_name
+    if not (run_dir / 'latest.pt').exists():  # nothing to resume: fix the W&B id up front: two runs received the same uuid and the
+        run_dir.mkdir(parents=True, exist_ok=True)  # second resumed (overwrote) the first run's record
+        (run_dir / 'run_state.json').write_text(json.dumps(dict(
+            wandb_run_id=hashlib.sha1(config.run_name.encode()).hexdigest()[:8], run_name=config.run_name,
+            wandb_entity=config.wandb_entity, wandb_project=config.wandb_project)))
     try:
         train(replace(config, model_dir=str(MODAL_MODEL_DIR)))
         return dict(run_name=config.run_name, checkpoint=str(MODAL_MODEL_DIR/config.run_name))
