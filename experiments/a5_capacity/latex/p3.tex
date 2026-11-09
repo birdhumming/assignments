@@ -1,0 +1,19 @@
+\section*{Problem 3: Mixture of experts}
+
+Every MoE run replaces each of the eight FFNs of d8w512 by four experts of the same shape with a linear router over the residual stream (\texttt{p3\_moe.py:MoELM}); top-1 routing executes one expert per token, so the FFN FLOPs equal the dense model's while the FFN parameters are $4\times$. ``Unit'' routing is top-1 selection with the combine weight fixed to 1 instead of the softmax probability, i.e.\ the same expert choice with no router gradient. Diagnostics (load CV across the four experts, routing entropy normalized by $\log 4$, mean largest probability) are measured after training on 8 held-out sequences of 128 tokens (\texttt{measure\_runs.py}); the worst layer is reported.
+
+\input{p3_tables}
+
+\begin{figure}[H]\centering
+\includegraphics[width=\linewidth]{p3_curves}
+\caption{Validation loss of the routing variants (left) and of the balancing / conditioning variants of learned top-1 routing (right).}
+\label{fig:p3curves}
+\end{figure}
+
+\textbf{(a) Dense, random, frozen, learned.} Random top-1 routing, which re-draws the expert per token every step, is far worse than dense (3.084 vs 2.927): each expert sees a quarter of the tokens with no consistency, so the model is effectively a quarter-size FFN trained on a quarter of the data per step. A frozen random router (a fixed random projection chosen at init) is a different story: 2.892, 0.035 \emph{better} than dense. Because the assignment is a fixed function of the residual stream, tokens with similar hidden states are consistently sent to the same expert, and the $4\times$ FFN parameters are usable even though nothing was learned about the routing. Learned top-1 routing (2.907) beats dense by 0.020 but \emph{loses} to the frozen router by 0.015, and its curve shows why (Figure~\ref{fig:p3curves}): a loss spike of 0.1 nats at update 7{,}200 from which it never fully recovers, the signature of routing flips late in training. The ranking frozen $<$ learned $<$ dense $\ll$ random says that at this scale almost all of the MoE gain comes from \emph{consistent} partitioning, and the learned router's only job is to not destabilize training. %P3A%
+
+\textbf{(b) Matched control: is the router doing anything?} Unit routing keeps the learned argmax but drops the probability from the combine, so the router receives no gradient and the experts are chosen by a drifting but untrained projection. It reaches 2.952, worse than dense by 0.025 and worse than learned top-1 by 0.045. So the softmax weight matters twice: it is the only path by which the router learns, and it also scales each expert's contribution. The difference between unit (2.952) and frozen (2.892), two routers that both get no useful gradient, shows that a router whose weights keep changing under weight decay and shared residual updates is worse than one that is simply fixed. %P3B%
+
+\textbf{(c--d) Balancing and router conditioning.} %P3C%
+
+\textbf{(e) Own variant.} %P3E%

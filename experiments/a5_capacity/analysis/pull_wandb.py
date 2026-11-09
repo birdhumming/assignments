@@ -15,7 +15,9 @@ def main():
     out = {}
     for r in api.runs(PROJECT, filters={'display_name': {'$regex': '^a5-'}}):
         s = dict(r.summary)
-        hist = r.history(samples=400, keys=['optimizer_step', 'val_loss', 'train_loss'], pandas=False) if r.state == 'finished' else []
+        # keys= needs every key in the same row, and val_loss rows carry no train_loss, so pull the two series separately
+        hist = r.history(samples=400, keys=['optimizer_step', 'val_loss'], pandas=False)
+        hist += r.history(samples=400, keys=['optimizer_step', 'train_loss'], pandas=False)
         out[r.name] = dict(id=r.id, state=r.state, url=r.url, created=str(r.created_at),
                            val_loss=s.get('val_loss'), train_loss=s.get('train_loss'), step=s.get('optimizer_step', s.get('step')),
                            runtime=s.get('_runtime'), switch_before=s.get('switch/before_val_loss'),

@@ -5,12 +5,15 @@
 Writes results/a5_capacity/measurements.json (merged with earlier entries). For loop models the
 held-out NLL is also measured at other inference loop counts.
 """
+import os
 import json
 import sys
 from pathlib import Path
 
 OUTPUT = Path('results/a5_capacity/measurements.json')
-GPU = ['H100', 'H200', 'A100-80GB']
+# The class workspace caps GPUs of every kind, so diagnostics default to a 16-core CPU container (a few minutes per run).
+GPU = os.environ.get('A5_MEASURE_GPU') or None
+DEVICE = 'cuda' if GPU else 'cpu'
 
 
 def held_out(run_name, device, sequences=8, context=128):
@@ -38,18 +41,18 @@ def loop_count_sweep(model, tokens, passes):
     out = {}
     for p in passes:
         model.eval_passes = p
-        with torch.no_grad(), torch.autocast('cuda', dtype=torch.bfloat16):
+        with torch.no_grad(), torch.autocast(device_type='cuda' if tokens.is_cuda else 'cpu', dtype=torch.bfloat16, enabled=tokens.is_cuda):
             out[str(p)] = float(causal_lm_loss(model(tokens), tokens))
     model.eval_passes = None
     return out
 
 
-def measure_one(run_name, device='cuda'):
+def measure_one(run_name, device=DEVICE):
     import torch
     from model_io import load_model
     from modal_utils import MODAL_MODEL_DIR
     from .diagnostics import measure_model, signal_profile
-    path = MODAL_MODEL_DIR/run_name
+    path = Path(MODAL_MODEL_DIR)/run_name
     model = load_model(path, device=device, precision='fp32')
     tokens = held_out(run_name, device)
     result = measure_model(model, tokens)
@@ -66,15 +69,16 @@ def measure_one(run_name, device='cuda'):
     elif not run_name.startswith('a5-spam-') and 'moe' not in run_name:
         result['signals'] = signal_profile(model, tokens[:2])
     del model
-    torch.cuda.empty_cache()
+    if device == 'cuda':
+        torch.cuda.empty_cache()
     return result
 
 
 def measure_many(run_names=None):
     import torch
     from modal_utils import MODAL_MODEL_DIR
-    if not run_names:
-        run_names = sorted(p.name for p in MODAL_MODEL_DIR.glob('a5-*') if (p/'metadata.json').exists())
+    if run_names == ['__list__']:
+        return {'__list__': sorted(p.name for p in Path(MODAL_MODEL_DIR).glob('a5-*') if (p/'metadata.json').exists())}
     out = {}
     for name in run_names:
         try:
@@ -89,10 +93,15 @@ def measure_many(run_names=None):
 if __name__ == '__main__':
     import modal
     from modal_utils import app, build_image, VOLUME_MOUNTS, MODAL_ENVIRONMENT
-    remote = app.function(image=build_image(), volumes=VOLUME_MOUNTS, gpu=GPU,
-                          cpu=8, memory=32768, timeout=3600)(measure_many)
+    remote = app.function(image=build_image(), volumes=VOLUME_MOUNTS, gpu=GPU.split(',') if GPU else None,
+                          cpu=16, memory=65536, timeout=3600)(measure_many)
+    names = sys.argv[1:]
     with modal.enable_output(), app.run(environment_name=MODAL_ENVIRONMENT):
-        result = remote.remote(sys.argv[1:] or None)
+        if not names:
+            names = remote.remote(['__list__'])['__list__']
+        result = {}
+        for part in remote.map([[n] for n in names]):  # one container per run; CPU containers are not capped
+            result.update(part)
     previous = json.loads(OUTPUT.read_text()) if OUTPUT.exists() else {}
     previous.update(result)
     OUTPUT.write_text(json.dumps(previous, indent=1) + '\n')

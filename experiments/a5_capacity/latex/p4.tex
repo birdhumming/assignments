@@ -1,0 +1,21 @@
+\section*{Problem 4: Looping}
+
+All looped models are d8w512 with one prelude block, one coda block and a core of $R$ applications of $B$ distinct blocks (\texttt{p4\_looping.py:LoopLM}); the dense d8 is the same code with $B=6$ distinct core blocks applied once each. Table~\ref{tab:p4ladder} and Figure~\ref{fig:p4ladder} give the ladders; Table~\ref{tab:p4boundary} the boundary maps; Figure~\ref{fig:p4eval} the inference-time pass sweep; Table~\ref{tab:p4switch} the mid-training switches.
+
+\input{p4_tables}
+
+\begin{figure}[H]\centering
+\includegraphics[width=\linewidth]{p4_ladders}
+\caption{Left: eight core applications with 6, 3, 2 or 1 distinct blocks. Middle: one shared core block applied $R$ times, loss against executed depth. Right: boundary variants of the one-block, six-pass loop.}
+\label{fig:p4ladder}
+\end{figure}
+
+\textbf{(a) Fewer distinct blocks at fixed compute.} Holding eight core applications fixed, every halving of the number of distinct blocks costs loss, and the cost is roughly constant per halving: 6 blocks 2.927, 3 blocks 2.980 ($+0.053$), 2 blocks 3.007 ($+0.027$ more), 1 block 3.048 ($+0.041$ more). The one-block loop is 0.12 nats behind the dense model at identical FLOPs, which on the Problem 1 yardstick is the gap between d8 and d5 ($\epsilon\approx0.45$). So at this scale the loop is a parameter-saving device, not a compute-saving one: the curves in Figure~\ref{fig:p4ladder} (left) are parallel from update 2{,}000 on, there is no late crossover, and the ranking is the parameter ranking.
+
+\textbf{(b) Does more looping help at fixed parameters?} %P4B%
+
+\textbf{(c) Boundary maps.} The six-pass one-block loop improves from 3.048 to 3.005 when the core input is RMS-normalized at each pass boundary and the prelude output is re-injected (``recall'', $h \leftarrow \text{norm}(h) + e$). That recovers 0.044 of the 0.12 gap to dense and puts the one-block model level with the two-block loop (3.007) at a third of the core parameters. %P4C%
+
+\textbf{(d) Deep one-block loops.} %P4D%
+
+\textbf{(e) Changing sharing mid-training.} %P4E%
