@@ -1,75 +1,80 @@
 \documentclass[10pt,letterpaper]{article}
-\usepackage[margin=0.75in]{geometry}
+\usepackage[margin=0.9in]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
-\usepackage{times}
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs}
-\usepackage{tabularx}
 \usepackage{array}
 \usepackage{graphicx}
-\usepackage[font=small,labelfont=bf,skip=3pt]{caption}
+\usepackage[font=small,labelfont=bf,labelsep=period,skip=4pt]{caption}
 \usepackage{enumitem}
-\usepackage{microtype}
+\usepackage[expansion=false]{microtype}
 \usepackage[hidelinks]{hyperref}
-\usepackage{xcolor}
-\usepackage{parskip}
 \usepackage{float}
-\usepackage{listings}
-\setlength{\parskip}{4pt}
-\setlist{nosep,leftmargin=*}
+\usepackage{multicol}
+\setlength{\parskip}{3pt}
+\setlength{\parindent}{0pt}
+\setlist{nosep,leftmargin=1.2em}
+\setlist[itemize]{label=\textbullet}
 \graphicspath{{../../../plots/a5_capacity/}}
-\newcolumntype{L}{>{\raggedright\arraybackslash}X}
-\renewcommand{\arraystretch}{1.08}
-\captionsetup[table]{skip=2pt}
-\lstset{basicstyle=\ttfamily\scriptsize,breaklines=true,columns=fullflexible,frame=single}
+\renewcommand{\arraystretch}{1.05}
+\captionsetup[table]{position=above,skip=3pt}
+\newcommand{\lead}[1]{\textbf{#1}}
+\newcommand{\LL}{L}
 
-\title{\vspace{-1.6em}CS 312 --- Assignment 5: Capacity\vspace{-0.4em}}
-\author{Sandra Yang (\texttt{aleyang})}
-\date{\vspace{-0.6em}}
+\title{\vspace{-2em}CS 312 Assignment 5 writeup}
+\author{Sandra Yang}
+\date{November 10, 2026}
 
 \begin{document}
 \maketitle
-\vspace{-2em}
+\vspace{-1.5em}
 
-\paragraph{Setup.} Code: \texttt{experiments/a5\_capacity/} on branch \texttt{a5-experiments} of the fork \texttt{birdhumming/assignments}; the analysis scripts are in \texttt{analysis/}, the run queue in \texttt{launch\_plan.py}. Problem 1 uses only the supplied release \texttt{a5-capacity-v1} (manifest published at Unix time 1793391573, 2026-10-30 04:19 UTC; 370 runs, 76 shapes, 105 retained checkpoints, project \texttt{hashimoto-group/public-alchemy-a5}); we did not retrain any of it. Problems 2--5 are our own 600k-sequence (614.4M-token) d8 runs on Modal H100s, W\&B project \texttt{assignments}, run names \texttt{a5-*}. %GPUHOURS%
+\section*{Setup}
 
-\paragraph{How to read the numbers.} ``Loss'' is final validation loss in nats per next token on the course validation split. The seed-to-seed standard deviation of the d8 run is about 0.002 (Assignment 1), so gaps below 0.005 are noise, 0.01--0.03 are small but real, and 0.1 separates regimes. Unless stated otherwise, our runs use LR $3\times10^{-3}$, the best supplied d8 rate. Compute is the analytic estimate \texttt{training\_flops()} (6 FLOPs per parameter-token in the blocks and head plus $12\,D\,T\,W$ per token for attention scores), not wall-clock. For the compute yardstick we fit the supplied default ladder d4--d10 ($W=64D$):
+\lead{Models and recipe.} Every run uses the course data, a vocabulary of 4,096 tokens, a context length of 1,024, and the d8 Transformer (8 blocks, width 512, 34.6M parameters) unless a problem changes it. We train for 600,000 sequences in batches of 64, or 614.4M tokens over 9,375 updates, with AdamW, weight decay 0.1, $\beta=(0.9,0.95)$, 1\% warmup, linear decay to zero and gradient clipping at 1. The validation loss $L$ is measured on 1,000 held-out sequences. Our runs use LR 0.003, the best supplied d8 rate, unless stated. We abbreviate learning rate as LR.
+
+\lead{Supplied runs and our runs.} Problem 1 uses only the supplied release \texttt{a5-capacity-v1} (manifest published at Unix time 1793391573, 2026-10-30 04:19 UTC; 370 runs, 76 shapes, 105 retained checkpoints; W\&B project \texttt{hashimoto-group/public-alchemy-a5}). We did not retrain any of it. Problems 2 to 5 are our own runs on Modal H100s (W\&B project \texttt{assignments}, run names \texttt{a5-*}). Code is in \texttt{experiments/a5\_capacity/} on branch \texttt{a5-experiments} of \texttt{birdhumming/assignments}: model files \texttt{p2\_readout.py}, \texttt{p3\_moe.py}, \texttt{p3\_own.py}, \texttt{p4\_looping.py}; the run queue in \texttt{launch\_plan.py} and \texttt{launch\_more.py}; the diagnostics in \texttt{measure\_runs.py}; the plots and tables in \texttt{analysis/}. The last section lists every run.
+
+\lead{Diagnostics.} We probe final checkpoints in FP32 on fixed held-out sequences (8 sequences of 128 tokens for gradient energy, routing statistics and signal propagation; 64 sequences of 512 tokens for loop-count sweeps). The held-out NLL on the 8-sequence set is about 0.008 higher than $L$ (dense: 2.935 against 2.927). Where a run's W\&B history was lost (Section ``All runs''), we report this checkpoint NLL and mark it $^\dagger$.
+
+\lead{Notation and noise.} $\Delta L$ is a loss difference. A seed rerun of d8 changes $L$ by 0.003 (Assignment 4) %SEED%, so we treat $|\Delta L|<0.005$ as noise, 0.01 to 0.03 as small but real, and 0.1 as a change of regime. FLOPs are the analytic estimate \texttt{training\_flops()}: 6 per parameter-token in blocks and head plus $12\,D\,T\,W$ per token for attention scores, not wall-clock. For an MoE we count only the executed experts; for a loop we count every application.
+
+\lead{The compute yardstick.} Following the assignment we fit the supplied default ladder d4 to d10 ($W=64D$):
 \[
 \hat L_{\text{ref}}(C) = 2.396 + 0.534\,(C/C_0)^{-0.28}, \qquad C_0 = 150.8\ \text{PFLOP (d8)},
 \]
-and report $\epsilon = C_{\text{eq}}(L)/C$, the dense-equivalent cost divided by the actual cost. $\epsilon=1$ means ``as good as a default-shaped dense model of the same cost''. The fit is over seven points with unequal LR tuning, so $\epsilon$ is accurate to about $\pm0.05$.
+and report $\epsilon = C_{\text{eq}}(L)/C$, the dense-equivalent cost divided by the actual cost. $\epsilon=1$ means ``as good as a default-shaped dense model of the same cost''. The fit uses seven points with unequal LR tuning, so $\epsilon$ is accurate to about $\pm0.05$.
+
+\lead{What we ran.} We trained 50 full-budget runs over two days: 7 short SpamLang runs, 14 head variants for Problem 2, 25 MoE variants for Problem 3, and the rest for the loops and switches of Problem 4, including LR trials and two seed reruns. The class workspace was at its GPU cap most of the time, so we ran one to four runs at once and cut the lowest-priority runs (listed as ``cut'' in the last section).
 
 %=====================================================================
-\section*{Problem 1: Depth vs width}
+\section*{Problem 1. Depth versus width}
 
-Best available loss at each of the 35 ratio-grid shapes, seed 42, full budget (129 LR trials; 1--9 per shape). Figure~\ref{fig:p1flops} plots them against estimated FLOPs, Figure~\ref{fig:p1dir} isolates the depth-only and width-only directions from d8, and Figure~\ref{fig:p1eff} converts every shape into an efficiency $\epsilon$.
+We analyze the supplied ratio grid: depths 4 to 10 and widths $W=\rho D$ with $\rho\in\{16,32,64,128,256\}$, plus the extra shapes at width 512 and depth 8 and the two parameter-matched extremes. Every point is the best available loss over the LR trials at that shape (1 to 9 trials, 129 in total), seed 42, full budget. Figure~\ref{fig:p1flops} plots loss against estimated FLOPs, Figure~\ref{fig:p1dir} isolates the depth-only and width-only directions from d8, and Figure~\ref{fig:p1eff} converts every shape into an efficiency $\epsilon$.
 
 \begin{figure}[H]\centering
-\includegraphics[width=.72\linewidth]{p1_loss_vs_flops}
-\caption{(a) Loss against estimated training FLOPs, one color per $W/D$ (faint dots: all LR trials; circles: best). Dashed: the $\rho=64$ ladder fit. Star and plus: the parameter-matched extremes of (b).}
+\includegraphics[width=.7\linewidth]{p1_loss_vs_flops}
+\caption{Best loss against estimated training FLOPs, one color per $W/D$. Faint dots are all LR trials, circles the best. Dashed, the $\rho=64$ ladder fit. Star and plus, the parameter-matched extremes of Part (b).}
 \label{fig:p1flops}
 \end{figure}
 
-\begin{figure}[H]\centering
-\includegraphics[width=\linewidth]{p1_directions}
-\caption{Left: from d8 (w512), spending compute only on depth (d3--d22 at width 512), only on width (d8 at widths 128--2048), or on the default ladder. Right: loss against $W/D$ at each fixed depth.}
-\label{fig:p1dir}
-\end{figure}
+\subsection*{Part (a). Where to spend compute}
 
-\begin{figure}[H]\centering
-\includegraphics[width=\linewidth]{p1_iso_budget}
-\caption{Dense-equivalent efficiency $\epsilon=C_{\text{eq}}(L)/C$ of every ratio-grid shape, by ratio (left, colored by budget) and by budget (right). $\rho=64$ is 1 by construction.}
-\label{fig:p1eff}
-\end{figure}
-
-\textbf{(a)(i) Depth or width from d8.} Table~\ref{tab:p1dir} lists the two directions at matched cost. For small increments (1.2--1.5$\times$ the d8 cost) the two are indistinguishable: d10w512 vs d8w576 at 186 PFLOP are 2.897 vs 2.898, d12w512 vs d8w640 at 223 PFLOP are 2.872 vs 2.875. The directions separate past about $2\times$: depth-only stays on the ladder fit (d16w512 at 294 PFLOP: 2.836, fit 2.834; d22w512 at 401 PFLOP: 2.809, fit 2.803; $\epsilon\approx0.95$--$1.0$), while width-only falls below it (d8w1024 at 526 PFLOP: 2.804 against fit 2.774, $\epsilon=0.74$; d8w2048 at 1948 PFLOP: 2.702 against fit 2.68, $\epsilon=0.57$). So at this fixed 614M-token budget extra depth is the more useful single direction, and the advantage grows with the budget; extra width alone is fine for up to about $1.5\times$ the cost and wasteful beyond. Caveat: d20w512 and d22w512 have one LR trial each (LR $3\times10^{-3}$) against three for d8w1024, so the depth-only points are if anything undertuned.
+\lead{(i) Depth or width from d8.} Table~\ref{tab:p1dir} lists the two directions at matched cost.
+\begin{itemize}
+\item \lead{Small increments are a tie.} At 1.2 to 1.5 times the d8 cost the directions agree to 0.003: d10w512 against d8w576 at 186 PFLOP are 2.897 and 2.898; d12w512 against d8w640 at 223 PFLOP are 2.872 and 2.875.
+\item \lead{Past about $2\times$, depth wins.} Depth-only stays on the ladder fit ($\epsilon=0.95$ to 1.0 up to d22w512 at 401 PFLOP). Width-only falls below it: d8w1024 at 526 PFLOP reaches 2.804 against a fit of 2.774 ($\epsilon=0.74$), and d8w2048 at 1,948 PFLOP reaches 2.702 against 2.681 ($\epsilon=0.57$).
+\item \lead{Caveat.} d20w512 and d22w512 have one LR trial each (0.003) against three for d8w1024, so the depth points are if anything undertuned.
+\end{itemize}
 
 \begin{table}[H]\centering\small
+\caption{Spending compute from d8 on one axis. ``fit'' is $\hat L_{\text{ref}}$ at the same FLOPs.}
+\label{tab:p1dir}
 \begin{tabular}{lrrrr @{\hspace{1.5em}} lrrrr}
 \toprule
 \multicolumn{5}{c}{Depth only, $W=512$} & \multicolumn{5}{c}{Width only, $D=8$} \\
-shape & PFLOP & loss & fit & $\epsilon$ & shape & PFLOP & loss & fit & $\epsilon$ \\
+shape & PFLOP & $L$ & fit & $\epsilon$ & shape & PFLOP & $L$ & fit & $\epsilon$ \\
 \midrule
 d8w512 & 151 & 2.932 & 2.930 & 0.98 & d8w512 & 151 & 2.932 & 2.930 & 0.98 \\
 d10w512 & 186 & 2.897 & 2.899 & 1.01 & d8w576 & 185 & 2.898 & 2.900 & 1.01 \\
@@ -79,24 +84,71 @@ d20w512 & 365 & 2.823 & 2.812 & 0.92 & d8w2048 & 1948 & 2.702 & 2.681 & 0.57 \\
 d22w512 & 401 & 2.809 & 2.803 & 0.95 & & & & & \\
 \bottomrule
 \end{tabular}
-\caption{Spending compute from d8 on one axis. ``fit'' is $\hat L_{\text{ref}}$ at the same FLOPs.}
-\label{tab:p1dir}
 \end{table}
 
-\textbf{(a)(ii) The two infinite limits.} Neither limit is preferable; they fail differently. $W\to\infty$ at fixed depth is the $\rho=256$ line and beyond: its efficiency falls monotonically with budget (0.68 at d4w1024, 0.57 at d8w2048, 0.39 at d10w2560) and the one-block d1w1280 model of part (b) reaches only 3.432, worse than every grid shape except the five smallest $\rho\le32$ models (d4w64 through d4w128, 1.5--3M parameters against its 34M). A one-block model cannot compose two attention steps, so induction-type copying (which needs a previous-token head feeding a matching head) is unavailable no matter the width; the universal-approximation argument needs the MLP to memorize the composition instead, which is exponentially expensive in parameters and gets no gradient signal to do so in 9k steps. $D\to\infty$ at fixed width is the $\rho=16$ line and d62w192: loss keeps improving with depth (3.94, 3.77, 3.60, 3.55, 3.42, 3.38, 3.28 for d4--d10 at $\rho=16$), but at $\epsilon\approx0.8$--$0.9$, and the 62-block model has $\epsilon=0.41$ (3.017 for 215 PFLOP; the ladder reaches 3.017 at 88 PFLOP). Depth is paid for twice: in attention FLOPs ($12DTW$ per token, 23\% of d62w192's cost against 13\% of d8's) and in wall-clock (62 sequential blocks: 4.0 hours against 1.7 for d8 and 0.9 for d1w1280 in the supplied runs), and very deep thin residual streams are also harder to optimize (the deep run's curve in Figure~\ref{fig:p1ext} is still steeper at the end, i.e.\ it is undertrained at this LR). The deep limit degrades gracefully in loss and badly in cost; the wide limit degrades in both.
+\begin{figure}[H]\centering
+\includegraphics[width=\linewidth]{p1_directions}
+\caption{Left, from d8 (w512), spending compute only on depth (d3 to d22 at width 512), only on width (d8 at widths 128 to 2,048), or on the default ladder. Right, loss against $W/D$ at each fixed depth.}
+\label{fig:p1dir}
+\end{figure}
 
-\textbf{(a)(iii) Choosing a fixed ratio.} $\rho\in\{32,64\}$ (Figure~\ref{fig:p1eff}). $\rho=32$ is best at the smallest budgets (d4w128: $\epsilon=1.05$, d5w160: 1.01) and 0.96--0.97 from d6 up; $\rho=64$ is 1.0 everywhere by construction; $\rho=128$ is 0.86--0.91 at d4--d7 and drops to 0.74 at d8; $\rho=256$ drops from 0.68 to 0.39; $\rho=16$ sits at 0.78--0.94 with no trend. So the answer does change with budget: below about 20 PFLOP a narrower $\rho\approx32$ is slightly better, from about 50 PFLOP on $\rho=64$ is best, and wider ratios get relatively worse as the budget grows. The important caveat is that ``budget'' here moves parameters at a fixed 614M tokens: wide models are the most parameter-heavy per FLOP and therefore the most undertrained (d10w2560 has 971M parameters for 614M tokens, far from the roughly 20 tokens per parameter of a compute-optimal run), which is why the right end of the $\rho=256$ line flattens. With a Chinchilla-style data budget the wide ratios would recover part of the gap, but not the attention-free one-block failure.
+\lead{(ii) The two infinite limits.} Neither limit is preferable; they fail differently.
+\begin{itemize}
+\item \lead{$W\to\infty$ at fixed depth} is the $\rho=256$ line and beyond. Its efficiency falls with budget: 0.68 at d4w1024, 0.57 at d8w2048, 0.39 at d10w2560. The one-block d1w1280 model of Part (b) reaches only 3.432, worse than every grid shape except the five smallest $\rho\le32$ models (1.5M to 3M parameters against its 34M). One attention layer cannot compose two attention steps, so induction-style copying is unavailable at any width; the MLP would have to memorize the composition instead, which is exponentially expensive in parameters and gets no gradient signal to do so in 9k steps.
+\item \lead{$D\to\infty$ at fixed width} is the $\rho=16$ line and d62w192. Loss keeps improving with depth (3.94, 3.77, 3.60, 3.55, 3.42, 3.38, 3.28 for d4 to d10 at $\rho=16$) but at $\epsilon=0.8$ to 0.9, and the 62-block model has $\epsilon=0.41$: 3.017 for 215 PFLOP, where the ladder reaches 3.017 at 88 PFLOP. Depth is paid for twice, in attention FLOPs ($12DTW$ per token is 23\% of d62w192's cost against 13\% of d8's) and in wall-clock (62 sequential blocks: 4.0 hours against 1.7 for d8 and 0.9 for d1w1280). The deep run's curve (Figure~\ref{fig:p1ext}) is still steep at the end, so it is also undertrained at this LR.
+\end{itemize}
+The deep limit degrades gracefully in loss and badly in cost; the wide limit degrades in both.
 
-\textbf{(b) Parameter-matched extremes} (Figure~\ref{fig:p1ext}, all at LR $3\times10^{-3}$, seed 42). d8w512 reaches 2.932, the deep and skinny d62w192 reaches 3.017, and the wide and shallow d1w1280 reaches 3.432. Deep beats wide by 0.42 nats, a regime-sized gap, but both lose to the default: the deep model is 0.085 worse than d8 while spending 43\% more FLOPs (215 vs 151 PFLOP) and 2.4$\times$ the wall-clock. This agrees with (a): at matched parameters the right-hand panel of Figure~\ref{fig:p1dir} says loss is minimized at $\rho\approx32$--$64$ and rises on both sides, and the deep extreme ($\rho=3$) is the side that rises slowly while the wide extreme ($\rho=1280$) is the side that collapses. The disagreement with (a)(i) is only apparent: there, depth-only won because it was added to a model that already had $\rho=64$ and 8 blocks; here, depth is bought by removing width below the $\rho=16$ line, where every grid shape already sat at $\epsilon<0.95$.
+\begin{figure}[H]\centering
+\includegraphics[width=\linewidth]{p1_iso_budget}
+\caption{Dense-equivalent efficiency $\epsilon=C_{\text{eq}}(L)/C$ of every ratio-grid shape, by ratio (left, colored by budget) and by budget (right). $\rho=64$ is 1 by construction.}
+\label{fig:p1eff}
+\end{figure}
+
+\lead{(iii) Choosing a fixed ratio.} We would choose $\rho\in\{32,64\}$ (Figure~\ref{fig:p1eff}).
+\begin{itemize}
+\item $\rho=32$ is best at the smallest budgets (d4w128: $\epsilon=1.05$; d5w160: 1.01) and 0.96 to 0.97 from d6 up.
+\item $\rho=64$ is 1.0 everywhere by construction. $\rho=128$ is 0.86 to 0.91 at d4 to d7 and drops to 0.74 at d8. $\rho=256$ drops from 0.68 to 0.39. $\rho=16$ sits at 0.78 to 0.94 with no trend.
+\item So the answer changes with budget: below about 20 PFLOP a narrower $\rho\approx32$ is slightly better, from about 50 PFLOP on $\rho=64$ is best, and wider ratios get relatively worse as the budget grows.
+\end{itemize}
+The caveat is that ``budget'' here moves parameters at a fixed 614M tokens. Wide models are the most parameter-heavy per FLOP and therefore the most undertrained (d10w2560 has 971M parameters for 614M tokens). A compute-optimal study that also scaled data would be kinder to width.
+
+\subsection*{Part (b). Parameter-matched extremes}
+
+All three at LR 0.003 and seed 42 (Figure~\ref{fig:p1ext}): d8w512 reaches 2.932, the deep and skinny d62w192 reaches 3.017, and the wide and shallow d1w1280 reaches 3.432.
+\begin{itemize}
+\item \lead{Deep beats wide by 0.42}, a regime-sized gap, but both lose to the default. The deep model is 0.085 worse than d8 while spending 43\% more FLOPs (215 against 151 PFLOP) and $2.4\times$ the wall-clock.
+\item \lead{This agrees with Part (a).} The right panel of Figure~\ref{fig:p1dir} says loss at fixed parameters is minimized at $\rho\approx32$ to 64 and rises on both sides; the deep extreme ($\rho=3$) is the side that rises slowly, the wide extreme ($\rho=1280$) the side that collapses.
+\item \lead{The apparent disagreement with (a)(i)} is only apparent. There, depth won because it was added to a model that already had $\rho=64$. Here depth is bought by removing width below the $\rho=16$ line, where every grid shape already had $\epsilon<0.95$.
+\end{itemize}
 
 \begin{figure}[H]\centering
 \includegraphics[width=\linewidth]{p1_extremes}
-\caption{(b) Supplied runs of the parameter-matched extremes against the same-LR d8 control (train loss faint, validation circles). Right: late training.}
+\caption{Supplied runs of the parameter-matched extremes against the same-LR d8 control (training loss faint, validation circles). Right, late training.}
 \label{fig:p1ext}
 \end{figure}
+
+\lead{Synthesis.} At a fixed 614M-token budget, extra depth from d8 is worth as much as the default ladder and extra width is worth less, by a margin that grows with the budget. Both infinite limits waste compute, the wide one in loss and the deep one in attention FLOPs, wall-clock and optimization. A fixed ratio of 32 to 64 is best; narrower helps a little at small budgets. Parameter count is the wrong currency: the three 34M-parameter models span 0.5 nats and a factor of 1.8 in FLOPs.
+
+\lead{Rules of thumb.}
+\begin{itemize}
+\item The default ladder follows $\hat L = 2.396 + 0.534\,(C/C_{d8})^{-0.28}$; doubling compute on the ladder is worth about $-0.09$ at d8.
+\item Depth-only from d8 keeps $\epsilon\approx1$ to $2.7\times$ the cost; width-only drops to $\epsilon=0.74$ at $3.5\times$ and 0.57 at $13\times$.
+\item At 34M parameters: d1w1280 is 3.43, d62w192 is 3.02, d8w512 is 2.93.
+\end{itemize}
 
 \input{p2}
 \input{p3}
 \input{p4}
 \input{p5}
+
+%=====================================================================
+\section*{Reference values for predicting new runs}
+Table~\ref{tab:ref} collects the numbers that come up most often. All losses are final validation losses at 614.4M tokens with the recipe in the Setup.
+\input{ref_table}
+
+\section*{All runs we trained}
+Every run below uses the recipe in the Setup and is named \texttt{a5-\{variant\}-d8-w512-lr\{LR\}} in W\&B and on Modal (SpamLang: \texttt{a5-spam-v\{V\}-w\{W\}}). Status is the final validation loss, ``plateau'' for a run stuck at the unigram loss 6.875, ``cut'' for a run we cancelled for GPU time, or ``lost'' when neither the W\&B history nor a checkpoint survived a run-id collision. $^\dagger$ marks a loss read from the checkpoint (8-sequence NLL) because the W\&B history was lost. Minutes is wall time on one H100.
+\input{runs_table}
+
 \end{document}

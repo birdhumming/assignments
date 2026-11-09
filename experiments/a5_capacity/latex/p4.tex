@@ -1,27 +1,81 @@
-\section*{Problem 4: Looping}
+%=====================================================================
+\section*{Problem 4. Looping}
 
-All looped models are d8w512 with one prelude block, one coda block and a core of $R$ applications of $B$ distinct blocks (\texttt{p4\_looping.py:LoopLM}); the dense d8 is the same code with $B=6$ distinct core blocks applied once each. Table~\ref{tab:p4ladder} and Figure~\ref{fig:p4ladder} give the ladders; Table~\ref{tab:p4boundary} the boundary maps; Figure~\ref{fig:p4eval} the inference-time pass sweep; Table~\ref{tab:p4switch} the mid-training switches.
+All looped models are d8w512 with one prelude block, one coda block, and a core of $R$ applications of $B$ distinct blocks (\texttt{p4\_looping.py}). The dense d8 is the same code with $B=6$ distinct blocks applied once. Weights and norm gains are shared across applications. Table~\ref{tab:p4ladder} and Figure~\ref{fig:p4ladder} give the ladders, Table~\ref{tab:p4boundary} the boundary maps, Figure~\ref{fig:p4eval} the inference-time pass sweep, and Table~\ref{tab:p4switch} the mid-training switches.
 
 \input{p4_tables}
 
 \begin{figure}[H]\centering
 \includegraphics[width=\linewidth]{p4_ladders}
-\caption{Left: eight core applications with 6, 3, 2 or 1 distinct blocks. Middle: one shared core block applied $R$ times, loss against executed depth. Right: boundary variants of the one-block, six-pass loop.}
+\caption{Left, eight core applications with 6, 3, 2 or 1 distinct blocks. Middle, one shared core block applied $R$ times, loss against executed depth. Right, boundary variants of the one-block, six-pass loop.}
 \label{fig:p4ladder}
 \end{figure}
 
-\textbf{(a) Fewer distinct blocks at fixed compute.} Holding eight core applications fixed, every halving of the number of distinct blocks costs loss, and the cost is roughly constant per halving: 6 blocks 2.927, 3 blocks 2.980 ($+0.053$), 2 blocks 3.007 ($+0.027$ more), 1 block 3.048 ($+0.041$ more). The one-block loop is 0.12 nats behind the dense model at identical FLOPs, which on the Problem 1 yardstick is the gap between d8 and d5 ($\epsilon\approx0.45$). So at this scale the loop is a parameter-saving device, not a compute-saving one: the curves in Figure~\ref{fig:p4ladder} (left) are parallel from update 2{,}000 on, there is no late crossover, and the ranking is the parameter ranking.
+\subsection*{Part (a). Capacity at fixed applications}
 
-\textbf{(b) Does more looping help at fixed parameters?} The one-block ladder holds the parameter count fixed at 15.6M (prelude, one core block, coda) and varies how often the core is applied. Two passes give 3.086, three 3.066, four 3.066, six 3.048 (the loop-r6 model, whose core is the same single block), twelve 3.048 and eighteen 3.064 (the four- and twelve-pass values are checkpoint NLLs on the diagnostic set, marked $^\dagger$ in the table; the nine-pass run lost both its W\&B log and its checkpoint to a run-id collision and is reported as missing), so the gain saturates: each extra application up to six buys about 0.01 nats, and doubling or tripling the passes beyond that buys nothing while costing 1.7--2.5$\times$ the FLOPs of the dense model. The 18-pass model is also the most brittle at other pass counts (3.93 at 6 passes, 3.12 at 24). Compared with the fixed-application ladder, re-applying one block six times (3.048) recovers 0.07 of the 0.12-nat gap between the 15.6M one-block model at two passes and the 34.6M dense model: looping converts compute into quality, but at a worse rate than adding fresh parameters (the dense model spends the same 8 applications and is 0.12 better than the six-pass loop). %P4B%
+\begin{itemize}
+\item \lead{Every halving of the distinct blocks costs loss}, by a roughly constant amount: 6 blocks 2.927, 3 blocks 2.980 ($+0.053$), 2 blocks 3.007 ($+0.027$), 1 block 3.048 ($+0.041$). %LOOPLR%
+\item \lead{The one-block loop is 0.12 behind dense at identical FLOPs.} On the Problem 1 yardstick that is the d8 to d5 gap ($\epsilon\approx0.45$): the loop saves 19M of 34.6M parameters but no compute. The curves are parallel from update 2,000 on; there is no late crossover.
+\item \lead{Fewer or more passes at inference are both costly for plain loops} (Part (c)): loop-r6 at 1 pass is 4.46, at 24 passes 4.21.
+\end{itemize}
 
-\textbf{(c) Boundary maps.} The six-pass one-block loop improves from 3.048 to 3.005 when the core input is RMS-normalized at each pass boundary and the prelude output is re-injected (``recall'', $h \leftarrow \text{norm}(h) + e$). That recovers 0.044 of the 0.12 gap to dense and puts the one-block model level with the two-block loop (3.007) at a third of the core parameters. Boundary normalization \emph{alone} fails outright: the run falls to the unigram loss (6.87) by update 40 and never recovers. Its signal profile shows why: after the first RMS-normalized boundary the next block's output has RMS 246 (vs 5--7 in the plain loop), the stream saturates at RMS 321 for the remaining passes, and the gradient reaching the first two applications is exactly zero. Normalizing the residual stream to unit scale between passes while the blocks keep adding updates of RMS 5--10 makes each pass overwrite the previous one; re-injecting the prelude output (recall) restores a persistent reference signal, and with it the stream stays at RMS 5.6--8.2 across all eight applications with gradients within a factor of 20 of each other, against a monotone growth from 5.3 to 24.3 in the plain loop. In short, the norm fixes the \emph{scale} drift of the loop but destroys the \emph{content}; recall supplies the content.
+\subsection*{Part (b). Signal propagation and boundary maps}
 
-\textbf{(d) Deep one-block loops and evaluating at unseen pass counts.} Figure~\ref{fig:p4eval} evaluates each trained loop at pass counts it never saw. The plain loops are brittle: loop-r6 (trained at 6) is 3.06 at 6 passes, 3.11 at 8, 3.35 at 12 and 4.21 at 24, and the two- and three-pass loops degrade even faster (loop-r2: 3.00 at 2, 3.44 at 6, 5.01 at 24). Running fewer passes than trained is worse still (loop-r6 at 1 pass: 4.46). With boundary norm and recall the picture changes completely: 3.02 at the trained 6 passes, 3.03 at 7--24 passes, flat to three decimals. The normalized, re-anchored loop has learned a contraction: extra applications leave the stream essentially where it was, so the model can be run deeper for free (and shallower at a modest cost: 3.07 at 4 passes, 3.10 at 3). The one-block two-pass model behaves like the plain loops (3.10 at 2 passes, 3.16 at 3, 4.09 at 8, 5.91 at 24). Recall alone (prelude output re-added at every boundary, no norm) is also worth having: 3.022 vs 3.048 for the plain six-pass loop, with norm+recall at 3.005. Halving the recall weight to 0.5 (W\&B log lost; checkpoint NLL 3.000 on the diagnostic set, where recall 1.0 scores 3.021 and norm+recall 3.000) is even better at the trained depth, so the anchor need not be strong to help the loss. But it does nothing for pass generalization: the 0.5-recall loop degrades like the plain one (3.04 at 6 passes, 3.08 at 8, 3.24 at 12, 3.40 at 16), so the flat profile of the norm+recall model comes from the normalization keeping each pass's update at a fixed scale relative to the anchor, not from the anchor alone. %P4D%
+\begin{figure}[H]\centering
+\includegraphics[width=\linewidth]{p4_signals}
+\caption{Per-application activation RMS, gradient RMS and relative residual update of the final checkpoints, dense d8 against the one-block six-pass loop and its boundary variants, on 8 held-out sequences.}
+\label{fig:p4signals}
+\end{figure}
+
+\begin{itemize}
+\item \lead{The plain loop behaves like dense.} Stream RMS grows monotonically from 5.3 after the first application to 24 at the top (dense: 4.6 to 23), and the relative update per application shrinks correspondingly. Gradient RMS is within a factor of 2 of dense at every depth.
+\item \lead{Norm alone fails outright.} The run falls to the unigram loss 6.875 by update 40 and never recovers. After the first normalized boundary the next block's output has RMS 246 (5 to 7 in the plain loop), the stream saturates at RMS 321, and the gradient reaching the first two applications is exactly zero. Normalizing the stream to unit scale while the blocks add updates of RMS 5 to 10 makes each pass overwrite the previous one. %NORMLR%
+\item \lead{Recall alone helps.} Re-adding the prelude output $a$ at every boundary ($h\leftarrow h+a$) gives 3.022, $-0.026$ from the plain loop. With $\alpha=0.5$ the loss is 3.025$^\dagger$, so the anchor need not be strong.
+\item \lead{Norm plus recall is best}, 3.005 ($-0.044$), level with the two-block loop at a third of the core parameters. The stream stays at RMS 5.6 to 8.2 across all eight applications and gradients are within a factor of 20 of each other, against a growth from 5.3 to 24 in the plain loop. The norm fixes the scale drift and destroys the content; recall supplies the content.
+\end{itemize}
+
+\subsection*{Part (c). Evaluating at unseen loop counts}
 
 \begin{figure}[H]\centering
 \includegraphics[width=.8\linewidth]{p4_eval_passes}
-\caption{Held-out loss (64 sequences of 512 tokens) when a trained loop is run for a different number of passes. Filled markers: the trained pass count.}
+\caption{Held-out loss (64 sequences of 512 tokens) when a trained loop is run for a different number of passes. Filled markers, the trained pass count.}
 \label{fig:p4eval}
 \end{figure}
 
-\textbf{(e) Changing sharing mid-training.} Table~\ref{tab:p4switch} switches the 6-pass core at update 4,688 (half of training), with the two Adam-reset controls trained from the same seed. Going from unique blocks to a tied block is destructive: the run was at 3.114 just before the switch, jumped to 5.23 at the first evaluation afterwards (the six blocks are averaged into one, which is nowhere near any of them) and only recovered to 3.104 by the end, worse than the 3.048 of a loop that was tied throughout. Resetting Adam at the same step without changing the architecture costs nothing for the tied loop (3.0486 vs 3.0484), so the damage comes from the weight merge, not from the optimizer state. The opposite direction is benign: untying the block (six copies of the shared weights, which continue from exactly the same function) reaches a held-out NLL of 2.991 on the diagnostic set, between the tied loop (3.034 on the same set) and the always-unique dense model (2.935); the W\&B log of that run was lost, so only the checkpoint diagnostic is available, and the unique-weights Adam-reset control (3.002) shows that a fresh optimizer on 8 unique blocks mid-schedule costs about 0.07 by itself, which is most of the gap to the dense model. So a tied warm start followed by untying recovers most of the dense model's loss at half the parameter count for the first half of training, while late tying throws away what the unique blocks had learned.
+\begin{itemize}
+\item \lead{Plain loops are brittle.} loop-r6 (trained at 6) is 3.06 at 6 passes, 3.11 at 8, 3.35 at 12 and 4.21 at 24. The two- and three-pass loops degrade faster (loop-r2: 3.00 at 2, 3.44 at 6, 5.01 at 24), and fewer passes than trained is worse still (loop-r6 at 1 pass: 4.46).
+\item \lead{Norm plus recall is flat.} 3.02 at the trained 6 passes and 3.03 at every count from 7 to 24, so the model can be run deeper for free and shallower at a modest cost (3.07 at 4, 3.10 at 3). The normalized, re-anchored map has a fixed point that the stream reaches in about six applications.
+\item \lead{Recall alone does not generalize.} The $\alpha=0.5$ loop degrades like the plain one (3.04 at 6, 3.08 at 8, 3.24 at 12, 3.40 at 16). The flat profile comes from the norm keeping each update at a fixed scale relative to the anchor, not from the anchor alone.
+\item \lead{The best count is the trained count}, except for the norm+recall model, where any count at or above it is equally good.
+\end{itemize}
+
+\subsection*{Part (d). Extra deep one-block loops}
+
+The one-block ladder holds the parameter count at 15.6M and varies how often the core is applied.
+\begin{itemize}
+\item \lead{The gain saturates at about six passes.} Two passes give 3.086, three 3.066, four 3.066$^\dagger$, six 3.048, twelve 3.048$^\dagger$, eighteen 3.064. %R9R1% Each application up to six buys about 0.01; beyond that more passes buy nothing and cost 1.7 to 2.5 times the dense FLOPs.
+\item \lead{Looping converts compute into quality at a worse rate than fresh parameters.} From two to six passes the 15.6M model recovers 0.04 of the 0.16 gap to the dense model at the same eight applications.
+\item \lead{The 18-pass model is the most brittle} at other counts: 3.93 at 6 passes, 3.12 at 24.
+\item \lead{Designs for depth 20.} %R18DESIGN%
+\end{itemize}
+
+\subsection*{Part (e). Switching sharing during training}
+
+Table~\ref{tab:p4switch} switches the 6-pass core at update 4,688 (half of training) and resets Adam; the controls reset Adam at the same step without changing the architecture, %RANDOMCTRL% all from the same seed.
+\begin{itemize}
+\item \lead{Unique to tied is destructive.} The run was at 3.114 before the switch, jumped to 5.23 at the first evaluation after it (the six blocks are averaged into one, which is nowhere near any of them), and recovered only to 3.104 by the end, worse than the 3.048 of a loop tied throughout.
+\item \lead{The Adam reset itself is free for the tied loop} (3.0486 against 3.0484), so the damage is the weight merge, not the optimizer state.
+\item \lead{Tied to unique is benign.} Untying into six copies of the shared block (the function is unchanged at the switch) reaches 2.991$^\dagger$, between the tied loop (3.034 on the same set) and the dense model (2.935). The unique Adam-reset control (3.002, W\&B summary; its record was later overwritten and could not be re-verified) says a fresh optimizer on unique blocks mid-schedule costs about 0.07 by itself, most of the remaining gap.
+\item \lead{When to switch.} Start shared and specialize later if you have a looped model and the parameter budget grows: half of training at a third of the parameters costs about 0.06. Never compress a trained unique model by averaging; distilling or fine-tuning one block at a low LR would be needed instead.
+\end{itemize}
+
+\lead{Synthesis.} At this scale looping saves parameters, not compute. Re-applying one block six times is 0.12 worse than six distinct blocks at the same FLOPs, and more than six applications buy nothing. Plain loops also behave badly at any pass count other than the trained one. A parameter-free RMSNorm at the pass boundary is fatal on its own but, combined with re-injecting the prelude output, recovers a third of the gap to dense and makes the loss independent of the pass count from 6 to 24. Untying a loop mid-training is cheap; tying a dense model by averaging is not.
+
+\lead{Rules of thumb.}
+\begin{itemize}
+\item At eight applications, $\Delta L$ from dense is $+0.053$, $+0.080$, $+0.122$ for 3, 2, 1 distinct core blocks.
+\item One block applied 2, 3, 6, 12, 18 times: 3.086, 3.066, 3.048, 3.048, 3.064.
+\item Boundary norm alone: unigram plateau 6.875. Recall alone: $-0.026$. Norm plus recall: $-0.044$, and flat to 0.01 from 6 to 24 passes.
+\item Plain loop at $4\times$ the trained passes: $+1.2$. Norm+recall loop: $+0.01$.
+\item Averaging six trained blocks into one at mid-training: loss jumps to 5.2 and ends $+0.056$ above a loop tied throughout.
+\end{itemize}

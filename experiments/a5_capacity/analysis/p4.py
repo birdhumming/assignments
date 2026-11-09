@@ -6,9 +6,12 @@ LADDER8 = [('dense', 8, 6), ('loop-r1', 8, 6), ('loop-r2', 8, 3), ('loop-r3', 8,
 LADDER1 = [('loop-r6' if r == 6 else 'loop-1block-r%d' % r, r + 2, 1) for r in (1, 2, 3, 4, 6, 9, 12, 18)]
 BOUNDARY = [('loop-r6', 'plain loop'), ('loop-boundary-norm', '+ boundary norm'), ('loop-recall', '+ recall 1.0'),
             ('loop-norm-recall', '+ norm + recall'), ('loop-recall05', '+ recall 0.5'),
+            ('loop-1block-r18', '1 block, 18 passes, plain'),
+            ('loop-1block-r18-recall05', '1 block, 18 passes, recall 0.5'),
             ('loop-1block-r18-norm-recall', '1 block, 18 passes, norm+recall')]
 SWITCH = [('loop-to-unique', 'tied -> unique at 4688'), ('unique-to-loop', 'unique -> tied at 4688'),
           ('loop-reset', 'tied, Adam reset at 4688'), ('unique-reset', 'unique, Adam reset at 4688'),
+          ('loop-random', 'tied, random restart at 4688'), ('unique-random', 'unique, random restart at 4688'),
           ('loop-r6', 'tied throughout'), ('dense', 'unique throughout')]
 
 
@@ -21,19 +24,19 @@ def main():
         rows.append(dict(name=tag(name, r), apps=apps, blocks=blocks, loss=final_loss(r), state=(r or {}).get('state', 'missing'),
                          params=M(name).get('parameters'), runtime=(r or {}).get('runtime')))
         print(f"{name:16s} apps {apps:2d} blocks {blocks} {rows[-1]['state']:9s} loss {fmt(rows[-1]['loss'])} params {rows[-1]['params']} s {rows[-1]['runtime']}")
-    lines = [r'\begin{table}[H]\centering\small\begin{tabular}{lrrrrr}\toprule',
+    lines = [r'\begin{table}[H]\centering\small\caption{Problem 4 ladders (d8w512, LR 0.003). Prelude and coda are one block each. The 8-application ladder keeps compute fixed; the 1-block ladder keeps parameters fixed. $^\dagger$: checkpoint NLL (W\&B history lost).}\label{tab:p4ladder}\begin{tabular}{lrrrrr}\toprule',
              r'Model & block apps & distinct core blocks & params (M) & val loss & wall-clock (min) \\ \midrule']
     for r in rows:
         p = '--' if r['params'] is None else f"{r['params']/1e6:.1f}"
         t = '--' if r['runtime'] is None else f"{r['runtime']/60:.0f}"
         lines.append(f"{r['name']} & {r['apps']} & {r['blocks']} & {p} & {fmt(r['loss'])} & {t} \\\\")
-    lines += [r'\bottomrule\end{tabular}', r'\caption{P4(a--b,d): looping ladders at d8w512, LR .003. Prelude and coda are always one block each; the 8-application ladder keeps compute fixed, the 1-block ladder keeps parameters fixed.}\label{tab:p4ladder}\end{table}']
+    lines += [r'\bottomrule\end{tabular}\end{table}']
     brows = []
     for name, label in BOUNDARY:
         r = run(runs, name); brows.append((tag(label, r), final_loss(r)))
-    lines += [r'\begin{table}[H]\centering\small\begin{tabular}{lr}\toprule Variant (6 passes, 1 core block unless noted) & val loss \\ \midrule']
+    lines += [r'\begin{table}[H]\centering\small\caption{Problem 4(b): boundary maps on the one-block loop (6 passes unless noted).}\label{tab:p4boundary}\begin{tabular}{lr}\toprule Variant & val loss \\ \midrule']
     lines += [f'{l} & {fmt(v)} \\\\' for l, v in brows]
-    lines += [r'\bottomrule\end{tabular}\caption{P4(c): boundary normalization and prelude injection (recall).}\label{tab:p4boundary}\end{table}']
+    lines += [r'\bottomrule\end{tabular}\end{table}']
     srows = []
     for name, label in SWITCH:
         r = run(runs, name) or {}
@@ -41,9 +44,9 @@ def main():
         if final is None and M(name).get('nll') is not None:  # W&B log lost; checkpoint diagnostic NLL instead
             final, label = M(name)['nll'], label + r'$^\dagger$'
         srows.append((label, r.get('switch_before'), r.get('switch_after'), final))
-    lines += [r'\begin{table}[H]\centering\small\begin{tabular}{lrrr}\toprule Schedule & before switch & after switch & final \\ \midrule']
+    lines += [r'\begin{table}[H]\centering\small\caption{Problem 4(e): changing sharing at update 4,688 of 9,375, with Adam-reset and random-restart controls. Before and after are the validation losses at the evaluations around the switch. $^\dagger$: checkpoint NLL on the diagnostic set (dense 2.935, tied loop 3.034 there). The unique Adam-reset value is the W\&B summary at pull time; its record was later overwritten and could not be re-verified.}\label{tab:p4switch}\begin{tabular}{lrrr}\toprule Schedule & before switch & after switch & final \\ \midrule']
     lines += [f'{l} & {fmt(b)} & {fmt(a)} & {fmt(f)} \\\\' for l, b, a, f in srows]
-    lines += [r'\bottomrule\end{tabular}\caption{P4(e): changing sharing mid-training (update 4,688 of 9,375) with matched Adam-reset controls. $^\dagger$: W\&B log lost; final column is the checkpoint held-out NLL on the diagnostic set (dense model 2.935, tied loop 3.034 on that set). The unique Adam-reset value is the W\&B summary at pull time; that record was later overwritten by a run-id collision and its checkpoint was not retained, so it could not be re-verified.}\label{tab:p4switch}\end{table}']
+    lines += [r'\bottomrule\end{tabular}\end{table}']
     open('experiments/a5_capacity/latex/p4_tables.tex', 'w').write('\n'.join(lines))
 
     fig, axes = plt.subplots(1, 3, figsize=(13, 3.6))

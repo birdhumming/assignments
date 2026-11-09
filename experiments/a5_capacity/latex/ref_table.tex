@@ -1,0 +1,23 @@
+\begin{table}[H]\centering\small\caption{Reference values. $L$ is a validation loss, $\Delta L$ a difference from the dense d8 (2.927) unless stated.}\label{tab:ref}
+\begin{tabular}{p{2.1in}p{2.45in}p{1.85in}}\toprule Quantity & Setting & Value \\ \midrule
+$L$ of d8 & our run, supplied run at LR 0.003, seed-1 rerun & 2.927, 2.932, -- \\
+Default ladder & d4, d6, d8, d10 ($W=64D$) & 3.272, 3.056, 2.932, 2.846 \\
+$\epsilon$ of width-only from d8 & d8w1024 ($3.5\times$ cost), d8w2048 ($13\times$) & 0.74, 0.57 \\
+$L$ at 34M parameters & d1w1280, d62w192, d8w512 & 3.432, 3.017, 2.932 \\
+$\Delta L$ of a low-rank softmax head & rank 32, 64, 128, 256 & +0.336, +0.186, +0.090, -- \\
+Suppressed gradient energy $E_r$ & rank 32, 128, 512 (reference $1-r/4096$) & 0.994, 0.972, 0.878 (0.992, 0.969, 0.875) \\
+$\Delta L$ of MoS, CPLM, Sigsoftmax & at rank 32, relative to the rank-32 softmax & -0.178, -0.123, +0.009 \\
+$\Delta L$ of MoS, CPLM, Sigsoftmax & at full rank, relative to softmax & -0.007, -0.007, +0.001 \\
+SpamLang loss at width 64 & $V=64, 256, 1024, 4096$, 800 updates & $3\times10^{-7}$, $8\times10^{-6}$, $1\times10^{-3}$, 0.32 \\
+SpamLang loss at $V=4096$ & $W=64, 128, 256, 512$ & 0.32, $5\times10^{-3}$, $2\times10^{-5}$, $9\times10^{-7}$ \\
+$\Delta L$ of four-expert MoE & random, frozen, learned, unit combine, all four & +0.157, -0.035, -0.020, +0.025, -0.100 \\
+$\Delta L$ of router tricks & balance .001, .01, .1; noise .05; norm; shared init & -0.056, -0.034, -0.030, -0.040, -0.018, -0.021 \\
+Worst-layer load CV & learned, balance .01, quantile, unit, random & 1.73, 0.13, 0.17, 0.82, 0.08 \\
+$\Delta L$ of our routers & hash, straight-through, z-loss & +0.005, --, -- \\
+$\Delta L$ of looping at 8 applications & 3, 2, 1 distinct core blocks & +0.054, +0.080, +0.122 \\
+$L$ of one block applied $R$ times & $R=2, 3, 6, 12, 18$ & 3.085, 3.066, 3.048, 3.048, 3.064 \\
+$L$ of boundary maps on the 6-pass loop & plain, norm, recall 1, recall .5, norm+recall & 3.048, 6.875, 3.022, 3.025, 3.005 \\
+Loss at $4\times$ the trained passes & plain loop, norm+recall loop & 4.21, 3.03 \\
+Switching at mid-training & unique$\to$tied, tied$\to$unique, tied reset, unique reset & 3.104, 2.991$^\dagger$, 3.049, 3.002 \\
+$\Delta L$ from a new seed & d8, learned top-1 MoE & --, -- \\
+\bottomrule\end{tabular}\end{table}

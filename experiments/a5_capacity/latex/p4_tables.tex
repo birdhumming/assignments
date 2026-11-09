@@ -1,0 +1,36 @@
+\begin{table}[H]\centering\small\caption{Problem 4 ladders (d8w512, LR 0.003). Prelude and coda are one block each. The 8-application ladder keeps compute fixed; the 1-block ladder keeps parameters fixed. $^\dagger$: checkpoint NLL (W\&B history lost).}\label{tab:p4ladder}\begin{tabular}{lrrrrr}\toprule
+Model & block apps & distinct core blocks & params (M) & val loss & wall-clock (min) \\ \midrule
+dense & 8 & 6 & 34.6 & 2.9267 & 28 \\
+loop-r1 & 8 & 6 & -- & -- & -- \\
+loop-r2 & 8 & 3 & 23.2 & 2.9803 & 28 \\
+loop-r3 & 8 & 2 & 19.4 & 3.0072 & 28 \\
+loop-r6 & 8 & 1 & 15.6 & 3.0484 & 28 \\
+loop-1block-r1 & 3 & 1 & -- & -- & 251 \\
+loop-1block-r2 & 4 & 1 & 15.6 & 3.0855 & 15 \\
+loop-1block-r3 & 5 & 1 & -- & 3.0659 & 22 \\
+loop-1block-r4$^\dagger$ & 6 & 1 & 15.6 & 3.0657 & -- \\
+loop-r6 & 8 & 1 & 15.6 & 3.0484 & 28 \\
+loop-1block-r9 & 11 & 1 & -- & -- & -- \\
+loop-1block-r12$^\dagger$ & 14 & 1 & 15.6 & 3.0483 & -- \\
+loop-1block-r18 & 20 & 1 & 15.6 & 3.0637 & 68 \\
+\bottomrule\end{tabular}\end{table}
+\begin{table}[H]\centering\small\caption{Problem 4(b): boundary maps on the one-block loop (6 passes unless noted).}\label{tab:p4boundary}\begin{tabular}{lr}\toprule Variant & val loss \\ \midrule
+plain loop & 3.0484 \\
++ boundary norm & 6.8746 \\
++ recall 1.0 & 3.0222 \\
++ norm + recall & 3.0047 \\
++ recall 0.5 & 3.0253 \\
+1 block, 18 passes, plain & 3.0637 \\
+1 block, 18 passes, recall 0.5 & -- \\
+1 block, 18 passes, norm+recall & -- \\
+\bottomrule\end{tabular}\end{table}
+\begin{table}[H]\centering\small\caption{Problem 4(e): changing sharing at update 4,688 of 9,375, with Adam-reset and random-restart controls. Before and after are the validation losses at the evaluations around the switch. $^\dagger$: checkpoint NLL on the diagnostic set (dense 2.935, tied loop 3.034 there). The unique Adam-reset value is the W\&B summary at pull time; its record was later overwritten and could not be re-verified.}\label{tab:p4switch}\begin{tabular}{lrrr}\toprule Schedule & before switch & after switch & final \\ \midrule
+tied -> unique at 4688 & -- & -- & 2.9908 \\
+unique -> tied at 4688 & 3.1143 & 5.2330 & 3.1039 \\
+tied, Adam reset at 4688 & 3.2231 & 3.2231 & 3.0486 \\
+unique, Adam reset at 4688 & -- & -- & 3.0018 \\
+tied, random restart at 4688 & -- & -- & -- \\
+unique, random restart at 4688 & -- & -- & -- \\
+tied throughout & -- & -- & 3.0484 \\
+unique throughout & -- & -- & 2.9267 \\
+\bottomrule\end{tabular}\end{table}

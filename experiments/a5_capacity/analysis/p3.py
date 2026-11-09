@@ -22,11 +22,11 @@ def row(runs, meas, key, label):
 
 
 def table(rows, caption, label):
-    lines = [r'\begin{table}[H]\centering\small', r'\begin{tabular}{lrrrr}\toprule',
+    lines = [r'\begin{table}[H]\centering\small', f'\\caption{{{caption}}}\\label{{{label}}}', r'\begin{tabular}{lrrrr}\toprule',
              r'Variant & val loss & max layer load CV & norm. entropy & mean max $p$ \\ \midrule']
     for r in rows:
         lines.append(f"{r['label']} & {fmt(r['loss'])} & {fmt(r['load_cv'], 3)} & {fmt(r['entropy'], 3)} & {fmt(r['max_p'], 3)} \\\\")
-    lines += [r'\bottomrule\end{tabular}', f'\\caption{{{caption}}}\\label{{{label}}}', r'\end{table}']
+    lines += [r'\bottomrule\end{tabular}', r'\end{table}']
     return '\n'.join(lines)
 
 
@@ -37,9 +37,9 @@ def main():
     own = [row(runs, meas, *c) for c in OWN]
     for r in central + tricks + own:
         print(f"{r['label']:34s} {r['state']:9s} loss {fmt(r['loss'])} cv {fmt(r['load_cv'],3)} H {fmt(r['entropy'],3)} maxp {fmt(r['max_p'],3)}")
-    tex = table(central, 'P3(a--b): routing comparison, d8w512, LR .003, 9,375 updates. Diagnostics on 8 held-out sequences of 128 tokens.', 'tab:p3central')
-    tex += '\n' + table(tricks, 'P3(c--d): balancing and router conditioning on learned top-1 routing.', 'tab:p3tricks')
-    tex += '\n' + table(own, 'P3(e): own router variants; control is learned top-1 (balance 0).', 'tab:p3own')
+    tex = table(central, 'Problem 3(a): routing variants (d8w512, LR 0.003). Load CV is the worst layer; entropy and mean max $p$ are means over the MoE layers, on 8 held-out sequences.', 'tab:p3central')
+    tex += '\n' + table(tricks, 'Problem 3(b): balancing and router conditioning added to learned top-1 routing. $^\\dagger$: checkpoint NLL (W\\&B history lost).', 'tab:p3tricks')
+    tex += '\n' + table(own, 'Problem 3(c): our router variants; the control is learned top-1 with balance 0 (2.9067).', 'tab:p3own')
     open('experiments/a5_capacity/latex/p3_tables.tex', 'w').write(tex)
 
     fig, axes = plt.subplots(1, 2, figsize=(11, 3.8))

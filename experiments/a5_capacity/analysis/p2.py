@@ -23,13 +23,13 @@ def main():
             grid[k] = dict(method=method, rank=rank, loss=final_loss(r), ckpt=(r or {}).get('from_ckpt', False), state=(r or {}).get('state', 'missing'),
                            suppressed=ge.get('suppressed_fraction'), eff_rank=ge.get('rank'))
             print(f"{k:16s} {grid[k]['state']:9s} loss {fmt(grid[k]['loss'])} suppressed {fmt(grid[k]['suppressed'],3)} ref {fmt(None if rank is None else 1-rank/4096,3)}")
-    lines = [r'\begin{table}[H]\centering\small\begin{tabular}{lrrrrr}\toprule',
-             r'Method & rank 32 & rank 64 & rank 128 & rank 256 & full (512) \\ \midrule']
+    lines = [r'\begin{table}[H]\centering\small\caption{Problem 2 heads: final validation loss by rank and output method (d8w512, LR 0.003), and the suppressed fraction of the error gradient for the softmax head on 8 held-out sequences. $^\dagger$: W\&B history lost, checkpoint NLL on the diagnostic set (dense 2.935 there).}\label{tab:p2grid}',
+             r'\begin{tabular}{lrrrrr}\toprule', r'Method & rank 32 & rank 64 & rank 128 & rank 256 & full (512) \\ \midrule']
     for method, label in METHODS:
         lines.append(label + ' & ' + ' & '.join(fmt(grid[key(method, r)]['loss']) + (r'$^\dagger$' if grid[key(method, r)]['ckpt'] else '') for r in RANKS) + r' \\')
     lines += [r'\midrule softmax: suppressed gradient energy & ' + ' & '.join(fmt(grid[key('softmax', r)]['suppressed'], 3) for r in RANKS) + r' \\',
               r'independent-subspace reference $1-r/4096$ & ' + ' & '.join(f'{1-(r or 512)/4096:.3f}' for r in RANKS) + r' \\',
-              r'\bottomrule\end{tabular}\caption{P2(a,d): final validation loss by head rank and output method, d8w512, LR .003. Suppressed energy is the fraction of $p-\mathrm{onehot}(y)$ gradient energy outside the head column space, measured on 8 held-out sequences. $^\dagger$: W\&B log lost; held-out NLL of the final checkpoint on the diagnostic set (dense model: 2.935 there vs 2.927 in W\&B).}\label{tab:p2grid}\end{table}']
+              r'\bottomrule\end{tabular}\end{table}']
     open('experiments/a5_capacity/latex/p2_tables.tex', 'w').write('\n'.join(lines))
 
     fig, axes = plt.subplots(1, 2, figsize=(11, 3.6))
