@@ -162,7 +162,7 @@ def app_tasks(prefix):
 
 
 def expand(max_runs=14, containers=2, poll=600, gpu=GPU):
-    """Spawn cut runs one at a time whenever the main queue holds >=3 GPUs (or has finished)."""
+    """Spawn cut runs one at a time whenever the main queue holds >=2 GPUs (or has finished)."""
     import modal
     from modal_utils import app, build_image, VOLUME_MOUNTS, MODAL_ENVIRONMENT, secrets, timestamped_modal_app_name
     by_name = {c.run_name: c for lane in LANES.values() for c in lane}
@@ -183,7 +183,7 @@ def expand(max_runs=14, containers=2, poll=600, gpu=GPU):
                     print(time.strftime('%H:%M'), 'expansion run failed:', e, flush=True)
                     live.remove(call)
             tasks, queue_live = app_tasks('a5-queue')
-            if len(live) < containers and (tasks >= 3 or not queue_live):
+            if len(live) < containers and (tasks >= 2 or not queue_live):
                 cfg = todo.pop(0)
                 live.append(remote.spawn(cfg))
                 print(time.strftime('%H:%M'), f'queue tasks={tasks} live={queue_live}; spawned', cfg.run_name, flush=True)

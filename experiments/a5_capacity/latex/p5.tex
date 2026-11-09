@@ -1,0 +1,38 @@
+\section*{Problem 5: A prediction question}
+
+\textbf{Setup.} Take the d8w512 looped model of Problem 4: a prelude block, one core block applied $R=6$ times, and a coda block (15.6M parameters), trained for 9,375 updates on the standard A5 recipe (batch 64 sequences of 1,024 tokens, AdamW with $\beta=(0.9,0.95)$, weight decay 0.1, peak LR $3\times10^{-3}$, linear decay after 1\% warmup, model seed 42, data seed 42, four microbatches). The plain loop reaches 3.064 nats on 64 held-out sequences when run for the 6 passes it was trained with, and 4.214 when run for 24 passes.
+
+Now change two lines of the loop (diff below): apply a parameter-free RMSNorm to the residual stream at every pass boundary, and add the prelude output back in afterwards (``norm + recall''). Train it identically and evaluate it at \textbf{24 passes}, four times the trained count.
+
+\textbf{Question.} At 24 passes the held-out loss of the norm+recall loop is
+\begin{enumerate}[label=(\Alph*), itemsep=0pt]
+\item above 4.5 (worse than the plain loop: the norm removes scale information and recall keeps re-injecting a stale signal),
+\item between 3.5 and 4.5 (about the same degradation as the plain loop),
+\item between 3.1 and 3.5 (degrades, but much less than the plain loop),
+\item below 3.1 (within 0.1 of its loss at the trained 6 passes).
+\end{enumerate}
+
+\textbf{Answer: (D).} Measured: 3.033 at 24 passes against 3.023 at the trained 6 passes (and 3.035, 3.030, 3.032, 3.033 at 8, 9, 12, 16 passes). The matched control is the plain six-pass loop trained with the same recipe and seed: 3.064 at 6 passes, 3.113 at 8, 3.349 at 12, 3.794 at 18 and 4.214 at 24. The norm turns each pass into a map on the unit sphere, and recall gives it a fixed point to settle on; after about six applications the stream stops moving, so additional passes are free. Without recall (norm only), the same model collapses to the unigram loss of 6.87 during training (Section~4c), which is why both lines are needed.
+
+\textbf{Diff} (against the plain \texttt{LoopLM} in \texttt{p4\_looping.py}; 14 lines):
+\begin{verbatim}
+ class LoopLM(AutoregressiveLM):
+-    def __init__(self, config, *, passes=6, core_size=1, **kwargs):
++    def __init__(self, config, *, passes=6, core_size=1,
++                 boundary_norm=False, recall=0., **kwargs):
+         super().__init__(config, **kwargs)
+         self.passes, self.core_size = passes, core_size
++        self.boundary = (nn.RMSNorm(config.hidden_size, eps=1e-5, elementwise_affine=False)
++                         if boundary_norm else nn.Identity())
++        self.recall = recall
+
+     def forward_hidden(self, h, rope, attention_mask):
+         h = self.model.layers[0](h, rope, attention_mask)   # prelude
++        anchor = h
+         for r in range(self.passes):
+             for j in range(self.core_size):
+                 h = self.model.layers[1 + j](h, rope, attention_mask)
++            h = self.boundary(h) + self.recall * anchor
+         return self.model.layers[-1](h, rope, attention_mask)  # coda
+\end{verbatim}
+Reproduce with \texttt{config('loop-norm-recall')} (\texttt{passes=6, core\_size=1, boundary\_norm=True, recall=1.0}) and the control \texttt{config('loop-r6')} in \texttt{launch\_plan.py}; the pass sweep is \texttt{measure\_runs.py}, which evaluates the saved checkpoint at 1--24 passes on the first 64 validation sequences.
