@@ -14,6 +14,8 @@ def main():
     api = wandb.Api(timeout=120)
     prev = json.loads(OUT.read_text()) if OUT.exists() else {}
     seen = {v['id']: name for name, v in prev.items()}
+    # ids created by one run and later resumed by another (hash router -> moe-all, recall05 -> norm-balanced, mos-r256 relaunch)
+    seen.update({'b8763552': 'a5-moe-hash-d8-w512-lr0.003', '3fb48d6a': 'a5-loop-recall05-d8-w512-lr0.003', '09c3f6a7': 'contaminated'})
     out = {}
     for r in api.runs(PROJECT, filters={'display_name': {'$regex': '^a5-'}}):
         # a later run that resumed this run id (checkpoint-derived ids collided) overwrites the record: skip it
