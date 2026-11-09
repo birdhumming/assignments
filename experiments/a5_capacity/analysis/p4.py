@@ -37,10 +37,13 @@ def main():
     srows = []
     for name, label in SWITCH:
         r = run(runs, name) or {}
-        srows.append((label, r.get('switch_before'), r.get('switch_after'), final_loss(r)))
+        final = final_loss(r)
+        if final is None and M(name).get('nll') is not None:  # W&B log lost; checkpoint diagnostic NLL instead
+            final, label = M(name)['nll'], label + r'$^\dagger$'
+        srows.append((label, r.get('switch_before'), r.get('switch_after'), final))
     lines += [r'\begin{table}[H]\centering\small\begin{tabular}{lrrr}\toprule Schedule & before switch & after switch & final \\ \midrule']
     lines += [f'{l} & {fmt(b)} & {fmt(a)} & {fmt(f)} \\\\' for l, b, a, f in srows]
-    lines += [r'\bottomrule\end{tabular}\caption{P4(e): changing sharing mid-training (update 4,688 of 9,375) with matched Adam-reset controls.}\label{tab:p4switch}\end{table}']
+    lines += [r'\bottomrule\end{tabular}\caption{P4(e): changing sharing mid-training (update 4,688 of 9,375) with matched Adam-reset controls. $^\dagger$: W\&B log lost; final column is the checkpoint held-out NLL on the diagnostic set (dense model 2.935, tied loop 3.034 on that set).}\label{tab:p4switch}\end{table}']
     open('experiments/a5_capacity/latex/p4_tables.tex', 'w').write('\n'.join(lines))
 
     fig, axes = plt.subplots(1, 3, figsize=(13, 3.6))

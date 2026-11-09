@@ -13,6 +13,9 @@ PLOTS.mkdir(parents=True, exist_ok=True)
 
 def load():
     runs = json.loads(RUNS.read_text()) if RUNS.exists() else {}
+    for r in runs.values():  # a cancelled Modal call exits cleanly, so W&B marks it finished without a val_loss
+        if r.get('state') == 'finished' and r.get('val_loss') is None:
+            r['state'] = 'cancelled'
     meas = json.loads(MEASURES.read_text()) if MEASURES.exists() else {}
     return runs, meas
 
