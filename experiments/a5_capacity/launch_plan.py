@@ -123,6 +123,19 @@ def watch(pending):
     print(time.strftime('%H:%M'), 'all lanes launched', flush=True)
 
 
+
+def cancel(patterns, log='logs/a5_queue.log'):
+    """Cancel queued calls whose run name contains any pattern (ids come from the launch log)."""
+    import re
+    import modal
+    from modal_utils import MODAL_ENVIRONMENT
+    calls = re.findall(r'(fc-\w+) (a5-\S+)', open(log).read())
+    for call_id, name in calls:
+        if any(p in name for p in patterns):
+            modal.FunctionCall.from_id(call_id).cancel()
+            print('cancelled', call_id, name)
+
+
 if __name__ == '__main__':
     args = sys.argv[1:]
     if args[:1] == ['dry'] or not args:
@@ -139,15 +152,3 @@ if __name__ == '__main__':
     else:
         for lane in args:
             launch_lane(lane)
-
-
-def cancel(patterns, log='logs/a5_queue.log'):
-    """Cancel queued calls whose run name contains any pattern (ids come from the launch log)."""
-    import re
-    import modal
-    from modal_utils import MODAL_ENVIRONMENT
-    calls = re.findall(r'(fc-\w+) (a5-\S+)', open(log).read())
-    for call_id, name in calls:
-        if any(p in name for p in patterns):
-            modal.FunctionCall.from_id(call_id, environment_name=MODAL_ENVIRONMENT).cancel()
-            print('cancelled', call_id, name)
