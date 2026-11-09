@@ -14,8 +14,14 @@ All looped models are d8w512 with one prelude block, one coda block and a core o
 
 \textbf{(b) Does more looping help at fixed parameters?} %P4B%
 
-\textbf{(c) Boundary maps.} The six-pass one-block loop improves from 3.048 to 3.005 when the core input is RMS-normalized at each pass boundary and the prelude output is re-injected (``recall'', $h \leftarrow \text{norm}(h) + e$). That recovers 0.044 of the 0.12 gap to dense and puts the one-block model level with the two-block loop (3.007) at a third of the core parameters. %P4C%
+\textbf{(c) Boundary maps.} The six-pass one-block loop improves from 3.048 to 3.005 when the core input is RMS-normalized at each pass boundary and the prelude output is re-injected (``recall'', $h \leftarrow \text{norm}(h) + e$). That recovers 0.044 of the 0.12 gap to dense and puts the one-block model level with the two-block loop (3.007) at a third of the core parameters. Boundary normalization \emph{alone} fails outright: the run falls to the unigram loss (6.87) by update 40 and never recovers. Its signal profile shows why: after the first RMS-normalized boundary the next block's output has RMS 246 (vs 5--7 in the plain loop), the stream saturates at RMS 321 for the remaining passes, and the gradient reaching the first two applications is exactly zero. Normalizing the residual stream to unit scale between passes while the blocks keep adding updates of RMS 5--10 makes each pass overwrite the previous one; re-injecting the prelude output (recall) restores a persistent reference signal, and with it the stream stays at RMS 5.6--8.2 across all eight applications with gradients within a factor of 20 of each other, against a monotone growth from 5.3 to 24.3 in the plain loop. In short, the norm fixes the \emph{scale} drift of the loop but destroys the \emph{content}; recall supplies the content.
 
-\textbf{(d) Deep one-block loops.} %P4D%
+\textbf{(d) Deep one-block loops and evaluating at unseen pass counts.} Figure~\ref{fig:p4eval} evaluates each trained loop at pass counts it never saw. The plain loops are brittle: loop-r6 (trained at 6) is 3.06 at 6 passes, 3.11 at 8, 3.35 at 12 and 4.21 at 24, and the two- and three-pass loops degrade even faster (loop-r2: 3.00 at 2, 3.44 at 6, 5.01 at 24). Running fewer passes than trained is worse still (loop-r6 at 1 pass: 4.46). With boundary norm and recall the picture changes completely: 3.02 at the trained 6 passes, 3.03 at 7--24 passes, flat to three decimals. The normalized, re-anchored loop has learned a contraction: extra applications leave the stream essentially where it was, so the model can be run deeper for free (and shallower at a modest cost: 3.07 at 4 passes, 3.10 at 3). %P4D%
+
+\begin{figure}[H]\centering
+\includegraphics[width=.8\linewidth]{p4_eval_passes}
+\caption{Held-out loss (64 sequences of 512 tokens) when a trained loop is run for a different number of passes. Filled markers: the trained pass count.}
+\label{fig:p4eval}
+\end{figure}
 
 \textbf{(e) Changing sharing mid-training.} %P4E%

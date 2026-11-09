@@ -28,7 +28,7 @@ def main():
     for method, label in METHODS:
         lines.append(label + ' & ' + ' & '.join(fmt(grid[key(method, r)]['loss']) for r in RANKS) + r' \\')
     lines += [r'\midrule softmax: suppressed gradient energy & ' + ' & '.join(fmt(grid[key('softmax', r)]['suppressed'], 3) for r in RANKS) + r' \\',
-              r'independent-subspace reference $1-r/4096$ & ' + ' & '.join('--' if r is None else f'{1-r/4096:.3f}' for r in RANKS) + r' \\',
+              r'independent-subspace reference $1-r/4096$ & ' + ' & '.join(f'{1-(r or 512)/4096:.3f}' for r in RANKS) + r' \\',
               r'\bottomrule\end{tabular}\caption{P2(a,d): final validation loss by head rank and output method, d8w512, LR .003. Suppressed energy is the fraction of $p-\mathrm{onehot}(y)$ gradient energy outside the head column space, measured on 8 held-out sequences.}\label{tab:p2grid}\end{table}']
     open('experiments/a5_capacity/latex/p2_tables.tex', 'w').write('\n'.join(lines))
 
