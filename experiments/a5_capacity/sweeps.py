@@ -44,7 +44,9 @@ for passes in (1, 2, 3, 4, 6, 18, 20):
 for name, tied, target in [('loop-to-unique', True, 'unique'),
                             ('unique-to-loop', False, 'loop'),
                             ('loop-reset', True, 'reset'),
-                            ('unique-reset', False, 'reset')]:
+                            ('unique-reset', False, 'reset'),
+                            ('loop-random', True, 'random'),
+                            ('unique-random', False, 'random')]:
     VARIANTS[name] = ('experiments.a5_capacity.p4_looping:LoopLM',
                       dict(passes=6, tied=tied, switch_step=4688, switch_to=target))
 

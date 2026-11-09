@@ -22,8 +22,8 @@ class LoopLM(AutoregressiveLM):
         self.passes, self.core_size = passes, core_size
         if switch_step is not None and (not isinstance(switch_step, int) or switch_step < 1):
             raise ValueError('switch_step counts completed optimizer updates and must be positive.')
-        if switch_to not in ('unique', 'loop', 'reset') or merge not in ('mean', 'first'):
-            raise ValueError('Use switch_to=unique/loop/reset and merge=mean/first.')
+        if switch_to not in ('unique', 'loop', 'reset', 'random') or merge not in ('mean', 'first'):
+            raise ValueError('Use switch_to=unique/loop/reset/random and merge=mean/first.')
         self.switch_step, self.switch_to, self.merge = switch_step, switch_to, merge
         self.tied, self.completed_steps = tied, 0
         self.register_buffer('_tied', torch.tensor(tied))
@@ -92,12 +92,23 @@ class LoopLM(AutoregressiveLM):
                 return
             observer = getattr(self, 'switch_observer', lambda model, phase: None)
             observer(self, 'before')
-            if self.switch_to != 'reset':
+            if self.switch_to == 'random':
+                self.reinitialize()
+            elif self.switch_to != 'reset':
                 self.set_sharing(self.switch_to == 'loop', self.merge)
             refresh_groups()
             observer(self, 'after')
             print(f'Completed update {self.completed_steps}: {self.switch_to}; optimizer state reset.', flush=True)
         return load_hook, optimizer.register_step_post_hook(finish)
+
+    @torch.no_grad()
+    def reinitialize(self, seed=1):
+        """Control for the switch: keep the sharing pattern, discard the first phase's weights."""
+        from modeling import initialize_model
+        torch.manual_seed(seed)
+        initialize_model(self)
+        if hasattr(self, "post_initialize"):
+            self.post_initialize()
 
     @property
     def executed_depth(self):
