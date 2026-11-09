@@ -45,18 +45,22 @@ def main():
     axes[1].set_xticks(rs); axes[1].set_xticklabels([str(r) for r in rs])
     save(fig, 'p2_rank.png')
 
-    # SpamLang: 64 repeats of one symbol -> the only uncertainty is the first token.
+    # SpamLang: 64 repeats of one symbol, so every scored position is deterministic (floor 0); the log V
+    # reference is the loss of a model that has not learned to copy and guesses uniformly.
     fig, axes = plt.subplots(1, 2, figsize=(11, 3.6))
     spam = {}
     for v in (64, 256, 1024, 4096):
         r = runs.get(f'a5-spam-v{v}-w64-lr0.001'); spam[f'v{v}-w64'] = (final_loss(r), (r or {}).get('state', 'missing'))
         s, l = curve(r)
-        if s: axes[0].plot(s, l, label=f'V={v}, w=64 (floor log V/63 = {math.log(v)/63:.3f})')
+        if s:
+            line, = axes[0].plot(s, l, label=f'V={v}, w=64 (log V = {math.log(v):.2f})')
+            axes[0].axhline(math.log(v), color=line.get_color(), ls=':', lw=.8)
     axes[0].set(xlabel='update', ylabel='val loss (nats/token)', yscale='log', title='SpamLang: vocabulary at width 64'); axes[0].legend(fontsize=7)
     for w in (64, 128, 256, 512):
         r = runs.get(f'a5-spam-v4096-w{w}-lr0.001'); spam[f'v4096-w{w}'] = (final_loss(r), (r or {}).get('state', 'missing'))
         s, l = curve(r)
         if s: axes[1].plot(s, l, label=f'V=4096, w={w}')
+    axes[1].axhline(math.log(4096), color='k', ls=':', lw=.8, label='log V = 8.32')
     axes[1].set(xlabel='update', ylabel='val loss (nats/token)', yscale='log', title='SpamLang: width at V=4096'); axes[1].legend(fontsize=7)
     save(fig, 'p2_spam.png')
     for k, v in spam.items(): print('spam', k, v)
