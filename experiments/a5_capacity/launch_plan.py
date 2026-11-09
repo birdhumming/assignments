@@ -136,6 +136,62 @@ def cancel(patterns, log='logs/a5_queue.log'):
             print('cancelled', call_id, name)
 
 
+
+# Runs cut from the queue on 11/08 (workspace GPU cap); re-added, most important first, when GPUs free up.
+EXPANSION = ['a5-softmax-r64-d8-w512-lr0.003', 'a5-softmax-r256-d8-w512-lr0.003', 'a5-loop-1block-r1-d8-w512-lr0.003',
+             'a5-loop-1block-r3-d8-w512-lr0.003', 'a5-unique-reset-d8-w512-lr0.003', 'a5-mos-r128-d8-w512-lr0.003',
+             'a5-cplm-r128-d8-w512-lr0.003', 'a5-sigsoftmax-r128-d8-w512-lr0.003', 'a5-moe-hash-d8-w512-lr0.003',
+             'a5-moe-zloss-d8-w512-lr0.003', 'a5-moe-balanced001-d8-w512-lr0.003', 'a5-moe-balanced1-d8-w512-lr0.003',
+             'a5-moe-noisy02-d8-w512-lr0.003', 'a5-loop-1block-r9-d8-w512-lr0.003', 'a5-loop-1block-r12-d8-w512-lr0.003',
+             'a5-moe-norm-balanced-d8-w512-lr0.003', 'a5-moe-balanced-noisy-d8-w512-lr0.003',
+             'a5-moe-cloned-balanced-d8-w512-lr0.003', 'a5-moe-all-d8-w512-lr0.003', 'a5-loop-recall05-d8-w512-lr0.003',
+             'a5-dense-d8-w512-lr0.006', 'a5-loop-r6-d8-w512-lr0.006', 'a5-loop-norm-recall-d8-w512-lr0.006',
+             'a5-mos-r64-d8-w512-lr0.003', 'a5-cplm-r64-d8-w512-lr0.003', 'a5-mos-r256-d8-w512-lr0.003',
+             'a5-cplm-r256-d8-w512-lr0.003', 'a5-moe-learned-d8-w512-lr0.006']
+
+
+def app_tasks(prefix):
+    """(running task count, still-live) for the newest Modal app whose description starts with prefix."""
+    import json, subprocess
+    out = subprocess.run(['uv', 'run', 'modal', 'app', 'list', '--env', ENV, '--json'], capture_output=True, text=True).stdout
+    apps = [a for a in json.loads(out[out.index('['):]) if a['description'].startswith(prefix)]
+    if not apps:
+        return 0, False
+    a = max(apps, key=lambda a: a['created_at'])
+    return int(a['tasks'] or 0), a['state'].startswith('ephemeral') and a['stopped_at'] is None
+
+
+def expand(max_runs=14, containers=2, poll=600, gpu=GPU):
+    """Spawn cut runs one at a time whenever the main queue holds >=3 GPUs (or has finished)."""
+    import modal
+    from modal_utils import app, build_image, VOLUME_MOUNTS, MODAL_ENVIRONMENT, secrets, timestamped_modal_app_name
+    by_name = {c.run_name: c for lane in LANES.values() for c in lane}
+    todo = [by_name[n] for n in EXPANSION[:max_runs]]
+    remote = app.function(image=build_image(), volumes=VOLUME_MOUNTS, secrets=secrets(include_wandb=True),
+                          gpu=gpu, cpu=8, memory=32768, timeout=24*3600, max_containers=containers,
+                          retries=modal.Retries(initial_delay=0., max_retries=3))(run)
+    live = []
+    with modal.enable_output(), app.run(name=timestamped_modal_app_name('a5-expand'), environment_name=MODAL_ENVIRONMENT, detach=True):
+        while todo:
+            for call in list(live):
+                try:
+                    call.get(timeout=0)
+                    live.remove(call)
+                except TimeoutError:
+                    pass
+                except Exception as e:
+                    print(time.strftime('%H:%M'), 'expansion run failed:', e, flush=True)
+                    live.remove(call)
+            tasks, queue_live = app_tasks('a5-queue')
+            if len(live) < containers and (tasks >= 3 or not queue_live):
+                cfg = todo.pop(0)
+                live.append(remote.spawn(cfg))
+                print(time.strftime('%H:%M'), f'queue tasks={tasks} live={queue_live}; spawned', cfg.run_name, flush=True)
+            else:
+                print(time.strftime('%H:%M'), f'queue tasks={tasks} live={queue_live}; expansion running={len(live)} todo={len(todo)}', flush=True)
+            time.sleep(poll)
+        print(time.strftime('%H:%M'), 'expansion list exhausted', flush=True)
+
 if __name__ == '__main__':
     args = sys.argv[1:]
     if args[:1] == ['dry'] or not args:
@@ -145,6 +201,8 @@ if __name__ == '__main__':
                 print('   ', c.run_name)
     elif args[:1] == ['watch']:
         watch(args[1:] or ORDER)
+    elif args[:1] == ['expand']:
+        expand(*map(int, args[1:]))
     elif args[:1] == ['cancel']:
         cancel(args[1:])
     elif args[:1] == ['queue']:
