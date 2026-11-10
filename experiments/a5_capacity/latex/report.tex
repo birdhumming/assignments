@@ -38,7 +38,7 @@
 
 \lead{Diagnostics.} We probe final checkpoints in FP32 on fixed held-out sequences (8 sequences of 128 tokens for gradient energy, routing statistics and signal propagation; 64 sequences of 512 tokens for loop-count sweeps). The held-out NLL on the 8-sequence set is about 0.008 higher than $L$ (dense: 2.935 against 2.927). Where a run's W\&B history was lost (Section ``All runs''), we report this checkpoint NLL and mark it $^\dagger$.
 
-\lead{Notation and noise.} $\Delta L$ is a loss difference. A seed rerun of d8 changes $L$ by 0.003 (Assignment 4) %SEED%, so we treat $|\Delta L|<0.005$ as noise, 0.01 to 0.03 as small but real, and 0.1 as a change of regime. FLOPs are the analytic estimate \texttt{training\_flops()}: 6 per parameter-token in blocks and head plus $12\,D\,T\,W$ per token for attention scores, not wall-clock. For an MoE we count only the executed experts; for a loop we count every application.
+\lead{Notation and noise.} $\Delta L$ is a loss difference. Our seed-1 rerun of d8 changes $L$ by $-0.001$ (2.9256 against 2.9267) %SEED%, so we treat $|\Delta L|<0.005$ as noise, 0.01 to 0.03 as small but real, and 0.1 as a change of regime. FLOPs are the analytic estimate \texttt{training\_flops()}: 6 per parameter-token in blocks and head plus $12\,D\,T\,W$ per token for attention scores, not wall-clock. For an MoE we count only the executed experts; for a loop we count every application.
 
 \lead{The compute yardstick.} Following the assignment we fit the supplied default ladder d4 to d10 ($W=64D$):
 \[
