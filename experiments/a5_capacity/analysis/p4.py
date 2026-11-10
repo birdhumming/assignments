@@ -2,14 +2,14 @@
 import json
 from .common import tag, load, run, final_loss, curve, fmt, save, plt
 
-LADDER8 = [('dense', 8, 6), ('loop-r1', 8, 6), ('loop-r2', 8, 3), ('loop-r3', 8, 2), ('loop-r6', 8, 1)]  # (name, apps, distinct core blocks)
+LADDER8 = [('dense', 8, 6), ('loop-r2', 8, 3), ('loop-r3', 8, 2), ('loop-r6', 8, 1)]  # (name, apps, distinct core blocks)
 LADDER1 = [('loop-r6' if r == 6 else 'loop-1block-r%d' % r, r + 2, 1) for r in (1, 2, 3, 4, 6, 9, 12, 18)]
 BOUNDARY = [('loop-r6', 'plain loop'), ('loop-boundary-norm', '+ boundary norm'), ('loop-recall', '+ recall 1.0'),
             ('loop-norm-recall', '+ norm + recall'), ('loop-recall05', '+ recall 0.5'),
             ('loop-1block-r18', '1 block, 18 passes, plain'),
             ('loop-1block-r18-recall05', '1 block, 18 passes, recall 0.5'),
             ('loop-1block-r18-norm-recall', '1 block, 18 passes, norm+recall')]
-SWITCH = [('loop-to-unique', 'tied -> unique at 4688'), ('unique-to-loop', 'unique -> tied at 4688'),
+SWITCH = [('loop-to-unique', r'tied $\to$ unique at 4688'), ('unique-to-loop', r'unique $\to$ tied at 4688'),
           ('loop-reset', 'tied, Adam reset at 4688'), ('unique-reset', 'unique, Adam reset at 4688'),
           ('loop-random', 'tied, random restart at 4688'), ('unique-random', 'unique, random restart at 4688'),
           ('loop-r6', 'tied throughout'), ('dense', 'unique throughout')]
