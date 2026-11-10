@@ -46,7 +46,7 @@
 \]
 and report $\epsilon = C_{\text{eq}}(L)/C$, the dense-equivalent cost divided by the actual cost. $\epsilon=1$ means ``as good as a default-shaped dense model of the same cost''. The fit uses seven points with unequal LR tuning, so $\epsilon$ is accurate to about $\pm0.05$.
 
-\lead{What we ran.} We trained 50 full-budget runs over two days: 7 short SpamLang runs, 14 head variants for Problem 2, 25 MoE variants for Problem 3, and the rest for the loops and switches of Problem 4, including LR trials and two seed reruns. The class workspace was at its GPU cap most of the time, so we ran one to four runs at once and cut the lowest-priority runs (listed as ``cut'' in the last section).
+\lead{What we ran.} We trained 77 runs over two days: 7 short SpamLang runs, 18 head variants for Problem 2, 26 MoE variants for Problem 3, and 26 loop and switching runs for Problem 4, including LR trials for the central variants and two seed reruns. Modal billed about 60 H100 GPU-hours. The class workspace was at its GPU cap most of the time, so we ran one to four runs at once; the runs we had cut on the first day were re-queued and finished on the second.
 
 %=====================================================================
 \section*{Problem 1. Depth versus width}
@@ -148,7 +148,7 @@ Table~\ref{tab:ref} collects the numbers that come up most often. All losses are
 \input{ref_table}
 
 \section*{All runs we trained}
-Every run below uses the recipe in the Setup and is named \texttt{a5-\{variant\}-d8-w512-lr\{LR\}} in W\&B and on Modal (SpamLang: \texttt{a5-spam-v\{V\}-w\{W\}}). Status is the final validation loss, ``plateau'' for a run stuck at the unigram loss 6.875, ``cut'' for a run we cancelled for GPU time, or ``lost'' when neither the W\&B history nor a checkpoint survived a run-id collision. $^\dagger$ marks a loss read from the checkpoint (8-sequence NLL) because the W\&B history was lost. Minutes is wall time on one H100.
+Every run below uses the recipe in the Setup and is named \texttt{a5-\{variant\}-d8-w512-lr\{LR\}} in W\&B and on Modal (SpamLang: \texttt{a5-spam-v\{V\}-w\{W\}}). Status is the final validation loss, or ``plateau'' for a run stuck at the unigram loss 6.875. $^\dagger$ marks a loss read from the final checkpoint (held-out NLL on the 8-sequence diagnostic set) because the W\&B history was overwritten by a run-id collision on the first day. Minutes is wall time on one H100.
 \input{runs_table}
 
 \end{document}

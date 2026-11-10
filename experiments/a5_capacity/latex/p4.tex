@@ -31,7 +31,7 @@ All looped models are d8w512 with one prelude block, one coda block, and a core 
 \item \lead{The plain loop behaves like dense.} Stream RMS grows monotonically from 5.3 after the first application to 24 at the top (dense: 4.6 to 23), and the relative update per application shrinks correspondingly. Gradient RMS is within a factor of 2 of dense at every depth.
 \item \lead{Norm alone fails outright.} The run falls to the unigram loss 6.875 by update 40 and never recovers. After the first normalized boundary the next block's output has RMS 246 (5 to 7 in the plain loop), the stream saturates at RMS 321, and the gradient reaching the first two applications is exactly zero. Normalizing the stream to unit scale while the blocks add updates of RMS 5 to 10 makes each pass overwrite the previous one. Lowering the LR to 0.001 does not help; the run collapses the same way.
 \item \lead{Recall alone helps.} Re-adding the prelude output $a$ at every boundary ($h\leftarrow h+a$) gives 3.022, $-0.026$ from the plain loop. With $\alpha=0.5$ the loss is 3.025$^\dagger$, so the anchor need not be strong.
-\item \lead{Norm plus recall is best}, 3.005 ($-0.044$), level with the two-block loop at a third of the core parameters. The stream stays at RMS 5.6 to 8.2 across all eight applications and gradients are within a factor of 20 of each other, against a growth from 5.3 to 24 in the plain loop. The norm fixes the scale drift and destroys the content; recall supplies the content.
+\item \lead{Norm plus recall is best}, 3.005 ($-0.044$) at LR 0.003 and 2.993 at LR 0.006, where the plain loop gets worse (3.055). The normalized loop tolerates a higher LR, as a pre-norm model does, and at its best LR it is level with the two-block loop (3.007) at a third of the core parameters. The stream stays at RMS 5.6 to 8.2 across all eight applications and gradients are within a factor of 20 of each other, against a growth from 5.3 to 24 in the plain loop. The norm fixes the scale drift and destroys the content; recall supplies the content.
 \end{itemize}
 
 \subsection*{Part (c). Evaluating at unseen loop counts}
@@ -61,11 +61,12 @@ The one-block ladder holds the parameter count at 15.6M and varies how often the
 
 \subsection*{Part (e). Switching sharing during training}
 
-Table~\ref{tab:p4switch} switches the 6-pass core at update 4,688 (half of training) and resets Adam; the controls reset Adam at the same step without changing the architecture, %RANDOMCTRL% all from the same seed.
+Table~\ref{tab:p4switch} switches the 6-pass core at update 4,688 (half of training) and resets Adam. Two controls reset Adam at the same step without changing the architecture, and two more re-initialize the weights at the switch (seed 1) and train the second half from scratch, keeping the sharing pattern and the decaying LR schedule; all start from the same seed.
 \begin{itemize}
 \item \lead{Unique to tied is destructive.} The run was at 3.114 before the switch, jumped to 5.23 at the first evaluation after it (the six blocks are averaged into one, which is nowhere near any of them), and recovered only to 3.104 by the end, worse than the 3.048 of a loop tied throughout.
 \item \lead{The Adam reset itself is free for the tied loop} (3.0486 against 3.0484), so the damage is the weight merge, not the optimizer state.
 \item \lead{Tied to unique is benign.} Untying into six copies of the shared block (the function is unchanged at the switch) reaches 2.991$^\dagger$, between the tied loop (3.034 on the same set) and the dense model (2.935). The unique Adam-reset control (3.002, W\&B summary; its record was later overwritten and could not be re-verified) says a fresh optimizer on unique blocks mid-schedule costs about 0.07 by itself, most of the remaining gap.
+\item \lead{The first phase is worth keeping either way.} The random-restart controls reach 3.129 (unique) and 3.239 (tied), against 2.991$^\dagger$ and 3.104 for the switched runs that inherit the first phase. So even the destructive unique-to-tied merge keeps 0.13 of value over starting the second half from scratch, and untying keeps about 0.14.
 \item \lead{When to switch.} Start shared and specialize later if you have a looped model and the parameter budget grows: half of training at a third of the parameters costs about 0.06. Never compress a trained unique model by averaging; distilling or fine-tuning one block at a low LR would be needed instead.
 \end{itemize}
 
@@ -75,7 +76,7 @@ Table~\ref{tab:p4switch} switches the 6-pass core at update 4,688 (half of train
 \begin{itemize}
 \item At eight applications, $\Delta L$ from dense is $+0.053$, $+0.080$, $+0.122$ for 3, 2, 1 distinct core blocks.
 \item One block applied 1, 2, 3, 6, 9, 12, 18 times: 3.122, 3.086, 3.066, 3.048, 3.054, 3.048, 3.064; with norm+recall at 6 or 18: 3.005, 2.999$^\dagger$.
-\item Boundary norm alone: unigram plateau 6.875. Recall alone: $-0.026$. Norm plus recall: $-0.044$, and flat to 0.01 from 6 to 24 passes.
+\item Boundary norm alone: unigram plateau 6.875 at LR 0.001 and 0.003. Recall alone: $-0.026$. Norm plus recall: $-0.044$ at LR 0.003, $-0.056$ at LR 0.006, and flat to 0.01 from 6 to 24 passes.
 \item Plain loop at $4\times$ the trained passes: $+1.2$. Norm+recall loop: $+0.01$.
-\item Averaging six trained blocks into one at mid-training: loss jumps to 5.2 and ends $+0.056$ above a loop tied throughout.
+\item Averaging six trained blocks into one at mid-training: loss jumps to 5.2 and ends $+0.056$ above a loop tied throughout, but 0.13 below a loop restarted from random weights at the same point.
 \end{itemize}
