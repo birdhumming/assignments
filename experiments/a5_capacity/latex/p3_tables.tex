@@ -24,7 +24,7 @@ shared init & 2.9054 & 1.732 & 0.633 & 0.647 \\
 quantile routing & 2.8923 & 0.175 & 0.725 & 0.590 \\
 norm + balance .01$^\dagger$ & 2.9004 & 0.168 & 0.738 & 0.548 \\
 balance .01 + noise .05 & 2.8872 & 0.152 & 0.758 & 0.548 \\
-shared init + balance .01 & -- & -- & -- & -- \\
+shared init + balance .01 & 2.8851 & 0.129 & 0.783 & 0.526 \\
 norm+balance+noise+shared init & 2.8832 & 0.175 & 0.587 & 0.664 \\
 \bottomrule\end{tabular}
 \end{table}
@@ -34,6 +34,6 @@ norm+balance+noise+shared init & 2.8832 & 0.175 & 0.587 & 0.664 \\
 Variant & val loss & max layer load CV & norm. entropy & mean max $p$ \\ \midrule
 hash router (own) & 2.9312 & 0.141 & 0.949 & 0.365 \\
 straight-through router (own)$^\dagger$ & 2.9384 & 0.886 & 0.528 & 0.691 \\
-router z-loss 1e-3 (own) & -- & -- & -- & -- \\
+router z-loss 1e-3 (own) & 2.9003 & 1.732 & 0.777 & 0.535 \\
 \bottomrule\end{tabular}
 \end{table}

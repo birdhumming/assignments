@@ -1,29 +1,33 @@
 \begin{center}\scriptsize\begin{tabular}{llrr @{\hspace{2em}} llrr}\toprule
 Variant & LR & Status & Min & Variant & LR & Status & Min \\ \midrule
-cplm & 0.003 & 2.9194$^\dagger$ & -- & moe-hash & 0.003 & 2.9312 & -- \\
-cplm-r128 & 0.003 & 2.9761 & 28 & moe-learned & 0.0015 & 2.9135 & 39 \\
-cplm-r256 & 0.003 & 2.9370 & 34 & moe-learned & 0.003 & 2.9067 & 40 \\
-cplm-r32 & 0.003 & 3.1400 & 34 & moe-learned & 0.006 & 2.9524 & 40 \\
-cplm-r64 & 0.003 & cut & -- & moe-learned-seed1 & 0.003 & running & 1 \\
-dense & 0.003 & 2.9267 & 28 & moe-noisy & 0.003 & 2.8864 & 39 \\
-dense-seed1 & 0.003 & 2.9256 & 28 & moe-noisy02 & 0.003 & 2.9040$^\dagger$ & -- \\
-loop-1block-r1 & 0.003 & cut & -- & moe-norm-balanced & 0.003 & 2.9004$^\dagger$ & -- \\
-loop-1block-r12 & 0.003 & 3.0483$^\dagger$ & -- & moe-norm & 0.003 & 2.9082 & 41 \\
-loop-1block-r18 & 0.003 & 3.0637 & 68 & moe-quantile & 0.003 & 2.8923 & 37 \\
-loop-1block-r18-norm-recall & 0.003 & 2.9990$^\dagger$ & -- & moe-random & 0.003 & 3.0840 & 35 \\
-loop-1block-r2 & 0.003 & 3.0855 & 15 & moe-st & 0.003 & 2.9384$^\dagger$ & -- \\
-loop-1block-r3 & 0.003 & 3.0659 & 22 & moe-unit & 0.003 & 2.9519 & 38 \\
-loop-1block-r4 & 0.003 & 3.0657$^\dagger$ & -- & moe-zloss & 0.003 & cut & -- \\
-loop-1block-r9 & 0.003 & 3.0539 & 38 & mos & 0.003 & 2.9201 & 37 \\
-loop-boundary-norm & 0.003 & plateau & 30 & mos-r256 & 0.003 & 2.9312 & 38 \\
-loop-norm-recall & 0.003 & 3.0047 & 30 & mos-r32 & 0.003 & 3.0851 & 37 \\
+cplm & 0.003 & 2.9194$^\dagger$ & -- & moe-full & 0.003 & 2.8271 & 53 \\
+cplm-r128 & 0.003 & 2.9761 & 28 & moe-hash & 0.003 & 2.9312 & -- \\
+cplm-r256 & 0.003 & 2.9370 & 34 & moe-learned & 0.0015 & 2.9135 & 39 \\
+cplm-r32 & 0.003 & 3.1400 & 34 & moe-learned & 0.003 & 2.9067 & 40 \\
+cplm-r64 & 0.003 & cut & -- & moe-learned & 0.006 & 2.9524 & 40 \\
+dense & 0.003 & 2.9267 & 28 & moe-learned-seed1 & 0.003 & 2.8996 & 39 \\
+dense-seed1 & 0.003 & 2.9256 & 28 & moe-noisy & 0.003 & 2.8864 & 39 \\
+loop-1block-r1 & 0.003 & 3.1218 & 12 & moe-noisy01 & 0.003 & 2.8864 & 40 \\
+loop-1block-r12 & 0.003 & 3.0483$^\dagger$ & -- & moe-noisy02 & 0.003 & 2.9040$^\dagger$ & -- \\
+loop-1block-r18 & 0.003 & 3.0637 & 68 & moe-norm-balanced & 0.003 & 2.9004$^\dagger$ & -- \\
+loop-1block-r18-norm-recall & 0.003 & 2.9990$^\dagger$ & -- & moe-norm & 0.003 & 2.9082 & 41 \\
+loop-1block-r18-recall05 & 0.003 & 3.0187 & 68 & moe-quantile & 0.003 & 2.8923 & 37 \\
+loop-1block-r2 & 0.003 & 3.0855 & 15 & moe-quantile-noisy & 0.003 & cut & -- \\
+loop-1block-r3 & 0.003 & 3.0659 & 22 & moe-random & 0.003 & 3.0840 & 35 \\
+loop-1block-r4 & 0.003 & 3.0657$^\dagger$ & -- & moe-st & 0.003 & 2.9384$^\dagger$ & -- \\
+loop-1block-r9 & 0.003 & 3.0539 & 38 & moe-unit & 0.003 & 2.9519 & 38 \\
+loop-boundary-norm & 0.001 & plateau & 30 & moe-zloss & 0.003 & 2.9003 & 41 \\
+loop-boundary-norm & 0.003 & plateau & 30 & mos & 0.003 & 2.9201 & 37 \\
+loop-norm-recall & 0.003 & 3.0047 & 30 & mos-r256 & 0.003 & 2.9312 & 38 \\
+loop-norm-recall & 0.006 & running & 4 & mos-r32 & 0.003 & 3.0851 & 37 \\
 loop-r2 & 0.003 & 2.9803 & 28 & mos-r64 & 0.003 & cut & -- \\
 loop-r3 & 0.003 & 3.0072 & 28 & sigsoftmax & 0.003 & 2.9281 & 30 \\
-loop-r6 & 0.0015 & 3.0664 & 28 & sigsoftmax-r128 & 0.003 & running & 18 \\
+loop-r6 & 0.0015 & 3.0664 & 28 & sigsoftmax-r128 & 0.003 & 3.0190 & 29 \\
 loop-r6 & 0.003 & 3.0484 & 28 & sigsoftmax-r32 & 0.003 & 3.2719 & 29 \\
 loop-r6 & 0.006 & 3.0545 & 28 & softmax-r128 & 0.003 & 3.0164 & 28 \\
-loop-recall & 0.003 & 3.0222 & 28 & softmax-r256 & 0.003 & 2.9650 & 28 \\
-loop-recall05 & 0.003 & 3.0253 & 214 & softmax-r32 & 0.003 & 3.2631 & 29 \\
+loop-random & 0.003 & running & 21 & softmax-r256 & 0.003 & 2.9650 & 28 \\
+loop-recall & 0.003 & 3.0222 & 28 & softmax-r32 & 0.003 & 3.2631 & 29 \\
+loop-recall05 & 0.003 & 3.0253 & 214 & softmax-r32 & 0.006 & 3.2709 & 29 \\
 loop-reset & 0.003 & 3.0486 & 29 & softmax-r64 & 0.003 & 3.1123 & 25 \\
 loop-to-unique & 0.003 & 2.9908$^\dagger$ & -- & SpamLang V=1024, W=64 & 0.001 & 1.1e-03 & 1 \\
 moe-all & 0.003 & 2.8832 & 40 & SpamLang V=256, W=64 & 0.001 & 7.8e-06 & 1 \\
@@ -31,7 +35,7 @@ moe-balanced & 0.003 & 2.8927 & 37 & SpamLang V=4096, W=128 & 0.001 & 5.4e-03 & 
 moe-balanced-noisy & 0.003 & 2.8872 & 37 & SpamLang V=4096, W=256 & 0.001 & 1.8e-05 & 1 \\
 moe-balanced001 & 0.003 & 2.8705$^\dagger$ & -- & SpamLang V=4096, W=512 & 0.001 & 9.4e-07 & 1 \\
 moe-balanced1 & 0.003 & 2.8964$^\dagger$ & -- & SpamLang V=4096, W=64 & 0.001 & 0.3242 & 1 \\
-moe-cloned & 0.003 & 2.9054 & 40 & SpamLang V=64, W=64 & 0.001 & 2.8e-07 & 1 \\
-moe-frozen & 0.003 & 2.8918 & 39 & unique-reset & 0.003 & 3.0018 & -- \\
-moe-full & 0.003 & 2.8271 & 53 & unique-to-loop & 0.003 & 3.1039 & 28 \\
+moe-cloned-balanced & 0.003 & 2.8851 & 37 & SpamLang V=64, W=64 & 0.001 & 2.8e-07 & 1 \\
+moe-cloned & 0.003 & 2.9054 & 40 & unique-reset & 0.003 & 3.0018 & -- \\
+moe-frozen & 0.003 & 2.8918 & 39 & unique-to-loop & 0.003 & 3.1039 & 28 \\
 \bottomrule\end{tabular}\end{center}

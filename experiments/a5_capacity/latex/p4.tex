@@ -29,7 +29,7 @@ All looped models are d8w512 with one prelude block, one coda block, and a core 
 
 \begin{itemize}
 \item \lead{The plain loop behaves like dense.} Stream RMS grows monotonically from 5.3 after the first application to 24 at the top (dense: 4.6 to 23), and the relative update per application shrinks correspondingly. Gradient RMS is within a factor of 2 of dense at every depth.
-\item \lead{Norm alone fails outright.} The run falls to the unigram loss 6.875 by update 40 and never recovers. After the first normalized boundary the next block's output has RMS 246 (5 to 7 in the plain loop), the stream saturates at RMS 321, and the gradient reaching the first two applications is exactly zero. Normalizing the stream to unit scale while the blocks add updates of RMS 5 to 10 makes each pass overwrite the previous one. %NORMLR%
+\item \lead{Norm alone fails outright.} The run falls to the unigram loss 6.875 by update 40 and never recovers. After the first normalized boundary the next block's output has RMS 246 (5 to 7 in the plain loop), the stream saturates at RMS 321, and the gradient reaching the first two applications is exactly zero. Normalizing the stream to unit scale while the blocks add updates of RMS 5 to 10 makes each pass overwrite the previous one. Lowering the LR to 0.001 does not help; the run collapses the same way.
 \item \lead{Recall alone helps.} Re-adding the prelude output $a$ at every boundary ($h\leftarrow h+a$) gives 3.022, $-0.026$ from the plain loop. With $\alpha=0.5$ the loss is 3.025$^\dagger$, so the anchor need not be strong.
 \item \lead{Norm plus recall is best}, 3.005 ($-0.044$), level with the two-block loop at a third of the core parameters. The stream stays at RMS 5.6 to 8.2 across all eight applications and gradients are within a factor of 20 of each other, against a growth from 5.3 to 24 in the plain loop. The norm fixes the scale drift and destroys the content; recall supplies the content.
 \end{itemize}
@@ -53,10 +53,10 @@ All looped models are d8w512 with one prelude block, one coda block, and a core 
 
 The one-block ladder holds the parameter count at 15.6M and varies how often the core is applied.
 \begin{itemize}
-\item \lead{The gain saturates at about six passes.} Two passes give 3.086, three 3.066, four 3.066$^\dagger$, six 3.048, nine 3.054, twelve 3.048$^\dagger$, eighteen 3.064. %R9R1% Each application up to six buys about 0.01; beyond that more passes buy nothing and cost 1.7 to 2.5 times the dense FLOPs.
+\item \lead{The gain saturates at about six passes.} Two passes give 3.086, three 3.066, four 3.066$^\dagger$, six 3.048, nine 3.054, twelve 3.048$^\dagger$, eighteen 3.064; one pass (a three-block model) gives 3.122. Each application up to six buys about 0.01; beyond that more passes buy nothing and cost 1.7 to 2.5 times the dense FLOPs.
 \item \lead{Looping converts compute into quality at a worse rate than fresh parameters.} From two to six passes the 15.6M model recovers 0.04 of the 0.16 gap to the dense model at the same eight applications.
 \item \lead{The 18-pass model is the most brittle} at other counts: 3.93 at 6 passes, 3.12 at 24.
-\item \lead{A design for depth 20.} Adding the norm+recall boundary to the 18-pass one-block loop gives 2.999$^\dagger$ against 3.062$^\dagger$ for the plain 18-pass loop on the same diagnostic set, a gain of 0.06, and the same as the 6-pass norm+recall loop (3.000$^\dagger$). Its pass sweep is flat from 12 to 24 passes (3.024, 3.019, 3.019, 3.019 at 12, 16, 18, 24), where the plain 18-pass loop is 3.19, 3.09, 3.08, 3.12. So at depth 20 the boundary map is worth as much as it is at depth 8, and it buys nothing beyond that: the fixed point is reached by pass 12 whether the model was trained for 6 or 18 passes. %R18DESIGN%
+\item \lead{A design for depth 20.} Adding the norm+recall boundary to the 18-pass one-block loop gives 2.999$^\dagger$ against 3.062$^\dagger$ for the plain 18-pass loop on the same diagnostic set, a gain of 0.06, and the same as the 6-pass norm+recall loop (3.000$^\dagger$). Its pass sweep is flat from 12 to 24 passes (3.024, 3.019, 3.019, 3.019 at 12, 16, 18, 24), where the plain 18-pass loop is 3.19, 3.09, 3.08, 3.12. So at depth 20 the boundary map is worth as much as it is at depth 8, and it buys nothing beyond that: the fixed point is reached by pass 12 whether the model was trained for 6 or 18 passes. Recall 0.5 without the norm also helps at 18 passes (3.019 against 3.064) but, as at 6 passes, does not make the pass count free.
 \end{itemize}
 
 \subsection*{Part (e). Switching sharing during training}
@@ -74,7 +74,7 @@ Table~\ref{tab:p4switch} switches the 6-pass core at update 4,688 (half of train
 \lead{Rules of thumb.}
 \begin{itemize}
 \item At eight applications, $\Delta L$ from dense is $+0.053$, $+0.080$, $+0.122$ for 3, 2, 1 distinct core blocks.
-\item One block applied 2, 3, 6, 9, 12, 18 times: 3.086, 3.066, 3.048, 3.054, 3.048, 3.064.
+\item One block applied 1, 2, 3, 6, 9, 12, 18 times: 3.122, 3.086, 3.066, 3.048, 3.054, 3.048, 3.064; with norm+recall at 6 or 18: 3.005, 2.999$^\dagger$.
 \item Boundary norm alone: unigram plateau 6.875. Recall alone: $-0.026$. Norm plus recall: $-0.044$, and flat to 0.01 from 6 to 24 passes.
 \item Plain loop at $4\times$ the trained passes: $+1.2$. Norm+recall loop: $+0.01$.
 \item Averaging six trained blocks into one at mid-training: loss jumps to 5.2 and ends $+0.056$ above a loop tied throughout.
