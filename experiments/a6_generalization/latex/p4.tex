@@ -1,0 +1,32 @@
+\input{p4_text_a}
+\begin{figure}[H]\centering\includegraphics[width=.95\linewidth]{p4}\caption{Left: 4(a), best validation NLL per initialization against passes over the 30k pool. Right: 4(b), 16 passes against fine-tuning pool size, log axis.}\label{fig:p4}\end{figure}
+\begin{table}[H]\centering\small\caption{Problem 4(a): best validation NLL per initialization and pass count on 30k chunks; parentheses give the selected LR (and WD 0 where used). LRs tried: .003/WD 3.2 and .001/WD 3.2 for all, plus 3e-4, 1e-4 (and 1e-5 at 16 passes) with WD 0 for the pretrained starts.}\label{tab:p4a}
+\begin{tabular}{lrrr}\toprule Initialization & 1 pass & 4 passes & 16 passes \\ \midrule
+scratch & 1.2991 (0.003) & -- & -- \\
+related DNA & 1.2691 (0.003) & -- & -- \\
+DCLM text & -- & -- & -- \\
+nucleotide noise & -- & -- & -- \\
+\bottomrule\end{tabular}\end{table}
+\input{p4_text_b}
+\begin{table}[H]\centering\small\caption{Problem 4(b): 16 passes, best LR per point, with the power-law fit $L(n)=L_\infty+An^{-\alpha}$ where three or more points exist.}\label{tab:p4b}
+\begin{tabular}{lrrrrrr}\toprule Initialization & 1k & 3k & 10k & 30k & $L_\infty$ & $\alpha$ \\ \midrule
+scratch & -- & -- & -- & -- & -- & -- \\
+related DNA & -- & -- & -- & -- & -- & -- \\
+DCLM text & -- & -- & -- & -- & -- & -- \\
+nucleotide noise & -- & -- & -- & -- & -- & -- \\
+\bottomrule\end{tabular}\end{table}
+\input{p4_text_c}
+\begin{table}[H]\centering\small\caption{Problem 4(c): adapting the related-DNA initialization, 16 passes on 30k chunks.}\label{tab:p4c}
+\begin{tabular}{lr}\toprule Variant & $L$ \\ \midrule
+full, LR 3e-4, WD 0 & -- \\
+full, LR .003, WD 3.2 & -- \\
+full, LR 3e-4, WD 3.2 & -- \\
+full, LR .003, WD .1 & -- \\
+decay toward init, LR 3e-4 & -- \\
+decay toward init, LR .003 & -- \\
+frozen head, LR 3e-4 & -- \\
+frozen head, LR .003 & -- \\
+frozen body, LR 3e-4 & -- \\
+frozen body, LR .003 & -- \\
+\bottomrule\end{tabular}\end{table}
+\input{p4_text_d}

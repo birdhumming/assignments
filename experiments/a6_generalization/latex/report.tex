@@ -1,0 +1,159 @@
+\documentclass[10pt,letterpaper]{article}
+\usepackage[margin=0.9in]{geometry}
+\usepackage[OT1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage[font=small,labelfont=bf,labelsep=period,skip=4pt]{caption}
+\usepackage{enumitem}
+\usepackage[expansion=false]{microtype}
+\usepackage[hidelinks]{hyperref}
+\usepackage{float}
+\usepackage{multicol}
+\usepackage{longtable}
+\setlength{\parskip}{3pt}
+\setlength{\parindent}{0pt}
+\setlist{nosep,leftmargin=1.2em}
+\setlist[itemize]{label=$\bullet$}
+\graphicspath{{../../../plots/a6_generalization/}}
+\renewcommand{\arraystretch}{1.05}
+\captionsetup[table]{position=above,skip=3pt}
+\newcommand{\lead}[1]{\textbf{#1}}
+\newcommand{\LL}{L}
+
+\title{\vspace{-2em}CS 312 Assignment 6 writeup}
+\author{Sandra Yang}
+\date{November 19, 2026}
+
+\begin{document}
+\maketitle
+
+\section*{Setup}
+
+\lead{Data and model.} Every run uses the released DNA pool: 30,000 training chunks of 1,024 tokens (a BOS prefix plus 1,023 payload tokens, 30.72M tokens per pass) and a disjoint 1,000-chunk validation set, with a 19-token vocabulary. The model is d8 (8 blocks, width 512, QK normalization, 30.4M parameters). The recipe is AdamW $\beta=(0.9,0.95)$, peak LR $0.003$, WD $3.2$, batch 64 sequences in 8 microbatches, clipping at 1, 4,800 sequences of warmup, then linear decay to zero; 32 passes over the pool (983M tokens of exposure, 15,000 updates). $L$ is the validation NLL in nats per token at the end of training. The fine-tuning parts use 1, 4 or 16 passes. We select and report on the same validation set, so every number below is slightly optimistic.
+
+\lead{Supplied runs and our runs.} The release \texttt{a6-generalization-v1} (W\&B project \texttt{hashimoto-group/public-alchemy-a6}, 48 runs) covers the tuned dense suite d4 to d10 (1a), the 16-epoch LR$\times$WD grid (2a-i), the two 32-epoch AdamW controls (2a-ii), five no-dropout ensemble members (2b-ii), the schedule horizons (3a) and the batch sweep with sharpness probes (3b). We did not retrain any of it. Everything else is our own: we train with the starter \texttt{training.py} on Modal H100/H200 GPUs, final checkpoints and histories under \texttt{a6/<name>} on our volume. Run names are listed at the end.
+
+\lead{Time budget.} The report was written in the 16 hours before the deadline. We queued 77 runs in priority order on two to four GPUs (the class workspace was at its GPU cap); full 32-pass runs take about 50 minutes, fine-tuning runs 2 to 25 minutes. Runs that did not finish are marked as such; the P1(d) and P3(d) explorations and most second seeds were cut, and we say so where it matters.
+
+\lead{Notation and noise.} $\Delta L$ is a loss difference. The supplied d8 ensemble members (seeds 42 to 46, same data order) span 1.2600 to 1.2640, so one-seed differences below about $0.003$ are noise, $0.005$ to $0.02$ are small but real, and $0.03$ or more is a change of regime. Our own second seed of the baseline is reported in Problem 2 where available.
+
+%=====================================================================
+\section*{Problem 1. Architecture}
+
+\subsection*{Part (a). Parameter scaling on the supplied suite}
+
+The supplied suite tunes LR, WD and epoch count per size on the same 30k pool (seed 42, Table~\ref{tab:p1}, Figure~\ref{fig:p1}). We fit $L(N)=L_\infty+AN^{-\alpha}$ to the seven selected points.
+
+\begin{figure}[H]\centering
+\includegraphics[width=.95\linewidth]{p1_parameters}
+\caption{Left: validation NLL of the tuned dense suite against parameter count with the power-law fit (dashed). Right: training FLOPs of the selected recipe at each size.}
+\label{fig:p1}
+\end{figure}
+
+\input{p1_table}
+
+\begin{itemize}
+\item \lead{Fit.} $L(N)=1.2590+257\,N^{-0.67}$ with $N$ in parameters, equivalently $1.2590 + 0.026\,(N/10^6)^{-0.67}$. The fitted floor sits only $0.003$ below the best measured point, and the whole suite spans $0.010$ nats (1.2695 at d4 to 1.2594 at d9).
+\item \lead{Not monotonic.} d6, d7 and d8 are within $0.0002$ of each other (1.2628, 1.2629, 1.2627), and d10 (1.2614) is worse than d9 (1.2594). With one seed and $0.003$ of seed noise, the suite is consistent with a flat region from 13M to 60M parameters. Returns diminish sharply: going 4$\times$ from d4 to d6 buys $0.007$, going 4.6$\times$ from d6 to d10 buys $0.001$.
+\item \lead{Epochs and compute.} The selected epoch count alternates between 16 and 32 (d5, d7, d10 pick 16), with no trend toward fewer passes at larger size; the 64-pass d8 reference (1.2691) is worse than 8 passes (1.2687), so 32 passes is already past the optimum for d8 and the selected WD rises with size up to d8 (1.0, 0.8, 3.2, 1.6, 3.2) then drops to 1.0 for d9/d10. Training compute therefore grows roughly linearly in $N$ with a factor-of-two sawtooth from the epoch choice (Figure~\ref{fig:p1}, right).
+\item \lead{Reading.} At 30k chunks the data, not the parameter count, limits the loss: a 15$\times$ increase in parameters moves $L$ by less than one ensemble-member's worth of seed noise times three. The remaining problems ask how to move $L$ by changing what we do with the same 30k chunks.
+\end{itemize}
+
+\input{p1_ours}
+
+%=====================================================================
+\section*{Problem 2. Regularization}
+
+\subsection*{Part (a). Weight decay}
+
+\lead{(i) LR$\times$WD on the supplied 16-epoch grid.} The grid has 21 completed runs (LR $\in\{.001,.003,.01\}$, WD $\in\{0,.1,.3,1,3.2,10,30\}$). Figure~\ref{fig:lrwd} shows the quadratic fit in $\log$LR and $\log$WD (positive WD only, RMSE $0.0086$) and the measured losses against the product.
+
+\begin{figure}[H]\centering
+\includegraphics[width=.95\linewidth]{lr_wd}
+\caption{Left: quadratic fit of validation NLL in $\log$ LR and $\log$ WD at 16 passes (dots are the grid). Right: measured loss against LR$\times$WD, one line per LR.}
+\label{fig:lrwd}
+\end{figure}
+
+\begin{itemize}
+\item \lead{The product organizes the grid.} All three LR lines reach their minimum at LR$\times$WD $=0.003$ (LR .01/WD .3 at 1.2621, LR .003/WD 1 at 1.2632, LR .001/WD 3.2 at 1.2637) and agree within $0.004$ to the right of it. To the left, the lines separate: LR .001 at small WD is $0.05$ worse than LR .01 at the same product, so the product predicts the loss once the LR is at least $0.003$ and otherwise sets a lower bound.
+\item \lead{How much more WD.} At LR .003 the best WD in the 16-pass grid is $1$ (1.2632 against 1.2886 at WD .1, a $0.025$ gap), 10$\times$ the earlier reference. At 32 passes the course selection moved to WD 3.2 (32$\times$), consistent with a product rule plus a longer run: the decay time constant $1/(\eta\lambda)$ should stay a fixed fraction of training.
+\item \lead{Quadratic fit.} The fitted surface puts its minimum on the LR .01 edge at WD near $0.4$; the surface is a valley along the product line rather than a bowl, so a quadratic in two variables is a coarse summary and the $0.0086$ RMSE is comparable to the differences between good points.
+\end{itemize}
+
+\lead{(ii) Hyperball against AdamW.} The supplied 32-pass controls are AdamW at WD .1 (no WD tuning, $L=1.4057$) and WD 3.2 (tuned, $L=1.2627$). The WD gap at 32 passes is $0.143$ nats, six times the 16-pass gap: with repeated data the untuned run overfits badly in the second half (its curve turns up after pass 12), so WD here controls memorization, not just the effective LR. \input{p2_hyperball}
+
+\subsection*{Part (b). Ensembling and dropout}
+
+\input{p2_dropout}
+
+\lead{(ii) Independent ensembles (supplied).} Averaging predicted probabilities over all subsets of the five no-dropout members (seeds 42 to 46, same data order) gives $L(K)=1.2619, 1.2571, 1.2555, 1.2547, 1.2543$ for $K=1$ to $5$ (Figure~\ref{fig:ens}).
+
+\begin{figure}[H]\centering
+\includegraphics[width=.5\linewidth]{p2_ensemble}
+\caption{Validation NLL against ensemble size for the supplied no-dropout members, all member subsets averaged, with the power-law fit.}
+\label{fig:ens}
+\end{figure}
+
+\begin{itemize}
+\item \lead{Scaling law.} $L(K)=1.2525+0.0095\,K^{-1.03}$. Fitting $K\in[2,5]$ or $[1,4]$ moves the floor by less than $0.0001$, so the exponent is stable on these five points, but a 200-draw paired chunk bootstrap of the floor spans $1.246$ to $1.258$: the chunk sampling, not the member count, dominates the uncertainty of the limit, and five members identify the next few steps better than the asymptote. A $1/K$ law is what one expects when members are exchangeable with independent errors (variance reduction), and the fitted exponent 1.03 is exactly that.
+\item \lead{Size of the effect.} Two members gain $0.0048$, five gain $0.0077$, and the fitted infinite ensemble gains $0.0094$. For reference the whole parameter suite from d4 to d10 spans $0.010$; one extra seed is worth more than going from d8 to d10.
+\item \lead{Cost.} $K$ members cost $K\times$ training and $K\times$ inference, so this is the most expensive way to buy $0.005$ nats; the appeal is only that it uses the same 30k chunks. Dropout is the cheap approximation we test next.
+\end{itemize}
+
+\input{p2_composition}
+
+\input{p2_synthesis}
+
+%=====================================================================
+\section*{Problem 3. Optimization}
+
+\subsection*{Part (a). LR schedules and horizon (supplied histories)}
+
+\begin{figure}[H]\centering
+\includegraphics[width=.95\linewidth]{p3_schedules}
+\caption{Left: final validation NLL of the linear-decay (LR selected per horizon) and constant-LR (LR $0.00033$, one continuous trajectory read at five horizons) references against the number of passes. Right: validation NLL over training at 32 and 256 passes for both schedules.}
+\label{fig:sched}
+\end{figure}
+
+\begin{itemize}
+\item \lead{Short horizons favor decay.} At 16 and 32 passes linear decay (1.2613, 1.2611) beats the constant LR (1.2657, 1.2627) by $0.002$ to $0.004$: annealing to zero removes the gradient-noise floor and settles into the bottom of the current basin.
+\item \lead{Long horizons favor the small constant LR.} Beyond 32 passes the linear runs get worse (1.2683 at 64, 1.2670 at 256, with the selected peak LR rising to .01), while the constant trajectory keeps improving slowly to 1.2604 at 128 passes and then flattens. The constant run never anneals, so its high loss noise acts as regularization on a dataset it has seen 128 times; the linear runs spend more total time at high LR on repeated data and then anneal into a minimum that fits the training pool.
+\item \lead{Sharpness reading.} A schedule that decays to zero lets the iterate descend into sharper minima (noise scale $\propto \eta/B$ goes to zero), which helps when the basin generalizes and hurts when the extra depth of the basin is memorization. With 30k chunks the crossover is around 32 passes; this matches the epoch selection in Problem 1(a), where 32 passes was the optimum for d8 and 64 passes lost $0.006$.
+\item \lead{We did not add schedules.} The time budget went to the fine-tuning and regularization runs; a warmup-stable-decay schedule at 64 passes is the obvious next test.
+\end{itemize}
+
+\subsection*{Part (b). Batch size (supplied runs)}
+
+\begin{figure}[H]\centering
+\includegraphics[width=.95\linewidth]{p3_batch}
+\caption{Left: final validation NLL against batch size at 32 passes with LR and WD scaled by $\sqrt{B/64}$. Right: the supplied directional sharpness probe (symmetric curvature at radius $0.05$, four fixed training chunks) at the same checkpoints; B64 has no probe in the release.}
+\label{fig:batch}
+\end{figure}
+
+\begin{itemize}
+\item \lead{Small batches win, marginally.} $L=1.2624, 1.2627, 1.2694, 1.2959, 1.3947$ for $B=16, 64, 256, 1024, 4096$. B16 and B64 tie within noise; B256 loses $0.007$, B1024 $0.033$ and B4096 $0.132$. The square-root rule keeps the recipe stable to B256 and fails beyond it, as the number of updates drops to 469 and 117 and the 4,800-sequence warmup becomes 10 to 40 percent of the run.
+\item \lead{Sharpness tracks loss only at large batch.} The curvature probe reads 60 at B16, 52 at B256, 113 at B1024 and 162 at B4096. From B256 upward, sharper minima go with worse loss, as Keskar et al.\ predicted; but B16 is not flatter than B256 despite its lower loss, so sharpness is a one-sided predictor here, consistent with Jiang et al.: it separates the failing large-batch runs from the rest and says nothing among the good ones.
+\end{itemize}
+
+\input{p3_ours}
+
+\input{p3_synthesis}
+
+%=====================================================================
+\section*{Problem 4. Fine-tuning}
+
+\input{p4}
+
+%=====================================================================
+\section*{Reference values for predicting new runs}
+
+\input{ref_table}
+
+\section*{All runs we trained}
+
+\input{runs_table}
+
+\end{document}

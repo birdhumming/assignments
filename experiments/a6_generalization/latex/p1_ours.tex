@@ -1,0 +1,10 @@
+\subsection*{Parts (b, c). MoE and looping from Assignment 5}
+
+\input{p1_ours_text}
+
+\begin{table}[H]\centering\small\caption{Problems 1(b,c): A5 architectures retrained on the 30k pool for 32 passes at WD 3.2, three LRs, seed 42, data order paired with the supplied baseline. Unfinished cells are marked.}\label{tab:p1ours}
+\begin{tabular}{lrrrrr}\toprule Architecture & LR .001 & LR .003 & LR .01 & best & $\Delta L$ vs d8 \\ \midrule
+MoE, 4 experts, learned top-1, quantile balance & -- & -- & -- & -- & -- \\
+Loop, prelude + 6 passes of a shared block + coda, RMS + recall & -- & -- & -- & -- & -- \\
+Dense d8 (supplied) & -- & 1.2627 & -- & 1.2627 & 0 \\
+\bottomrule\end{tabular}\end{table}

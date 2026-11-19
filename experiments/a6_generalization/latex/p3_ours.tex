@@ -1,0 +1,9 @@
+\subsection*{Part (c). SAM against AdamW}
+
+\input{p3_ours_text}
+\begin{table}[H]\centering\small\caption{Problem 3(c): SAM (one ascent step of radius $\rho$ per update, same LR, WD and schedule) against AdamW, 32 passes, seed 42.}\label{tab:sam}
+\begin{tabular}{lrr}\toprule Optimizer & $L$ & $\Delta L$ \\ \midrule
+AdamW (supplied baseline) & 1.2627 & 0 \\
+AdamW seed 43 & -- & -- \\
+SAM $\rho=.05$ on AdamW & -- & -- \\
+\bottomrule\end{tabular}\end{table}

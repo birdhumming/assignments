@@ -1,0 +1,10 @@
+
+\begin{table}[H]\centering\small\caption{Problem 2(a)(ii): Hyperball (Frobenius-norm projection of every Linear weight, plain Adam elsewhere, WD 0) against the supplied AdamW controls, 32 passes.}\label{tab:hb}
+\begin{tabular}{llrr}\toprule Optimizer & LR & $L$ & $\Delta L$ vs WD 3.2 \\ \midrule
+AdamW WD .1 (supplied) & -- & 1.4057 & +0.1430 \\
+AdamW WD 3.2 (supplied) & -- & 1.2627 & 0 \\
+Hyperball WD 0 & 0.001 & -- & -- \\
+Hyperball WD 0 & 0.003 & -- & -- \\
+Hyperball WD 0 & 0.01 & -- & -- \\
+\bottomrule\end{tabular}\end{table}
+\input{p2_hyperball_text}

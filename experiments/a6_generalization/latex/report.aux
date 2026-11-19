@@ -1,0 +1,54 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyperFirstAtBeginDocument{\AtBeginDocument}
+\HyperFirstAtBeginDocument{\ifx\hyper@anchor\@undefined
+\global\let\oldcontentsline\contentsline
+\gdef\contentsline#1#2#3#4{\oldcontentsline{#1}{#2}{#3}}
+\global\let\oldnewlabel\newlabel
+\gdef\newlabel#1#2{\newlabelxx{#1}#2}
+\gdef\newlabelxx#1#2#3#4#5#6{\oldnewlabel{#1}{{#2}{#3}}}
+\AtEndDocument{\ifx\hyper@anchor\@undefined
+\let\contentsline\oldcontentsline
+\let\newlabel\oldnewlabel
+\fi}
+\fi}
+\global\let\hyper@last\relax 
+\gdef\HyperFirstAtBeginDocument#1{#1}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Left: validation NLL of the tuned dense suite against parameter count with the power-law fit (dashed). Right: training FLOPs of the selected recipe at each size.\relax }}{2}{figure.caption.4}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{fig:p1}{{1}{2}{Left: validation NLL of the tuned dense suite against parameter count with the power-law fit (dashed). Right: training FLOPs of the selected recipe at each size.\relax }{figure.caption.4}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Problem 1(a): the supplied tuned dense suite (seed 42, linear decay). LR, WD and epochs were selected on validation data per size.\relax }}{2}{table.caption.5}\protected@file@percent }
+\newlabel{tab:p1}{{1}{2}{Problem 1(a): the supplied tuned dense suite (seed 42, linear decay). LR, WD and epochs were selected on validation data per size.\relax }{table.caption.5}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Problems 1(b,c): A5 architectures retrained on the 30k pool for 32 passes at WD 3.2, three LRs, seed 42, data order paired with the supplied baseline. Unfinished cells are marked.\relax }}{2}{table.caption.7}\protected@file@percent }
+\newlabel{tab:p1ours}{{2}{2}{Problems 1(b,c): A5 architectures retrained on the 30k pool for 32 passes at WD 3.2, three LRs, seed 42, data order paired with the supplied baseline. Unfinished cells are marked.\relax }{table.caption.7}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Left: quadratic fit of validation NLL in $\qopname  \relax o{log}$ LR and $\qopname  \relax o{log}$ WD at 16 passes (dots are the grid). Right: measured loss against LR$\times $WD, one line per LR.\relax }}{3}{figure.caption.10}\protected@file@percent }
+\newlabel{fig:lrwd}{{2}{3}{Left: quadratic fit of validation NLL in $\log $ LR and $\log $ WD at 16 passes (dots are the grid). Right: measured loss against LR$\times $WD, one line per LR.\relax }{figure.caption.10}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Problem 2(a)(ii): Hyperball (Frobenius-norm projection of every Linear weight, plain Adam elsewhere, WD 0) against the supplied AdamW controls, 32 passes.\relax }}{3}{table.caption.11}\protected@file@percent }
+\newlabel{tab:hb}{{3}{3}{Problem 2(a)(ii): Hyperball (Frobenius-norm projection of every Linear weight, plain Adam elsewhere, WD 0) against the supplied AdamW controls, 32 passes.\relax }{table.caption.11}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Problem 2(b)(i): attention-probability dropout at the baseline recipe (LR .003, WD 3.2, 32 passes), dropout off at evaluation.\relax }}{4}{table.caption.13}\protected@file@percent }
+\newlabel{tab:drop}{{4}{4}{Problem 2(b)(i): attention-probability dropout at the baseline recipe (LR .003, WD 3.2, 32 passes), dropout off at evaluation.\relax }{table.caption.13}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Validation NLL against ensemble size for the supplied no-dropout members, all member subsets averaged, with the power-law fit.\relax }}{4}{figure.caption.14}\protected@file@percent }
+\newlabel{fig:ens}{{3}{4}{Validation NLL against ensemble size for the supplied no-dropout members, all member subsets averaged, with the power-law fit.\relax }{figure.caption.14}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Left: final validation NLL of the linear-decay (LR selected per horizon) and constant-LR (LR $0.00033$, one continuous trajectory read at five horizons) references against the number of passes. Right: validation NLL over training at 32 and 256 passes for both schedules.\relax }}{5}{figure.caption.17}\protected@file@percent }
+\newlabel{fig:sched}{{4}{5}{Left: final validation NLL of the linear-decay (LR selected per horizon) and constant-LR (LR $0.00033$, one continuous trajectory read at five horizons) references against the number of passes. Right: validation NLL over training at 32 and 256 passes for both schedules.\relax }{figure.caption.17}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Left: final validation NLL against batch size at 32 passes with LR and WD scaled by $\sqrt  {B/64}$. Right: the supplied directional sharpness probe (symmetric curvature at radius $0.05$, four fixed training chunks) at the same checkpoints; B64 has no probe in the release.\relax }}{6}{figure.caption.19}\protected@file@percent }
+\newlabel{fig:batch}{{5}{6}{Left: final validation NLL against batch size at 32 passes with LR and WD scaled by $\sqrt {B/64}$. Right: the supplied directional sharpness probe (symmetric curvature at radius $0.05$, four fixed training chunks) at the same checkpoints; B64 has no probe in the release.\relax }{figure.caption.19}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Problem 3(c): SAM (one ascent step of radius $\rho $ per update, same LR, WD and schedule) against AdamW, 32 passes, seed 42.\relax }}{6}{table.caption.21}\protected@file@percent }
+\newlabel{tab:sam}{{5}{6}{Problem 3(c): SAM (one ascent step of radius $\rho $ per update, same LR, WD and schedule) against AdamW, 32 passes, seed 42.\relax }{table.caption.21}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Left: 4(a), best validation NLL per initialization against passes over the 30k pool. Right: 4(b), 16 passes against fine-tuning pool size, log axis.\relax }}{7}{figure.caption.23}\protected@file@percent }
+\newlabel{fig:p4}{{6}{7}{Left: 4(a), best validation NLL per initialization against passes over the 30k pool. Right: 4(b), 16 passes against fine-tuning pool size, log axis.\relax }{figure.caption.23}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Problem 4(a): best validation NLL per initialization and pass count on 30k chunks; parentheses give the selected LR (and WD 0 where used). LRs tried: .003/WD 3.2 and .001/WD 3.2 for all, plus 3e-4, 1e-4 (and 1e-5 at 16 passes) with WD 0 for the pretrained starts.\relax }}{7}{table.caption.24}\protected@file@percent }
+\newlabel{tab:p4a}{{6}{7}{Problem 4(a): best validation NLL per initialization and pass count on 30k chunks; parentheses give the selected LR (and WD 0 where used). LRs tried: .003/WD 3.2 and .001/WD 3.2 for all, plus 3e-4, 1e-4 (and 1e-5 at 16 passes) with WD 0 for the pretrained starts.\relax }{table.caption.24}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Problem 4(b): 16 passes, best LR per point, with the power-law fit $L(n)=L_\infty +An^{-\alpha }$ where three or more points exist.\relax }}{7}{table.caption.25}\protected@file@percent }
+\newlabel{tab:p4b}{{7}{7}{Problem 4(b): 16 passes, best LR per point, with the power-law fit $L(n)=L_\infty +An^{-\alpha }$ where three or more points exist.\relax }{table.caption.25}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces Problem 4(c): adapting the related-DNA initialization, 16 passes on 30k chunks.\relax }}{7}{table.caption.26}\protected@file@percent }
+\newlabel{tab:p4c}{{8}{7}{Problem 4(c): adapting the related-DNA initialization, 16 passes on 30k chunks.\relax }{table.caption.26}{}}
+\gdef \LT@i {\LT@entry 
+    {1}{134.84859pt}\LT@entry 
+    {1}{37.69429pt}\LT@entry 
+    {1}{124.7194pt}}
+\@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces Validation NLL of the main configurations in this report.\relax }}{8}{table.caption.28}\protected@file@percent }
+\newlabel{tab:ref}{{9}{8}{Validation NLL of the main configurations in this report.\relax }{table.caption.28}{}}
+\gdef \@abspage@last{8}

@@ -1,0 +1,16 @@
+\begin{table}[H]\centering\small\caption{Validation NLL of the main configurations in this report.}\label{tab:ref}
+\begin{tabular}{lr}\toprule Configuration & $L$ \\ \midrule
+Dense d8, 32 passes (supplied) & 1.2627 \\
+Supplied suite best, d9 & 1.2594 \\
+5-member ensemble (supplied) & 1.2543 \\
+AdamW WD .1, 32 passes (supplied) & 1.4057 \\
+Hyperball best & -- \\
+Dropout .15 & -- \\
+SAM & -- \\
+MoE LR .003 & -- \\
+Loop LR .003 & -- \\
+Fine-tune from scratch, 16 passes, 30k & -- \\
+Fine-tune from related DNA, 16 passes, 30k & -- \\
+Fine-tune from DCLM text, 16 passes, 30k & -- \\
+Fine-tune from nucleotide noise, 16 passes, 30k & -- \\
+\bottomrule\end{tabular}\end{table}

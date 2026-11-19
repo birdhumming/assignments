@@ -1,0 +1,12 @@
+\lead{(i) Dropout alone.} \input{p2_dropout_text}
+\begin{table}[H]\centering\small\caption{Problem 2(b)(i): attention-probability dropout at the baseline recipe (LR .003, WD 3.2, 32 passes), dropout off at evaluation.}\label{tab:drop}
+\begin{tabular}{lrr}\toprule Attention dropout & $L$ & $\Delta L$ \\ \midrule
+0 (supplied baseline) & 1.2627 & 0 \\
+0 (our seed 43) & -- & -- \\
+0.05 & -- & -- \\
+0.15 & -- & -- \\
+0.25 & -- & -- \\
+.15, LR .01 & -- & -- \\
+.15, seed 43 & -- & -- \\
+.15, seed 44 & -- & -- \\
+\bottomrule\end{tabular}\end{table}
