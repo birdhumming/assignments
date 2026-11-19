@@ -1,9 +1,11 @@
 \subsection*{Part (c). SAM against AdamW}
 
+\lead{Seed noise.} Our paired second seed of the baseline (seed 43, model and data order) gives 1.2618 against 1.2627, so differences below about 0.002 in this report are not resolved.
+
 \input{p3_ours_text}
 \begin{table}[H]\centering\small\caption{Problem 3(c): SAM (one ascent step of radius $\rho$ per update, same LR, WD and schedule) against AdamW, 32 passes, seed 42.}\label{tab:sam}
 \begin{tabular}{lrr}\toprule Optimizer & $L$ & $\Delta L$ \\ \midrule
 AdamW (supplied baseline) & 1.2627 & 0 \\
-AdamW seed 43 & -- & -- \\
+AdamW seed 43 & 1.2618 & -0.0009 \\
 SAM $\rho=.05$ on AdamW & 1.2628 & +0.0001 \\
 \bottomrule\end{tabular}\end{table}

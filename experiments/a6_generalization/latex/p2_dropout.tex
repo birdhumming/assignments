@@ -2,11 +2,11 @@
 \begin{table}[H]\centering\small\caption{Problem 2(b)(i): attention-probability dropout at the baseline recipe (LR .003, WD 3.2, 32 passes), dropout off at evaluation.}\label{tab:drop}
 \begin{tabular}{lrr}\toprule Attention dropout & $L$ & $\Delta L$ \\ \midrule
 0 (supplied baseline) & 1.2627 & 0 \\
-0 (our seed 43) & -- & -- \\
+0 (our seed 43) & 1.2618 & -0.0009 \\
 0.05 & 1.2591 & -0.0036 \\
 0.15 & 1.2623 & -0.0004 \\
 0.25 & 1.2633 & +0.0006 \\
 .15, LR .01 & -- & -- \\
-.15, seed 43 & -- & -- \\
-.15, seed 44 & -- & -- \\
+.15, seed 43 & 1.2600 & -0.0027 \\
+.15, seed 44 & 1.2602 & -0.0025 \\
 \bottomrule\end{tabular}\end{table}
