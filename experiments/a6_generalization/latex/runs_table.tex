@@ -1,8 +1,16 @@
 \small Names encode the recipe: \texttt{ft-<init>-n<pool>k-p<passes>-lr<LR>[-wd<WD>][-adaptation<variant>]} for fine-tuning; everything else is a 32-pass scratch run of d8 at WD 3.2 unless the name says otherwise. All seeds are 42 (model and data order) unless named.
 
 \begin{longtable}{lrl}\toprule Run & $L$ & state \\ \midrule
-\texttt{ft-dclm-n30k-p1-lr0.003} & -- & running (0.7 passes, 1.3003) \\
-\texttt{ft-noise-n30k-p1-lr0.003} & -- & running (0.7 passes, 1.3254) \\
+\texttt{dropout0.15} & -- & running (8.0 passes, 1.2927) \\
+\texttt{ft-dclm-n30k-p1-lr0.003} & 1.2936 & finished \\
+\texttt{ft-dclm-n30k-p4-lr0.003} & 1.2752 & finished \\
+\texttt{ft-noise-n30k-p1-lr0.003} & 1.3121 & finished \\
+\texttt{ft-noise-n30k-p4-lr0.003} & 1.2829 & finished \\
 \texttt{ft-related-n30k-p1-lr0.003} & 1.2691 & finished \\
+\texttt{ft-related-n30k-p4-lr0.003} & 1.2699 & finished \\
 \texttt{ft-scratch-n30k-p1-lr0.003} & 1.2991 & finished \\
+\texttt{ft-scratch-n30k-p4-lr0.003} & 1.2764 & finished \\
+\texttt{hyperball-lr0.001} & 1.4405 & finished \\
+\texttt{hyperball-lr0.003} & 1.5820 & finished \\
+\texttt{hyperball-lr0.01} & -- & running (10.0 passes, 1.2691) \\
 \bottomrule\end{longtable}

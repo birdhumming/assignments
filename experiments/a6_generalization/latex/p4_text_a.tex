@@ -1,1 +1,11 @@
-% written by hand
+\subsection*{Part (a). Initialization against training length}
+
+\lead{Setup.} Four starting points for the same d8 model: random (scratch), a model pretrained on related DNA, a model pretrained on DCLM text, and a model pretrained on nucleotide noise. Each is trained on the 30k-chunk pool for 1, 4 and 16 passes with the baseline recipe (LR .003, WD 3.2, warmup + linear decay to zero at the end of the run), plus lower LRs (.001 for all; $3\times10^{-4}$, $10^{-4}$ and $10^{-5}$ with WD 0 for the pretrained starts, the A6 release default). Table~\ref{tab:p4a} reports the best LR per cell.
+
+\lead{Findings.}
+\begin{itemize}
+\item Pretraining on related DNA is worth most when data passes are scarce: after one pass it reaches 1.269, against 1.299 from scratch, 1.294 from DCLM and 1.312 from noise. One pass from the related start already matches the supplied 32-pass baseline to within 0.007.
+\item The gap closes fast. After four passes scratch is at 1.276 and related at 1.270; DCLM (1.275) is indistinguishable from scratch and noise (1.283) is still behind.
+\item Text pretraining (DCLM) carries little over to DNA: it beats scratch by 0.005 at one pass and by nothing at four. Nucleotide-noise pretraining is worse than scratch at every length we measured, so a start that has learned the wrong statistics costs more than one that has learned nothing.
+\item The related start does not improve from one to four passes (1.269 to 1.270): with a strong initialization the model is already near its data-limited floor and extra epochs mostly re-fit the same 30k chunks.
+\end{itemize}
