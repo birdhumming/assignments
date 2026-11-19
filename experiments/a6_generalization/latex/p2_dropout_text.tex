@@ -1,5 +1,6 @@
 Dropout on the attention probabilities is the standard remedy for the memorization seen with Hyperball and WD .1, and the natural partner for ensembling (Part (iii)). Table~\ref{tab:drop} gives the rates we ran at the baseline recipe.
 \begin{itemize}
-\item At rate .15 the final NLL is 1.2623, within 0.0005 of the no-dropout baseline (1.2627): with WD 3.2 already stopping memorization, attention dropout buys nothing further on its own at this rate.
-\item The curves tell the rest: rate .05 reached 1.278 at pass 22 and rate .25 1.287 at pass 20 of 32, both running at the time of writing; the heavier rate is clearly behind at matching passes, so dropout above .15 costs capacity the 30k-chunk task cannot spare, and the final values appear in the table once the runs finish.
+\item A light rate helps: dropout .05 ends at 1.2591, 0.0036 below the no-dropout baseline (1.2627), which is as large as the gain from a second ensemble member on the supplied bank (0.0048) and larger than anything in the supplied parameter sweep from d6 upward.
+\item The effect is non-monotone. Rate .15 (1.2623) is back at the baseline and .25 (1.2633) slightly above it: the extra noise slows fitting all the way through (1.284, 1.286 and 1.289 at pass 16 for .05, .15 and .25), and only the lightest rate recovers that cost during the LR decay.
+\item So with WD 3.2 already stopping memorization, dropout is a small second-order regularizer with a narrow sweet spot near .05, not a large independent lever.
 \end{itemize}

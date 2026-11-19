@@ -1,1 +1,1 @@
-% written by hand
+SAM takes one gradient-ascent step of radius $\rho=.05$ in parameter space, evaluates the gradient there, and applies it at the original point, doubling the compute per update. We ran it at the baseline recipe (Table~\ref{tab:sam}). At the time of writing the run had reached pass 22 of 32 at 1.2800, level with our dropout runs at the same pass (1.2777 to 1.2809), so SAM is not ahead at matching passes despite the doubled compute; the final value appears in the table if it finishes before the deadline, otherwise the table marks it running.
