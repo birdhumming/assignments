@@ -1,0 +1,6 @@
+We evaluated our three dropout checkpoints on the validation pool (CPU, dropout off) and averaged probabilities with each other and with the supplied no-dropout members (Table~\ref{tab:comp}). One caveat up front: our dropout members all use seed 42 and the same data order, so they differ only through the dropout rate, whereas the supplied bank differs by seed.
+\begin{itemize}
+\item Dropout and ensembling are partial substitutes. The single-model gain of dropout .05 is 0.0036; paired with one supplied member it keeps 0.0011 of that (1.2564 against 1.2576 for two no-dropout seeds), and at $K=5$ swapping one bank member for the dropout .05 model gives 1.2540 against 1.2543. Most of what dropout buys, averaging already buys.
+\item Members must be good to help. Adding the .15 and .25 models to the .05 model gives 1.2573 and then 1.2574 (no change for the third), while three no-dropout seeds reach 1.2557: a weaker member dilutes the average, and same-seed members add little diversity. Filling the ensemble with bank members after the three dropout models (1.2557 at $K=5$) is still 0.0014 behind the all-bank ensemble.
+\item Rule: build ensembles from the best independently trained members (different seeds, and light dropout if it helps the single model); do not trade seed diversity for regularization diversity.
+\end{itemize}

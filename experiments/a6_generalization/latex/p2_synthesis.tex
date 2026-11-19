@@ -1,1 +1,3 @@
-% generated
+\lead{Synthesis.} On 30k chunks repeated 32 times, the dominant generalization problem is memorization, and weight decay is the tool that controls it: WD .1 costs 0.14 nats and norm-constrained Hyperball at WD 0 loses 0.1 to 0.3 nats after a good start. Once WD is tuned, the remaining regularizers are second order: light attention dropout gives 0.004, ensembling 0.005 per doubling of members with a $1/K$ tail, and the two overlap.
+
+\lead{Rules of thumb.} Tune WD before anything else when data are repeated; expect the LR$\times$WD product, not either alone, to set the optimum. Use the lightest dropout that helps the single model (.05 here) and stop. Spend spare compute on independent seeds for an ensemble before on a bigger model: here two seeds (1.2576) beat every single model we or the course trained, and $K$ members follow $L(K)=1.2525+0.0095K^{-1.03}$.

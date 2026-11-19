@@ -1,1 +1,13 @@
-% generated
+\lead{(iii) Composition.} \input{p2_composition_text}
+\begin{table}[H]\centering\small\caption{Problem 2(b)(iii): validation NLL of probability-averaged ensembles of $K$ members, by composition. Single dropout members: 0.05: 1.2591, 0.15: 1.2623, 0.25: 1.2633.}\label{tab:comp}
+\begin{tabular}{lrrrrr}\toprule Members in order & $K=1$ & 2 & 3 & 4 & 5 \\ \midrule
+no dropout, supplied bank (seeds) & 1.2627 & 1.2576 & 1.2557 & 1.2546 & 1.2543 \\
+dropout members .05, .15, .25 & 1.2591 & 1.2573 & 1.2574 & -- & -- \\
+dropout .05 then bank members & 1.2591 & 1.2564 & 1.2554 & 1.2547 & 1.2540 \\
+all three dropout then bank & 1.2591 & 1.2573 & 1.2574 & 1.2562 & 1.2557 \\
+\midrule \multicolumn{6}{l}{Pairs ($K=2$)} \\
+dropout0.05 + bank 1 & 1.2564 \\
+dropout0.15 + bank 1 & 1.2582 \\
+dropout0.25 + bank 1 & 1.2584 \\
+bank 1 + bank 2 & 1.2576 \\
+\bottomrule\end{tabular}\end{table}
