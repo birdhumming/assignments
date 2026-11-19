@@ -84,7 +84,7 @@ def p4():
         if len(ns) >= 3:
             try: fits[init] = power_law(np.array(ns), np.array(ys))
             except Exception: pass
-    ax[1].set(xscale='log', xlabel='fine-tuning chunks', ylabel='validation NLL', title='4(b): 16 passes, best LR per point'); ax[1].legend(fontsize=7)
+    ax[1].set(xscale='log', xlabel='fine-tuning chunks', ylabel='validation NLL', title='4(b): 16 passes, best LR per point (related 1k = 3.19, off scale)', ylim=(1.24, 1.42)); ax[1].legend(fontsize=7)
     fig.tight_layout(); fig.savefig(P / 'p4.png', dpi=160)
     brows = []
     for init in INITS:
