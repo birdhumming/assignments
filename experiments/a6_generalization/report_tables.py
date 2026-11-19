@@ -51,8 +51,8 @@ def p3():
 INITS = ('scratch', 'related', 'dclm', 'noise'); LABEL = dict(scratch='scratch', related='related DNA', dclm='DCLM text', noise='nucleotide noise')
 def ft(init, passes, lr, n=30, wd=None, adapt=None):
     name = f"ft-{init}-n{n}k-p{passes}-lr{lr:g}"
+    if wd is not None: name += f"-wd{float(wd)}"
     if adapt: name += f"-adaptation{adapt}"
-    if wd is not None: name += f"-wd{wd:g}"
     return L(name)
 LRS = {'scratch': ((.003, None), (.001, None)), 'related': ((.003, None), (.001, None), (3e-4, 0.), (1e-4, 0.), (1e-5, 0.))}
 LRS['dclm'] = LRS['noise'] = LRS['related']
@@ -93,15 +93,14 @@ def p4():
         brows.append(f"{LABEL[init]} & " + ' & '.join(cells) + (f" & {a - b:.4f}" if a is not None and b is not None else ' & --'))
     # (c) adaptation on related
     crows = []
-    for lab, lr, wd, adapt in (('full, LR 3e-4, WD 0', 3e-4, None, None), ('full, LR .003, WD 3.2', .003, None, None), ('full, LR 3e-4, WD 3.2', 3e-4, 3.2, None), ('full, LR .003, WD .1', .003, .1, None),
-                               ('decay toward init, LR 3e-4', 3e-4, None, 'toward_initialization'), ('decay toward init, LR .003', .003, None, 'toward_initialization'),
-                               ('frozen head, LR 3e-4', 3e-4, None, 'frozen_head'), ('frozen head, LR .003', .003, None, 'frozen_head'),
-                               ('frozen body, LR 3e-4', 3e-4, None, 'frozen_body'), ('frozen body, LR .003', .003, None, 'frozen_body')):
+    for lab, lr, wd, adapt in (('full, LR 3e-4, WD 0', 3e-4, 0., None), ('full, LR 1e-4, WD 0', 1e-4, 0., None), ('full, LR .001, WD 3.2', .001, None, None), ('full, LR .003, WD 3.2', .003, None, None), ('full, LR .003, WD .1', .003, .1, None),
+                               ('decay toward init, LR 3e-4 (cut at pass 2: 1.2309)', 3e-4, 0., 'toward_initialization'), ('decay toward init, LR .003', .003, None, 'toward_initialization'),
+                               ('frozen head, LR .003', .003, None, 'frozen_head'), ('frozen body, LR .003', .003, None, 'frozen_body')):
         v = ft('related', 16, lr, 30, wd, adapt); crows.append(f"{lab} & {fmt(v)}")
     (T / 'p4.tex').write_text(r'\input{p4_text_a}' + '\n' + r'\begin{figure}[H]\centering\includegraphics[width=.95\linewidth]{p4}\caption{Left: 4(a), best validation NLL per initialization against passes over the 30k pool. Right: 4(b), 16 passes against fine-tuning pool size, log axis.}\label{fig:p4}\end{figure}' + '\n'
         + table('Problem 4(a): best validation NLL per initialization and pass count on 30k chunks; parentheses give the selected LR (and WD 0 where used). LRs tried: .003/WD 3.2 and .001/WD 3.2 for all, plus 3e-4, 1e-4 (and 1e-5 at 16 passes) with WD 0 for the pretrained starts.', 'tab:p4a', r'Initialization & 1 pass & 4 passes & 16 passes', rows, 'lrrr')
         + r'\input{p4_text_b}' + '\n' + table('Problem 4(b): 16 passes over pools of 1k to 30k chunks, best LR per point; last column is the gain from tripling the pool from 10k to 30k.', 'tab:p4b', r'Initialization & 1k & 3k & 10k & 30k & gain 10k$\to$30k', brows, 'lrrrrr')
-        + r'\input{p4_text_c}' + '\n' + table('Problem 4(c): adapting the related-DNA initialization, 16 passes on 30k chunks.', 'tab:p4c', r'Variant & $L$', crows, 'lr') + r'\input{p4_text_d}' + '\n')
+        + r'\input{p4_text_c}' + '\n' + table('Problem 4(c): adapting the related-DNA initialization, 16 passes on 30k chunks. The LR 3e-4 adaptation variants were queued last and cut.', 'tab:p4c', r'Variant & $L$', crows, 'lr') + r'\input{p4_text_d}' + '\n')
     for f in ('p4_text_a', 'p4_text_b', 'p4_text_c', 'p4_text_d'):
         if not (T / f'{f}.tex').exists(): (T / f'{f}.tex').write_text('% written by hand\n')
 

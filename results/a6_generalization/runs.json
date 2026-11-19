@@ -1,0 +1,7383 @@
+{
+ "ft-dclm-n30k-p1-lr0.003": {
+  "history": [
+   {
+    "step": 29,
+    "epochs": 0.06183368869936034,
+    "validation_nll": 1.5087753047943115
+   },
+   {
+    "step": 58,
+    "epochs": 0.12366737739872068,
+    "validation_nll": 1.3671590896844863
+   },
+   {
+    "step": 87,
+    "epochs": 0.18550106609808104,
+    "validation_nll": 1.3586912672519684
+   },
+   {
+    "step": 116,
+    "epochs": 0.24733475479744135,
+    "validation_nll": 1.339339510679245
+   },
+   {
+    "step": 145,
+    "epochs": 0.3091684434968017,
+    "validation_nll": 1.3225100508928298
+   },
+   {
+    "step": 174,
+    "epochs": 0.37100213219616207,
+    "validation_nll": 1.323085181265138
+   },
+   {
+    "step": 203,
+    "epochs": 0.43283582089552236,
+    "validation_nll": 1.356518595457077
+   },
+   {
+    "step": 232,
+    "epochs": 0.4946695095948827,
+    "validation_nll": 1.315512749671936
+   },
+   {
+    "step": 261,
+    "epochs": 0.5565031982942431,
+    "validation_nll": 1.3145956197977067
+   },
+   {
+    "step": 290,
+    "epochs": 0.6183368869936035,
+    "validation_nll": 1.3156011397838592
+   },
+   {
+    "step": 319,
+    "epochs": 0.6801705756929638,
+    "validation_nll": 1.317915469288826
+   },
+   {
+    "step": 348,
+    "epochs": 0.7420042643923241,
+    "validation_nll": 1.300295604588464
+   },
+   {
+    "step": 377,
+    "epochs": 0.8038379530916845,
+    "validation_nll": 1.3207017910480499
+   },
+   {
+    "step": 406,
+    "epochs": 0.8656716417910447,
+    "validation_nll": 1.2971261768452824
+   },
+   {
+    "step": 435,
+    "epochs": 0.9275053304904051,
+    "validation_nll": 1.295012286014855
+   },
+   {
+    "step": 464,
+    "epochs": 0.9893390191897654,
+    "validation_nll": 1.2938015160411596
+   },
+   {
+    "step": 469,
+    "epochs": 1.0,
+    "validation_nll": 1.2935921840406954
+   }
+  ],
+  "final": 1.2935921840406954,
+  "state": "finished",
+  "last": {
+   "step": 469,
+   "epochs": 1.0,
+   "validation_nll": 1.2935921840406954
+  },
+  "config": {
+   "name": "ft-dclm-n30k-p1-lr0.003",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 1,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "dclm",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-noise-n30k-p1-lr0.003": {
+  "history": [
+   {
+    "step": 29,
+    "epochs": 0.06183368869936034,
+    "validation_nll": 1.4087024955749512
+   },
+   {
+    "step": 58,
+    "epochs": 0.12366737739872068,
+    "validation_nll": 1.397491623044014
+   },
+   {
+    "step": 87,
+    "epochs": 0.18550106609808104,
+    "validation_nll": 1.3967050132751464
+   },
+   {
+    "step": 116,
+    "epochs": 0.24733475479744135,
+    "validation_nll": 1.3938487907648087
+   },
+   {
+    "step": 145,
+    "epochs": 0.3091684434968017,
+    "validation_nll": 1.369655517578125
+   },
+   {
+    "step": 174,
+    "epochs": 0.37100213219616207,
+    "validation_nll": 1.3598167592287063
+   },
+   {
+    "step": 203,
+    "epochs": 0.43283582089552236,
+    "validation_nll": 1.3579582207202912
+   },
+   {
+    "step": 232,
+    "epochs": 0.4946695095948827,
+    "validation_nll": 1.351564009785652
+   },
+   {
+    "step": 261,
+    "epochs": 0.5565031982942431,
+    "validation_nll": 1.3468816618919373
+   },
+   {
+    "step": 290,
+    "epochs": 0.6183368869936035,
+    "validation_nll": 1.3395237617492677
+   },
+   {
+    "step": 319,
+    "epochs": 0.6801705756929638,
+    "validation_nll": 1.3300733516216279
+   },
+   {
+    "step": 348,
+    "epochs": 0.7420042643923241,
+    "validation_nll": 1.3253958401679993
+   },
+   {
+    "step": 377,
+    "epochs": 0.8038379530916845,
+    "validation_nll": 1.3206341743469239
+   },
+   {
+    "step": 406,
+    "epochs": 0.8656716417910447,
+    "validation_nll": 1.3172433393001557
+   },
+   {
+    "step": 435,
+    "epochs": 0.9275053304904051,
+    "validation_nll": 1.3142381447553635
+   },
+   {
+    "step": 464,
+    "epochs": 0.9893390191897654,
+    "validation_nll": 1.3120861895084381
+   },
+   {
+    "step": 469,
+    "epochs": 1.0,
+    "validation_nll": 1.3120517538785934
+   }
+  ],
+  "final": 1.3120517538785934,
+  "state": "finished",
+  "last": {
+   "step": 469,
+   "epochs": 1.0,
+   "validation_nll": 1.3120517538785934
+  },
+  "config": {
+   "name": "ft-noise-n30k-p1-lr0.003",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 1,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "noise",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-related-n30k-p1-lr0.003": {
+  "history": [
+   {
+    "step": 29,
+    "epochs": 0.06183368869936034,
+    "validation_nll": 1.247693752542138
+   },
+   {
+    "step": 58,
+    "epochs": 0.12366737739872068,
+    "validation_nll": 1.269398872613907
+   },
+   {
+    "step": 87,
+    "epochs": 0.18550106609808104,
+    "validation_nll": 1.2973183032274247
+   },
+   {
+    "step": 116,
+    "epochs": 0.24733475479744135,
+    "validation_nll": 1.2873530646264553
+   },
+   {
+    "step": 145,
+    "epochs": 0.3091684434968017,
+    "validation_nll": 1.2923927162885667
+   },
+   {
+    "step": 174,
+    "epochs": 0.37100213219616207,
+    "validation_nll": 1.2882215740904213
+   },
+   {
+    "step": 203,
+    "epochs": 0.43283582089552236,
+    "validation_nll": 1.2858615135401488
+   },
+   {
+    "step": 232,
+    "epochs": 0.4946695095948827,
+    "validation_nll": 1.2831764296293258
+   },
+   {
+    "step": 261,
+    "epochs": 0.5565031982942431,
+    "validation_nll": 1.2834957011938095
+   },
+   {
+    "step": 290,
+    "epochs": 0.6183368869936035,
+    "validation_nll": 1.2804745006263256
+   },
+   {
+    "step": 319,
+    "epochs": 0.6801705756929638,
+    "validation_nll": 1.2802869562506676
+   },
+   {
+    "step": 348,
+    "epochs": 0.7420042643923241,
+    "validation_nll": 1.276824262470007
+   },
+   {
+    "step": 377,
+    "epochs": 0.8038379530916845,
+    "validation_nll": 1.2757486801072955
+   },
+   {
+    "step": 406,
+    "epochs": 0.8656716417910447,
+    "validation_nll": 1.2734879407137631
+   },
+   {
+    "step": 435,
+    "epochs": 0.9275053304904051,
+    "validation_nll": 1.2709382435381413
+   },
+   {
+    "step": 464,
+    "epochs": 0.9893390191897654,
+    "validation_nll": 1.269223492845893
+   },
+   {
+    "step": 469,
+    "epochs": 1.0,
+    "validation_nll": 1.2690958912670611
+   }
+  ],
+  "final": 1.2690958912670611,
+  "state": "finished",
+  "last": {
+   "step": 469,
+   "epochs": 1.0,
+   "validation_nll": 1.2690958912670611
+  },
+  "config": {
+   "name": "ft-related-n30k-p1-lr0.003",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 1,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "related",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-scratch-n30k-p1-lr0.003": {
+  "history": [
+   {
+    "step": 29,
+    "epochs": 0.06183368869936034,
+    "validation_nll": 1.3871904460191726
+   },
+   {
+    "step": 58,
+    "epochs": 0.12366737739872068,
+    "validation_nll": 1.3790454623699189
+   },
+   {
+    "step": 87,
+    "epochs": 0.18550106609808104,
+    "validation_nll": 1.3508688968420028
+   },
+   {
+    "step": 116,
+    "epochs": 0.24733475479744135,
+    "validation_nll": 1.3311412502750755
+   },
+   {
+    "step": 145,
+    "epochs": 0.3091684434968017,
+    "validation_nll": 1.3227079874109477
+   },
+   {
+    "step": 174,
+    "epochs": 0.37100213219616207,
+    "validation_nll": 1.3228560750661418
+   },
+   {
+    "step": 203,
+    "epochs": 0.43283582089552236,
+    "validation_nll": 1.3156507048318162
+   },
+   {
+    "step": 232,
+    "epochs": 0.4946695095948827,
+    "validation_nll": 1.3138825873751194
+   },
+   {
+    "step": 261,
+    "epochs": 0.5565031982942431,
+    "validation_nll": 1.3127714432328939
+   },
+   {
+    "step": 290,
+    "epochs": 0.6183368869936035,
+    "validation_nll": 1.310148276289925
+   },
+   {
+    "step": 319,
+    "epochs": 0.6801705756929638,
+    "validation_nll": 1.3084503153264522
+   },
+   {
+    "step": 348,
+    "epochs": 0.7420042643923241,
+    "validation_nll": 1.3047965214960278
+   },
+   {
+    "step": 377,
+    "epochs": 0.8038379530916845,
+    "validation_nll": 1.3032344140447676
+   },
+   {
+    "step": 406,
+    "epochs": 0.8656716417910447,
+    "validation_nll": 1.3021703646685927
+   },
+   {
+    "step": 435,
+    "epochs": 0.9275053304904051,
+    "validation_nll": 1.3006155632305891
+   },
+   {
+    "step": 464,
+    "epochs": 0.9893390191897654,
+    "validation_nll": 1.2992185750342906
+   },
+   {
+    "step": 469,
+    "epochs": 1.0,
+    "validation_nll": 1.2990800853595137
+   }
+  ],
+  "final": 1.2990800853595137,
+  "state": "finished",
+  "last": {
+   "step": 469,
+   "epochs": 1.0,
+   "validation_nll": 1.2990800853595137
+  },
+  "config": {
+   "name": "ft-scratch-n30k-p1-lr0.003",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 1,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "random",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "dropout0.15": {
+  "history": [
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.2977432675361633
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.2987053608894348
+   },
+   {
+    "step": 2814,
+    "epochs": 6.0,
+    "validation_nll": 1.2932735914960503
+   },
+   {
+    "step": 3752,
+    "epochs": 8.0,
+    "validation_nll": 1.2927180146872996
+   },
+   {
+    "step": 4690,
+    "epochs": 10.0,
+    "validation_nll": 1.2938616607990117
+   },
+   {
+    "step": 5628,
+    "epochs": 12.0,
+    "validation_nll": 1.2915083386600017
+   },
+   {
+    "step": 6566,
+    "epochs": 14.0,
+    "validation_nll": 1.290438408613205
+   },
+   {
+    "step": 7504,
+    "epochs": 16.0,
+    "validation_nll": 1.2858988538086413
+   },
+   {
+    "step": 8442,
+    "epochs": 18.0,
+    "validation_nll": 1.2852954789400102
+   },
+   {
+    "step": 9380,
+    "epochs": 20.0,
+    "validation_nll": 1.2828174494057893
+   },
+   {
+    "step": 10318,
+    "epochs": 22.0,
+    "validation_nll": 1.2809300117194653
+   },
+   {
+    "step": 11256,
+    "epochs": 24.0,
+    "validation_nll": 1.2772535098195077
+   },
+   {
+    "step": 12194,
+    "epochs": 26.0,
+    "validation_nll": 1.2782096838355064
+   },
+   {
+    "step": 13132,
+    "epochs": 28.0,
+    "validation_nll": 1.2718483773767948
+   },
+   {
+    "step": 14070,
+    "epochs": 30.0,
+    "validation_nll": 1.267999058637768
+   },
+   {
+    "step": 15008,
+    "epochs": 32.0,
+    "validation_nll": 1.262296892117709
+   }
+  ],
+  "final": 1.262296892117709,
+  "state": "finished",
+  "last": {
+   "step": 15008,
+   "epochs": 32.0,
+   "validation_nll": 1.262296892117709
+  },
+  "config": {
+   "name": "dropout0.15",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 32,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.15,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "random",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-dclm-n30k-p4-lr0.003": {
+  "history": [
+   {
+    "step": 117,
+    "epochs": 0.24946695095948826,
+    "validation_nll": 1.3211544316178188
+   },
+   {
+    "step": 234,
+    "epochs": 0.4989339019189765,
+    "validation_nll": 1.3186467890739442
+   },
+   {
+    "step": 351,
+    "epochs": 0.7484008528784648,
+    "validation_nll": 1.3061897637099027
+   },
+   {
+    "step": 468,
+    "epochs": 0.997867803837953,
+    "validation_nll": 1.304274186993018
+   },
+   {
+    "step": 585,
+    "epochs": 1.2473347547974414,
+    "validation_nll": 1.3012929011397063
+   },
+   {
+    "step": 702,
+    "epochs": 1.4968017057569296,
+    "validation_nll": 1.3009919336438178
+   },
+   {
+    "step": 819,
+    "epochs": 1.7462686567164178,
+    "validation_nll": 1.295704820394516
+   },
+   {
+    "step": 936,
+    "epochs": 1.995735607675906,
+    "validation_nll": 1.295686754666269
+   },
+   {
+    "step": 1053,
+    "epochs": 2.2452025586353943,
+    "validation_nll": 1.2948105071783065
+   },
+   {
+    "step": 1170,
+    "epochs": 2.4946695095948828,
+    "validation_nll": 1.2908245233148337
+   },
+   {
+    "step": 1287,
+    "epochs": 2.744136460554371,
+    "validation_nll": 1.2892082389965653
+   },
+   {
+    "step": 1404,
+    "epochs": 2.9936034115138592,
+    "validation_nll": 1.2867569128349423
+   },
+   {
+    "step": 1521,
+    "epochs": 3.2430703624733477,
+    "validation_nll": 1.2825834603309632
+   },
+   {
+    "step": 1638,
+    "epochs": 3.4925373134328357,
+    "validation_nll": 1.2806771155893804
+   },
+   {
+    "step": 1755,
+    "epochs": 3.742004264392324,
+    "validation_nll": 1.277862190283835
+   },
+   {
+    "step": 1872,
+    "epochs": 3.991471215351812,
+    "validation_nll": 1.2752237343341113
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.275213570971042
+   }
+  ],
+  "final": 1.275213570971042,
+  "state": "finished",
+  "last": {
+   "step": 1876,
+   "epochs": 4.0,
+   "validation_nll": 1.275213570971042
+  },
+  "config": {
+   "name": "ft-dclm-n30k-p4-lr0.003",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 4,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "dclm",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-noise-n30k-p4-lr0.003": {
+  "history": [
+   {
+    "step": 117,
+    "epochs": 0.24946695095948826,
+    "validation_nll": 1.3903761576414109
+   },
+   {
+    "step": 234,
+    "epochs": 0.4989339019189765,
+    "validation_nll": 1.3914863342046737
+   },
+   {
+    "step": 351,
+    "epochs": 0.7484008528784648,
+    "validation_nll": 1.3867375410348177
+   },
+   {
+    "step": 468,
+    "epochs": 0.997867803837953,
+    "validation_nll": 1.3866037860661744
+   },
+   {
+    "step": 585,
+    "epochs": 1.2473347547974414,
+    "validation_nll": 1.3499674411900342
+   },
+   {
+    "step": 702,
+    "epochs": 1.4968017057569296,
+    "validation_nll": 1.331762122988701
+   },
+   {
+    "step": 819,
+    "epochs": 1.7462686567164178,
+    "validation_nll": 1.312164203170687
+   },
+   {
+    "step": 936,
+    "epochs": 1.995735607675906,
+    "validation_nll": 1.3088292886465789
+   },
+   {
+    "step": 1053,
+    "epochs": 2.2452025586353943,
+    "validation_nll": 1.3011920039886609
+   },
+   {
+    "step": 1170,
+    "epochs": 2.4946695095948828,
+    "validation_nll": 1.2951021654978394
+   },
+   {
+    "step": 1287,
+    "epochs": 2.744136460554371,
+    "validation_nll": 1.292433310419321
+   },
+   {
+    "step": 1404,
+    "epochs": 2.9936034115138592,
+    "validation_nll": 1.2910574445258827
+   },
+   {
+    "step": 1521,
+    "epochs": 3.2430703624733477,
+    "validation_nll": 1.2885219837781041
+   },
+   {
+    "step": 1638,
+    "epochs": 3.4925373134328357,
+    "validation_nll": 1.2866649535447359
+   },
+   {
+    "step": 1755,
+    "epochs": 3.742004264392324,
+    "validation_nll": 1.2849594570435583
+   },
+   {
+    "step": 1872,
+    "epochs": 3.991471215351812,
+    "validation_nll": 1.2828665769062937
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.2828513897862286
+   }
+  ],
+  "final": 1.2828513897862286,
+  "state": "finished",
+  "last": {
+   "step": 1876,
+   "epochs": 4.0,
+   "validation_nll": 1.2828513897862286
+  },
+  "config": {
+   "name": "ft-noise-n30k-p4-lr0.003",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 4,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "noise",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-related-n30k-p4-lr0.003": {
+  "history": [
+   {
+    "step": 117,
+    "epochs": 0.24946695095948826,
+    "validation_nll": 1.2900832642316817
+   },
+   {
+    "step": 234,
+    "epochs": 0.4989339019189765,
+    "validation_nll": 1.3025309150218964
+   },
+   {
+    "step": 351,
+    "epochs": 0.7484008528784648,
+    "validation_nll": 1.2955198393315077
+   },
+   {
+    "step": 468,
+    "epochs": 0.997867803837953,
+    "validation_nll": 1.295034291550517
+   },
+   {
+    "step": 585,
+    "epochs": 1.2473347547974414,
+    "validation_nll": 1.293176260188222
+   },
+   {
+    "step": 702,
+    "epochs": 1.4968017057569296,
+    "validation_nll": 1.2917813019156457
+   },
+   {
+    "step": 819,
+    "epochs": 1.7462686567164178,
+    "validation_nll": 1.2871659961938857
+   },
+   {
+    "step": 936,
+    "epochs": 1.995735607675906,
+    "validation_nll": 1.28445154877007
+   },
+   {
+    "step": 1053,
+    "epochs": 2.2452025586353943,
+    "validation_nll": 1.2836572859995068
+   },
+   {
+    "step": 1170,
+    "epochs": 2.4946695095948828,
+    "validation_nll": 1.2814089457094668
+   },
+   {
+    "step": 1287,
+    "epochs": 2.744136460554371,
+    "validation_nll": 1.280447001732886
+   },
+   {
+    "step": 1404,
+    "epochs": 2.9936034115138592,
+    "validation_nll": 1.2787609002441167
+   },
+   {
+    "step": 1521,
+    "epochs": 3.2430703624733477,
+    "validation_nll": 1.2774031789042055
+   },
+   {
+    "step": 1638,
+    "epochs": 3.4925373134328357,
+    "validation_nll": 1.2750491525232792
+   },
+   {
+    "step": 1755,
+    "epochs": 3.742004264392324,
+    "validation_nll": 1.2721575471162796
+   },
+   {
+    "step": 1872,
+    "epochs": 3.991471215351812,
+    "validation_nll": 1.2699494207054376
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.2699389224909245
+   }
+  ],
+  "final": 1.2699389224909245,
+  "state": "finished",
+  "last": {
+   "step": 1876,
+   "epochs": 4.0,
+   "validation_nll": 1.2699389224909245
+  },
+  "config": {
+   "name": "ft-related-n30k-p4-lr0.003",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 4,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "related",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-scratch-n30k-p4-lr0.003": {
+  "history": [
+   {
+    "step": 117,
+    "epochs": 0.24946695095948826,
+    "validation_nll": 1.3401688625570387
+   },
+   {
+    "step": 234,
+    "epochs": 0.4989339019189765,
+    "validation_nll": 1.3167567417770625
+   },
+   {
+    "step": 351,
+    "epochs": 0.7484008528784648,
+    "validation_nll": 1.3101271773986518
+   },
+   {
+    "step": 468,
+    "epochs": 0.997867803837953,
+    "validation_nll": 1.3022598350513725
+   },
+   {
+    "step": 585,
+    "epochs": 1.2473347547974414,
+    "validation_nll": 1.298869924923405
+   },
+   {
+    "step": 702,
+    "epochs": 1.4968017057569296,
+    "validation_nll": 1.2958751390576362
+   },
+   {
+    "step": 819,
+    "epochs": 1.7462686567164178,
+    "validation_nll": 1.2955757396332919
+   },
+   {
+    "step": 936,
+    "epochs": 1.995735607675906,
+    "validation_nll": 1.2925445612967015
+   },
+   {
+    "step": 1053,
+    "epochs": 2.2452025586353943,
+    "validation_nll": 1.2913288529105484
+   },
+   {
+    "step": 1170,
+    "epochs": 2.4946695095948828,
+    "validation_nll": 1.2904359467551112
+   },
+   {
+    "step": 1287,
+    "epochs": 2.744136460554371,
+    "validation_nll": 1.2886763866320252
+   },
+   {
+    "step": 1404,
+    "epochs": 2.9936034115138592,
+    "validation_nll": 1.2884885084591806
+   },
+   {
+    "step": 1521,
+    "epochs": 3.2430703624733477,
+    "validation_nll": 1.2849854692444205
+   },
+   {
+    "step": 1638,
+    "epochs": 3.4925373134328357,
+    "validation_nll": 1.2816738578155638
+   },
+   {
+    "step": 1755,
+    "epochs": 3.742004264392324,
+    "validation_nll": 1.2784697689004243
+   },
+   {
+    "step": 1872,
+    "epochs": 3.991471215351812,
+    "validation_nll": 1.2763877689056098
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.2763754170686006
+   }
+  ],
+  "final": 1.2763754170686006,
+  "state": "finished",
+  "last": {
+   "step": 1876,
+   "epochs": 4.0,
+   "validation_nll": 1.2763754170686006
+  },
+  "config": {
+   "name": "ft-scratch-n30k-p4-lr0.003",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 4,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "random",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "hyperball-lr0.001": {
+  "history": [
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.2946589540643618
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.2844545729141683
+   },
+   {
+    "step": 2814,
+    "epochs": 6.0,
+    "validation_nll": 1.279023813083768
+   },
+   {
+    "step": 3752,
+    "epochs": 8.0,
+    "validation_nll": 1.2791076340451837
+   },
+   {
+    "step": 4690,
+    "epochs": 10.0,
+    "validation_nll": 1.2844804523289204
+   },
+   {
+    "step": 5628,
+    "epochs": 12.0,
+    "validation_nll": 1.3006777790784836
+   },
+   {
+    "step": 6566,
+    "epochs": 14.0,
+    "validation_nll": 1.3082883633971214
+   },
+   {
+    "step": 7504,
+    "epochs": 16.0,
+    "validation_nll": 1.3330460727214812
+   },
+   {
+    "step": 8442,
+    "epochs": 18.0,
+    "validation_nll": 1.3704180629849434
+   },
+   {
+    "step": 9380,
+    "epochs": 20.0,
+    "validation_nll": 1.3683500147461891
+   },
+   {
+    "step": 10318,
+    "epochs": 22.0,
+    "validation_nll": 1.400320289492607
+   },
+   {
+    "step": 11256,
+    "epochs": 24.0,
+    "validation_nll": 1.3904063934087754
+   },
+   {
+    "step": 12194,
+    "epochs": 26.0,
+    "validation_nll": 1.409523560166359
+   },
+   {
+    "step": 13132,
+    "epochs": 28.0,
+    "validation_nll": 1.4266528959274292
+   },
+   {
+    "step": 14070,
+    "epochs": 30.0,
+    "validation_nll": 1.442708072066307
+   },
+   {
+    "step": 15008,
+    "epochs": 32.0,
+    "validation_nll": 1.4404646921157838
+   }
+  ],
+  "final": 1.4404646921157838,
+  "state": "finished",
+  "last": {
+   "step": 15008,
+   "epochs": 32.0,
+   "validation_nll": 1.4404646921157838
+  },
+  "config": {
+   "name": "hyperball-lr0.001",
+   "architecture": "dense",
+   "lr": 0.001,
+   "wd": 0.0,
+   "epochs": 32,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "hyperball",
+   "rho": 0.05,
+   "initialization": "random",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "hyperball-lr0.003": {
+  "history": [
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.2897373296506702
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.2796209706980735
+   },
+   {
+    "step": 2814,
+    "epochs": 6.0,
+    "validation_nll": 1.274153319168836
+   },
+   {
+    "step": 3752,
+    "epochs": 8.0,
+    "validation_nll": 1.2778563213888556
+   },
+   {
+    "step": 4690,
+    "epochs": 10.0,
+    "validation_nll": 1.2836950075663627
+   },
+   {
+    "step": 5628,
+    "epochs": 12.0,
+    "validation_nll": 1.3072238207682967
+   },
+   {
+    "step": 6566,
+    "epochs": 14.0,
+    "validation_nll": 1.3097485356293619
+   },
+   {
+    "step": 7504,
+    "epochs": 16.0,
+    "validation_nll": 1.3433250038772822
+   },
+   {
+    "step": 8442,
+    "epochs": 18.0,
+    "validation_nll": 1.3592957932539285
+   },
+   {
+    "step": 9380,
+    "epochs": 20.0,
+    "validation_nll": 1.3658519403897227
+   },
+   {
+    "step": 10318,
+    "epochs": 22.0,
+    "validation_nll": 1.4419170964770018
+   },
+   {
+    "step": 11256,
+    "epochs": 24.0,
+    "validation_nll": 1.4701679544448853
+   },
+   {
+    "step": 12194,
+    "epochs": 26.0,
+    "validation_nll": 1.4860541967116296
+   },
+   {
+    "step": 13132,
+    "epochs": 28.0,
+    "validation_nll": 1.5482032906003296
+   },
+   {
+    "step": 14070,
+    "epochs": 30.0,
+    "validation_nll": 1.5514115697741508
+   },
+   {
+    "step": 15008,
+    "epochs": 32.0,
+    "validation_nll": 1.5820010167136789
+   }
+  ],
+  "final": 1.5820010167136789,
+  "state": "finished",
+  "last": {
+   "step": 15008,
+   "epochs": 32.0,
+   "validation_nll": 1.5820010167136789
+  },
+  "config": {
+   "name": "hyperball-lr0.003",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 0.0,
+   "epochs": 32,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "hyperball",
+   "rho": 0.05,
+   "initialization": "random",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "hyperball-lr0.01": {
+  "history": [
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.290751716300845
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.2841714994497597
+   },
+   {
+    "step": 2814,
+    "epochs": 6.0,
+    "validation_nll": 1.2767043795771897
+   },
+   {
+    "step": 3752,
+    "epochs": 8.0,
+    "validation_nll": 1.2723818540014327
+   },
+   {
+    "step": 4690,
+    "epochs": 10.0,
+    "validation_nll": 1.269146079659462
+   },
+   {
+    "step": 5628,
+    "epochs": 12.0,
+    "validation_nll": 1.2680606996007264
+   },
+   {
+    "step": 6566,
+    "epochs": 14.0,
+    "validation_nll": 1.2676917209550738
+   },
+   {
+    "step": 7504,
+    "epochs": 16.0,
+    "validation_nll": 1.2685329763777553
+   },
+   {
+    "step": 8442,
+    "epochs": 18.0,
+    "validation_nll": 1.2709784320443869
+   },
+   {
+    "step": 9380,
+    "epochs": 20.0,
+    "validation_nll": 1.280083232562989
+   },
+   {
+    "step": 10318,
+    "epochs": 22.0,
+    "validation_nll": 1.2865595326535404
+   },
+   {
+    "step": 11256,
+    "epochs": 24.0,
+    "validation_nll": 1.3095055051594973
+   },
+   {
+    "step": 12194,
+    "epochs": 26.0,
+    "validation_nll": 1.3265169623363764
+   },
+   {
+    "step": 13132,
+    "epochs": 28.0,
+    "validation_nll": 1.3325441385060548
+   },
+   {
+    "step": 14070,
+    "epochs": 30.0,
+    "validation_nll": 1.3471420666761695
+   },
+   {
+    "step": 15008,
+    "epochs": 32.0,
+    "validation_nll": 1.363090244702995
+   }
+  ],
+  "final": 1.363090244702995,
+  "state": "finished",
+  "last": {
+   "step": 15008,
+   "epochs": 32.0,
+   "validation_nll": 1.363090244702995
+  },
+  "config": {
+   "name": "hyperball-lr0.01",
+   "architecture": "dense",
+   "lr": 0.01,
+   "wd": 0.0,
+   "epochs": 32,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "hyperball",
+   "rho": 0.05,
+   "initialization": "random",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "dropout0.05": {
+  "history": [
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.2965673251375556
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.300584663271904
+   },
+   {
+    "step": 2814,
+    "epochs": 6.0,
+    "validation_nll": 1.2931235779635608
+   },
+   {
+    "step": 3752,
+    "epochs": 8.0,
+    "validation_nll": 1.2916460283398628
+   },
+   {
+    "step": 4690,
+    "epochs": 10.0,
+    "validation_nll": 1.2926411849856376
+   },
+   {
+    "step": 5628,
+    "epochs": 12.0,
+    "validation_nll": 1.2875887169893832
+   },
+   {
+    "step": 6566,
+    "epochs": 14.0,
+    "validation_nll": 1.285297947987914
+   },
+   {
+    "step": 7504,
+    "epochs": 16.0,
+    "validation_nll": 1.284235293701291
+   },
+   {
+    "step": 8442,
+    "epochs": 18.0,
+    "validation_nll": 1.2857077207565308
+   },
+   {
+    "step": 9380,
+    "epochs": 20.0,
+    "validation_nll": 1.279900766991079
+   },
+   {
+    "step": 10318,
+    "epochs": 22.0,
+    "validation_nll": 1.2776823373138904
+   },
+   {
+    "step": 11256,
+    "epochs": 24.0,
+    "validation_nll": 1.2754036740213632
+   },
+   {
+    "step": 12194,
+    "epochs": 26.0,
+    "validation_nll": 1.2722157416250557
+   },
+   {
+    "step": 13132,
+    "epochs": 28.0,
+    "validation_nll": 1.2691235318891705
+   },
+   {
+    "step": 14070,
+    "epochs": 30.0,
+    "validation_nll": 1.2639371178727596
+   },
+   {
+    "step": 15008,
+    "epochs": 32.0,
+    "validation_nll": 1.2590551035087556
+   }
+  ],
+  "final": 1.2590551035087556,
+  "state": "finished",
+  "last": {
+   "step": 15008,
+   "epochs": 32.0,
+   "validation_nll": 1.2590551035087556
+  },
+  "config": {
+   "name": "dropout0.05",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 32,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.05,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "random",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "dropout0.25": {
+  "history": [
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.3071700787544251
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.2962606852650642
+   },
+   {
+    "step": 2814,
+    "epochs": 6.0,
+    "validation_nll": 1.2936430829241872
+   },
+   {
+    "step": 3752,
+    "epochs": 8.0,
+    "validation_nll": 1.3004506130218505
+   },
+   {
+    "step": 4690,
+    "epochs": 10.0,
+    "validation_nll": 1.2983853548765183
+   },
+   {
+    "step": 5628,
+    "epochs": 12.0,
+    "validation_nll": 1.296615521788597
+   },
+   {
+    "step": 6566,
+    "epochs": 14.0,
+    "validation_nll": 1.2897809091806411
+   },
+   {
+    "step": 7504,
+    "epochs": 16.0,
+    "validation_nll": 1.2892595162093639
+   },
+   {
+    "step": 8442,
+    "epochs": 18.0,
+    "validation_nll": 1.2867532343417407
+   },
+   {
+    "step": 9380,
+    "epochs": 20.0,
+    "validation_nll": 1.2896468931436538
+   },
+   {
+    "step": 10318,
+    "epochs": 22.0,
+    "validation_nll": 1.2828159604668616
+   },
+   {
+    "step": 11256,
+    "epochs": 24.0,
+    "validation_nll": 1.2769512327499688
+   },
+   {
+    "step": 12194,
+    "epochs": 26.0,
+    "validation_nll": 1.2742750411368906
+   },
+   {
+    "step": 13132,
+    "epochs": 28.0,
+    "validation_nll": 1.271603581249714
+   },
+   {
+    "step": 14070,
+    "epochs": 30.0,
+    "validation_nll": 1.2686367192417383
+   },
+   {
+    "step": 15008,
+    "epochs": 32.0,
+    "validation_nll": 1.2633317609578372
+   }
+  ],
+  "final": 1.2633317609578372,
+  "state": "finished",
+  "last": {
+   "step": 15008,
+   "epochs": 32.0,
+   "validation_nll": 1.2633317609578372
+  },
+  "config": {
+   "name": "dropout0.25",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 32,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.25,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "random",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-related-n30k-p16-lr0.003": {
+  "history": [
+   {
+    "step": 469,
+    "epochs": 1.0,
+    "validation_nll": 1.294822827771306
+   },
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.292592021882534
+   },
+   {
+    "step": 1407,
+    "epochs": 3.0,
+    "validation_nll": 1.2933531133234502
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.2888605317026376
+   },
+   {
+    "step": 2345,
+    "epochs": 5.0,
+    "validation_nll": 1.2877909478545189
+   },
+   {
+    "step": 2814,
+    "epochs": 6.0,
+    "validation_nll": 1.2860426240712404
+   },
+   {
+    "step": 3283,
+    "epochs": 7.0,
+    "validation_nll": 1.2852158841714263
+   },
+   {
+    "step": 3752,
+    "epochs": 8.0,
+    "validation_nll": 1.2829026615098118
+   },
+   {
+    "step": 4221,
+    "epochs": 9.0,
+    "validation_nll": 1.2816768735349178
+   },
+   {
+    "step": 4690,
+    "epochs": 10.0,
+    "validation_nll": 1.2797327669709921
+   },
+   {
+    "step": 5159,
+    "epochs": 11.0,
+    "validation_nll": 1.2778234057947992
+   },
+   {
+    "step": 5628,
+    "epochs": 12.0,
+    "validation_nll": 1.2754727531969547
+   },
+   {
+    "step": 6097,
+    "epochs": 13.0,
+    "validation_nll": 1.2736914753988384
+   },
+   {
+    "step": 6566,
+    "epochs": 14.0,
+    "validation_nll": 1.2715499545335769
+   },
+   {
+    "step": 7035,
+    "epochs": 15.0,
+    "validation_nll": 1.268996208369732
+   },
+   {
+    "step": 7504,
+    "epochs": 16.0,
+    "validation_nll": 1.2652701333574952
+   }
+  ],
+  "final": 1.2652701333574952,
+  "state": "finished",
+  "last": {
+   "step": 7504,
+   "epochs": 16.0,
+   "validation_nll": 1.2652701333574952
+  },
+  "config": {
+   "name": "ft-related-n30k-p16-lr0.003",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 16,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "related",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-scratch-n30k-p16-lr0.003": {
+  "history": [
+   {
+    "step": 469,
+    "epochs": 1.0,
+    "validation_nll": 1.3140851293206215
+   },
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.2991903602927923
+   },
+   {
+    "step": 1407,
+    "epochs": 3.0,
+    "validation_nll": 1.294515591710806
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.299610675930977
+   },
+   {
+    "step": 2345,
+    "epochs": 5.0,
+    "validation_nll": 1.2931022916287185
+   },
+   {
+    "step": 2814,
+    "epochs": 6.0,
+    "validation_nll": 1.289415934368968
+   },
+   {
+    "step": 3283,
+    "epochs": 7.0,
+    "validation_nll": 1.28747193903476
+   },
+   {
+    "step": 3752,
+    "epochs": 8.0,
+    "validation_nll": 1.2865302082821726
+   },
+   {
+    "step": 4221,
+    "epochs": 9.0,
+    "validation_nll": 1.2849766164198517
+   },
+   {
+    "step": 4690,
+    "epochs": 10.0,
+    "validation_nll": 1.282877722233534
+   },
+   {
+    "step": 5159,
+    "epochs": 11.0,
+    "validation_nll": 1.2802316486239433
+   },
+   {
+    "step": 5628,
+    "epochs": 12.0,
+    "validation_nll": 1.2769781299307943
+   },
+   {
+    "step": 6097,
+    "epochs": 13.0,
+    "validation_nll": 1.2784680273532867
+   },
+   {
+    "step": 6566,
+    "epochs": 14.0,
+    "validation_nll": 1.2719428780004383
+   },
+   {
+    "step": 7035,
+    "epochs": 15.0,
+    "validation_nll": 1.2684026660546661
+   },
+   {
+    "step": 7504,
+    "epochs": 16.0,
+    "validation_nll": 1.2637770285438745
+   }
+  ],
+  "final": 1.2637770285438745,
+  "state": "finished",
+  "last": {
+   "step": 7504,
+   "epochs": 16.0,
+   "validation_nll": 1.2637770285438745
+  },
+  "config": {
+   "name": "ft-scratch-n30k-p16-lr0.003",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 16,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "random",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "loop-lr0.003": {
+  "history": [
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.3043277836292981
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.303977833211422
+   },
+   {
+    "step": 2814,
+    "epochs": 6.0,
+    "validation_nll": 1.3184104291945695
+   },
+   {
+    "step": 3752,
+    "epochs": 8.0,
+    "validation_nll": 1.2953392407149076
+   },
+   {
+    "step": 4690,
+    "epochs": 10.0,
+    "validation_nll": 1.3031221564635636
+   },
+   {
+    "step": 5628,
+    "epochs": 12.0,
+    "validation_nll": 1.2943689241707326
+   },
+   {
+    "step": 6566,
+    "epochs": 14.0,
+    "validation_nll": 1.3153237416893244
+   },
+   {
+    "step": 7504,
+    "epochs": 16.0,
+    "validation_nll": 1.2932930061221122
+   },
+   {
+    "step": 8442,
+    "epochs": 18.0,
+    "validation_nll": 1.2892764458283783
+   },
+   {
+    "step": 9380,
+    "epochs": 20.0,
+    "validation_nll": 1.3003054922521113
+   },
+   {
+    "step": 10318,
+    "epochs": 22.0,
+    "validation_nll": 1.2887733635641634
+   },
+   {
+    "step": 11256,
+    "epochs": 24.0,
+    "validation_nll": 1.2856035424713046
+   },
+   {
+    "step": 12194,
+    "epochs": 26.0,
+    "validation_nll": 1.2887505458071828
+   },
+   {
+    "step": 13132,
+    "epochs": 28.0,
+    "validation_nll": 1.2806921248957515
+   },
+   {
+    "step": 14070,
+    "epochs": 30.0,
+    "validation_nll": 1.2752762431763112
+   },
+   {
+    "step": 15008,
+    "epochs": 32.0,
+    "validation_nll": 1.2692881224229933
+   }
+  ],
+  "final": 1.2692881224229933,
+  "state": "finished",
+  "last": {
+   "step": 15008,
+   "epochs": 32.0,
+   "validation_nll": 1.2692881224229933
+  },
+  "config": {
+   "name": "loop-lr0.003",
+   "architecture": "loop",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 32,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "random",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "moe-lr0.003": {
+  "history": [
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.302695831200108
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.2957192513421179
+   },
+   {
+    "step": 2814,
+    "epochs": 6.0,
+    "validation_nll": 1.2944071658290923
+   },
+   {
+    "step": 3752,
+    "epochs": 8.0,
+    "validation_nll": 1.291702553972602
+   },
+   {
+    "step": 4690,
+    "epochs": 10.0,
+    "validation_nll": 1.289307195737958
+   },
+   {
+    "step": 5628,
+    "epochs": 12.0,
+    "validation_nll": 1.2920748956799508
+   },
+   {
+    "step": 6566,
+    "epochs": 14.0,
+    "validation_nll": 1.287311927780509
+   },
+   {
+    "step": 7504,
+    "epochs": 16.0,
+    "validation_nll": 1.2856451690420507
+   },
+   {
+    "step": 8442,
+    "epochs": 18.0,
+    "validation_nll": 1.2827390332520008
+   },
+   {
+    "step": 9380,
+    "epochs": 20.0,
+    "validation_nll": 1.2802996445819737
+   },
+   {
+    "step": 10318,
+    "epochs": 22.0,
+    "validation_nll": 1.2778062180876733
+   },
+   {
+    "step": 11256,
+    "epochs": 24.0,
+    "validation_nll": 1.2752989000566304
+   },
+   {
+    "step": 12194,
+    "epochs": 26.0,
+    "validation_nll": 1.2718855235092341
+   },
+   {
+    "step": 13132,
+    "epochs": 28.0,
+    "validation_nll": 1.267821430053562
+   },
+   {
+    "step": 14070,
+    "epochs": 30.0,
+    "validation_nll": 1.2648776939176023
+   },
+   {
+    "step": 15008,
+    "epochs": 32.0,
+    "validation_nll": 1.2655848046075553
+   }
+  ],
+  "final": 1.2655848046075553,
+  "state": "finished",
+  "last": {
+   "step": 15008,
+   "epochs": 32.0,
+   "validation_nll": 1.2655848046075553
+  },
+  "config": {
+   "name": "moe-lr0.003",
+   "architecture": "moe",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 32,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "random",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "sam-rho0.05": {
+  "history": [
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.3114797877892852
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.2959757942333818
+   },
+   {
+    "step": 2814,
+    "epochs": 6.0,
+    "validation_nll": 1.2963005541563033
+   },
+   {
+    "step": 3752,
+    "epochs": 8.0,
+    "validation_nll": 1.3119002583026886
+   },
+   {
+    "step": 4690,
+    "epochs": 10.0,
+    "validation_nll": 1.300509649157524
+   },
+   {
+    "step": 5628,
+    "epochs": 12.0,
+    "validation_nll": 1.291082149796188
+   },
+   {
+    "step": 6566,
+    "epochs": 14.0,
+    "validation_nll": 1.2901615977436305
+   },
+   {
+    "step": 7504,
+    "epochs": 16.0,
+    "validation_nll": 1.2859894551932811
+   },
+   {
+    "step": 8442,
+    "epochs": 18.0,
+    "validation_nll": 1.2946583419442177
+   },
+   {
+    "step": 9380,
+    "epochs": 20.0,
+    "validation_nll": 1.28339580386132
+   },
+   {
+    "step": 10318,
+    "epochs": 22.0,
+    "validation_nll": 1.2800239005163312
+   },
+   {
+    "step": 11256,
+    "epochs": 24.0,
+    "validation_nll": 1.2775943055152894
+   },
+   {
+    "step": 12194,
+    "epochs": 26.0,
+    "validation_nll": 1.275099442511797
+   },
+   {
+    "step": 13132,
+    "epochs": 28.0,
+    "validation_nll": 1.2716501688063144
+   },
+   {
+    "step": 14070,
+    "epochs": 30.0,
+    "validation_nll": 1.2674865047596395
+   },
+   {
+    "step": 15008,
+    "epochs": 32.0,
+    "validation_nll": 1.2627624854110182
+   }
+  ],
+  "final": 1.2627624854110182,
+  "state": "finished",
+  "last": {
+   "step": 15008,
+   "epochs": 32.0,
+   "validation_nll": 1.2627624854110182
+  },
+  "config": {
+   "name": "sam-rho0.05",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 32,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "sam",
+   "rho": 0.05,
+   "initialization": "random",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-dclm-n10k-p16-lr0.003": {
+  "history": [
+   {
+    "step": 157,
+    "epochs": 1.0,
+    "validation_nll": 1.3265453940629959
+   },
+   {
+    "step": 314,
+    "epochs": 2.0,
+    "validation_nll": 1.323198274254799
+   },
+   {
+    "step": 471,
+    "epochs": 3.0,
+    "validation_nll": 1.311159250180237
+   },
+   {
+    "step": 628,
+    "epochs": 4.0,
+    "validation_nll": 1.3016213443279265
+   },
+   {
+    "step": 785,
+    "epochs": 5.0,
+    "validation_nll": 1.3217634267974645
+   },
+   {
+    "step": 942,
+    "epochs": 6.0,
+    "validation_nll": 1.2983121182369068
+   },
+   {
+    "step": 1099,
+    "epochs": 7.0,
+    "validation_nll": 1.2959286141218618
+   },
+   {
+    "step": 1256,
+    "epochs": 8.0,
+    "validation_nll": 1.2947700809026137
+   },
+   {
+    "step": 1413,
+    "epochs": 9.0,
+    "validation_nll": 1.2936844475865363
+   },
+   {
+    "step": 1570,
+    "epochs": 10.0,
+    "validation_nll": 1.3015288222432138
+   },
+   {
+    "step": 1727,
+    "epochs": 11.0,
+    "validation_nll": 1.2910416721105575
+   },
+   {
+    "step": 1884,
+    "epochs": 12.0,
+    "validation_nll": 1.2858094939943403
+   },
+   {
+    "step": 2041,
+    "epochs": 13.0,
+    "validation_nll": 1.2843616351354867
+   },
+   {
+    "step": 2198,
+    "epochs": 14.0,
+    "validation_nll": 1.2816307252515107
+   },
+   {
+    "step": 2355,
+    "epochs": 15.0,
+    "validation_nll": 1.279919734366238
+   },
+   {
+    "step": 2512,
+    "epochs": 16.0,
+    "validation_nll": 1.2776724986247718
+   }
+  ],
+  "final": 1.2776724986247718,
+  "state": "finished",
+  "last": {
+   "step": 2512,
+   "epochs": 16.0,
+   "validation_nll": 1.2776724986247718
+  },
+  "config": {
+   "name": "ft-dclm-n10k-p16-lr0.003",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 16,
+   "ntrain": 10000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "dclm",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-dclm-n1k-p16-lr0.003": {
+  "history": [
+   {
+    "step": 16,
+    "epochs": 1.0,
+    "validation_nll": 2.2110995045900346
+   },
+   {
+    "step": 32,
+    "epochs": 2.0,
+    "validation_nll": 1.6692424368858338
+   },
+   {
+    "step": 48,
+    "epochs": 3.0,
+    "validation_nll": 1.4581818261146546
+   },
+   {
+    "step": 64,
+    "epochs": 4.0,
+    "validation_nll": 1.4371921558380127
+   },
+   {
+    "step": 80,
+    "epochs": 5.0,
+    "validation_nll": 1.4468081516027451
+   },
+   {
+    "step": 96,
+    "epochs": 6.0,
+    "validation_nll": 1.362682246208191
+   },
+   {
+    "step": 112,
+    "epochs": 7.0,
+    "validation_nll": 1.3317254792153834
+   },
+   {
+    "step": 128,
+    "epochs": 8.0,
+    "validation_nll": 1.3331930176019668
+   },
+   {
+    "step": 144,
+    "epochs": 9.0,
+    "validation_nll": 1.3213792381174863
+   },
+   {
+    "step": 160,
+    "epochs": 10.0,
+    "validation_nll": 1.320138941546902
+   },
+   {
+    "step": 176,
+    "epochs": 11.0,
+    "validation_nll": 1.3162614717930556
+   },
+   {
+    "step": 192,
+    "epochs": 12.0,
+    "validation_nll": 1.3144181743096561
+   },
+   {
+    "step": 208,
+    "epochs": 13.0,
+    "validation_nll": 1.3119748083241285
+   },
+   {
+    "step": 224,
+    "epochs": 14.0,
+    "validation_nll": 1.3106079520909115
+   },
+   {
+    "step": 240,
+    "epochs": 15.0,
+    "validation_nll": 1.3099809358231724
+   },
+   {
+    "step": 256,
+    "epochs": 16.0,
+    "validation_nll": 1.3103265220224858
+   }
+  ],
+  "final": 1.3103265220224858,
+  "state": "finished",
+  "last": {
+   "step": 256,
+   "epochs": 16.0,
+   "validation_nll": 1.3103265220224858
+  },
+  "config": {
+   "name": "ft-dclm-n1k-p16-lr0.003",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 16,
+   "ntrain": 1000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "dclm",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-dclm-n30k-p16-lr0.003": {
+  "history": [
+   {
+    "step": 469,
+    "epochs": 1.0,
+    "validation_nll": 1.332551599383354
+   },
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.325551688671112
+   },
+   {
+    "step": 1407,
+    "epochs": 3.0,
+    "validation_nll": 1.3039701330065727
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.299451347231865
+   },
+   {
+    "step": 2345,
+    "epochs": 5.0,
+    "validation_nll": 1.292348421279341
+   },
+   {
+    "step": 2814,
+    "epochs": 6.0,
+    "validation_nll": 1.2938920147717
+   },
+   {
+    "step": 3283,
+    "epochs": 7.0,
+    "validation_nll": 1.2897476907372474
+   },
+   {
+    "step": 3752,
+    "epochs": 8.0,
+    "validation_nll": 1.2867479544058442
+   },
+   {
+    "step": 4221,
+    "epochs": 9.0,
+    "validation_nll": 1.2856208451390267
+   },
+   {
+    "step": 4690,
+    "epochs": 10.0,
+    "validation_nll": 1.2828668330386281
+   },
+   {
+    "step": 5159,
+    "epochs": 11.0,
+    "validation_nll": 1.2790110076572747
+   },
+   {
+    "step": 5628,
+    "epochs": 12.0,
+    "validation_nll": 1.2766341499388218
+   },
+   {
+    "step": 6097,
+    "epochs": 13.0,
+    "validation_nll": 1.2740898449514062
+   },
+   {
+    "step": 6566,
+    "epochs": 14.0,
+    "validation_nll": 1.2712963880067691
+   },
+   {
+    "step": 7035,
+    "epochs": 15.0,
+    "validation_nll": 1.2682948828451335
+   },
+   {
+    "step": 7504,
+    "epochs": 16.0,
+    "validation_nll": 1.2637195832170547
+   }
+  ],
+  "final": 1.2637195832170547,
+  "state": "finished",
+  "last": {
+   "step": 7504,
+   "epochs": 16.0,
+   "validation_nll": 1.2637195832170547
+  },
+  "config": {
+   "name": "ft-dclm-n30k-p16-lr0.003",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 16,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "dclm",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-dclm-n3k-p16-lr0.003": {
+  "history": [
+   {
+    "step": 47,
+    "epochs": 1.0,
+    "validation_nll": 1.3813074082136154
+   },
+   {
+    "step": 94,
+    "epochs": 2.0,
+    "validation_nll": 1.376181941986084
+   },
+   {
+    "step": 141,
+    "epochs": 3.0,
+    "validation_nll": 1.3304697804152965
+   },
+   {
+    "step": 188,
+    "epochs": 4.0,
+    "validation_nll": 1.3235135610699653
+   },
+   {
+    "step": 235,
+    "epochs": 5.0,
+    "validation_nll": 1.3336994360685348
+   },
+   {
+    "step": 282,
+    "epochs": 6.0,
+    "validation_nll": 1.3149830092191697
+   },
+   {
+    "step": 329,
+    "epochs": 7.0,
+    "validation_nll": 1.3107989674806595
+   },
+   {
+    "step": 376,
+    "epochs": 8.0,
+    "validation_nll": 1.3094420668780804
+   },
+   {
+    "step": 423,
+    "epochs": 9.0,
+    "validation_nll": 1.3050937383612617
+   },
+   {
+    "step": 470,
+    "epochs": 10.0,
+    "validation_nll": 1.3040256252372637
+   },
+   {
+    "step": 517,
+    "epochs": 11.0,
+    "validation_nll": 1.3007620087973772
+   },
+   {
+    "step": 564,
+    "epochs": 12.0,
+    "validation_nll": 1.3013369346093386
+   },
+   {
+    "step": 611,
+    "epochs": 13.0,
+    "validation_nll": 1.3043301385603845
+   },
+   {
+    "step": 658,
+    "epochs": 14.0,
+    "validation_nll": 1.3000493182614445
+   },
+   {
+    "step": 705,
+    "epochs": 15.0,
+    "validation_nll": 1.300144929330796
+   },
+   {
+    "step": 752,
+    "epochs": 16.0,
+    "validation_nll": 1.300506137104705
+   }
+  ],
+  "final": 1.300506137104705,
+  "state": "finished",
+  "last": {
+   "step": 752,
+   "epochs": 16.0,
+   "validation_nll": 1.300506137104705
+  },
+  "config": {
+   "name": "ft-dclm-n3k-p16-lr0.003",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 16,
+   "ntrain": 3000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "dclm",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-noise-n10k-p16-lr0.003": {
+  "history": [
+   {
+    "step": 157,
+    "epochs": 1.0,
+    "validation_nll": 1.3953013191223145
+   },
+   {
+    "step": 314,
+    "epochs": 2.0,
+    "validation_nll": 1.3877732073068618
+   },
+   {
+    "step": 471,
+    "epochs": 3.0,
+    "validation_nll": 1.3573200912475587
+   },
+   {
+    "step": 628,
+    "epochs": 4.0,
+    "validation_nll": 1.3277879594005644
+   },
+   {
+    "step": 785,
+    "epochs": 5.0,
+    "validation_nll": 1.3114487409479916
+   },
+   {
+    "step": 942,
+    "epochs": 6.0,
+    "validation_nll": 1.3050472149439156
+   },
+   {
+    "step": 1099,
+    "epochs": 7.0,
+    "validation_nll": 1.3022570920288563
+   },
+   {
+    "step": 1256,
+    "epochs": 8.0,
+    "validation_nll": 1.2973893979750573
+   },
+   {
+    "step": 1413,
+    "epochs": 9.0,
+    "validation_nll": 1.2960674811080097
+   },
+   {
+    "step": 1570,
+    "epochs": 10.0,
+    "validation_nll": 1.293962603855878
+   },
+   {
+    "step": 1727,
+    "epochs": 11.0,
+    "validation_nll": 1.2907052151672542
+   },
+   {
+    "step": 1884,
+    "epochs": 12.0,
+    "validation_nll": 1.2906541079524905
+   },
+   {
+    "step": 2041,
+    "epochs": 13.0,
+    "validation_nll": 1.2906000010389835
+   },
+   {
+    "step": 2198,
+    "epochs": 14.0,
+    "validation_nll": 1.2862617871575057
+   },
+   {
+    "step": 2355,
+    "epochs": 15.0,
+    "validation_nll": 1.2838825966529548
+   },
+   {
+    "step": 2512,
+    "epochs": 16.0,
+    "validation_nll": 1.2816439005620777
+   }
+  ],
+  "final": 1.2816439005620777,
+  "state": "finished",
+  "last": {
+   "step": 2512,
+   "epochs": 16.0,
+   "validation_nll": 1.2816439005620777
+  },
+  "config": {
+   "name": "ft-noise-n10k-p16-lr0.003",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 16,
+   "ntrain": 10000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "noise",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-noise-n1k-p16-lr0.003": {
+  "history": [
+   {
+    "step": 16,
+    "epochs": 1.0,
+    "validation_nll": 1.4143526479005815
+   },
+   {
+    "step": 32,
+    "epochs": 2.0,
+    "validation_nll": 1.407669602036476
+   },
+   {
+    "step": 48,
+    "epochs": 3.0,
+    "validation_nll": 1.395575089097023
+   },
+   {
+    "step": 64,
+    "epochs": 4.0,
+    "validation_nll": 1.3975586903095245
+   },
+   {
+    "step": 80,
+    "epochs": 5.0,
+    "validation_nll": 1.39572671687603
+   },
+   {
+    "step": 96,
+    "epochs": 6.0,
+    "validation_nll": 1.395768436908722
+   },
+   {
+    "step": 112,
+    "epochs": 7.0,
+    "validation_nll": 1.397714384317398
+   },
+   {
+    "step": 128,
+    "epochs": 8.0,
+    "validation_nll": 1.3990891164541244
+   },
+   {
+    "step": 144,
+    "epochs": 9.0,
+    "validation_nll": 1.3950439596176147
+   },
+   {
+    "step": 160,
+    "epochs": 10.0,
+    "validation_nll": 1.3968484998941422
+   },
+   {
+    "step": 176,
+    "epochs": 11.0,
+    "validation_nll": 1.394847673535347
+   },
+   {
+    "step": 192,
+    "epochs": 12.0,
+    "validation_nll": 1.3945468573570252
+   },
+   {
+    "step": 208,
+    "epochs": 13.0,
+    "validation_nll": 1.3962232898473739
+   },
+   {
+    "step": 224,
+    "epochs": 14.0,
+    "validation_nll": 1.3949165771007537
+   },
+   {
+    "step": 240,
+    "epochs": 15.0,
+    "validation_nll": 1.3954512172937392
+   },
+   {
+    "step": 256,
+    "epochs": 16.0,
+    "validation_nll": 1.3952059228420257
+   }
+  ],
+  "final": 1.3952059228420257,
+  "state": "finished",
+  "last": {
+   "step": 256,
+   "epochs": 16.0,
+   "validation_nll": 1.3952059228420257
+  },
+  "config": {
+   "name": "ft-noise-n1k-p16-lr0.003",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 16,
+   "ntrain": 1000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "noise",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-noise-n30k-p16-lr0.003": {
+  "history": [
+   {
+    "step": 469,
+    "epochs": 1.0,
+    "validation_nll": 1.334280268251896
+   },
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.3075065833851696
+   },
+   {
+    "step": 1407,
+    "epochs": 3.0,
+    "validation_nll": 1.2972841141223908
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.2949216634705663
+   },
+   {
+    "step": 2345,
+    "epochs": 5.0,
+    "validation_nll": 1.2975778642594815
+   },
+   {
+    "step": 2814,
+    "epochs": 6.0,
+    "validation_nll": 1.293398673430085
+   },
+   {
+    "step": 3283,
+    "epochs": 7.0,
+    "validation_nll": 1.2914605077020824
+   },
+   {
+    "step": 3752,
+    "epochs": 8.0,
+    "validation_nll": 1.2888595191165806
+   },
+   {
+    "step": 4221,
+    "epochs": 9.0,
+    "validation_nll": 1.2859297919720412
+   },
+   {
+    "step": 4690,
+    "epochs": 10.0,
+    "validation_nll": 1.2832913525104523
+   },
+   {
+    "step": 5159,
+    "epochs": 11.0,
+    "validation_nll": 1.2810600423514844
+   },
+   {
+    "step": 5628,
+    "epochs": 12.0,
+    "validation_nll": 1.2785403462275862
+   },
+   {
+    "step": 6097,
+    "epochs": 13.0,
+    "validation_nll": 1.2757234752252697
+   },
+   {
+    "step": 6566,
+    "epochs": 14.0,
+    "validation_nll": 1.2733091976102442
+   },
+   {
+    "step": 7035,
+    "epochs": 15.0,
+    "validation_nll": 1.2707477296572178
+   },
+   {
+    "step": 7504,
+    "epochs": 16.0,
+    "validation_nll": 1.2675738957691938
+   }
+  ],
+  "final": 1.2675738957691938,
+  "state": "finished",
+  "last": {
+   "step": 7504,
+   "epochs": 16.0,
+   "validation_nll": 1.2675738957691938
+  },
+  "config": {
+   "name": "ft-noise-n30k-p16-lr0.003",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 16,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "noise",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-noise-n3k-p16-lr0.003": {
+  "history": [
+   {
+    "step": 47,
+    "epochs": 1.0,
+    "validation_nll": 1.3975745890140534
+   },
+   {
+    "step": 94,
+    "epochs": 2.0,
+    "validation_nll": 1.3979403225183487
+   },
+   {
+    "step": 141,
+    "epochs": 3.0,
+    "validation_nll": 1.389424036026001
+   },
+   {
+    "step": 188,
+    "epochs": 4.0,
+    "validation_nll": 1.3871107328608632
+   },
+   {
+    "step": 235,
+    "epochs": 5.0,
+    "validation_nll": 1.3862214867174625
+   },
+   {
+    "step": 282,
+    "epochs": 6.0,
+    "validation_nll": 1.3868515115454794
+   },
+   {
+    "step": 329,
+    "epochs": 7.0,
+    "validation_nll": 1.386246785670519
+   },
+   {
+    "step": 376,
+    "epochs": 8.0,
+    "validation_nll": 1.3859793561547995
+   },
+   {
+    "step": 423,
+    "epochs": 9.0,
+    "validation_nll": 1.385858262822032
+   },
+   {
+    "step": 470,
+    "epochs": 10.0,
+    "validation_nll": 1.385922992259264
+   },
+   {
+    "step": 517,
+    "epochs": 11.0,
+    "validation_nll": 1.3858908412158488
+   },
+   {
+    "step": 564,
+    "epochs": 12.0,
+    "validation_nll": 1.3596510864906013
+   },
+   {
+    "step": 611,
+    "epochs": 13.0,
+    "validation_nll": 1.3537608508132397
+   },
+   {
+    "step": 658,
+    "epochs": 14.0,
+    "validation_nll": 1.3487956118024886
+   },
+   {
+    "step": 705,
+    "epochs": 15.0,
+    "validation_nll": 1.338300275489688
+   },
+   {
+    "step": 752,
+    "epochs": 16.0,
+    "validation_nll": 1.3335872398652135
+   }
+  ],
+  "final": 1.3335872398652135,
+  "state": "finished",
+  "last": {
+   "step": 752,
+   "epochs": 16.0,
+   "validation_nll": 1.3335872398652135
+  },
+  "config": {
+   "name": "ft-noise-n3k-p16-lr0.003",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 16,
+   "ntrain": 3000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "noise",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-related-n10k-p16-lr0.003": {
+  "history": [
+   {
+    "step": 157,
+    "epochs": 1.0,
+    "validation_nll": 1.30141930392012
+   },
+   {
+    "step": 314,
+    "epochs": 2.0,
+    "validation_nll": 1.297760565981269
+   },
+   {
+    "step": 471,
+    "epochs": 3.0,
+    "validation_nll": 1.2956076295375825
+   },
+   {
+    "step": 628,
+    "epochs": 4.0,
+    "validation_nll": 1.294748405404389
+   },
+   {
+    "step": 785,
+    "epochs": 5.0,
+    "validation_nll": 1.2919118838235737
+   },
+   {
+    "step": 942,
+    "epochs": 6.0,
+    "validation_nll": 1.291485365062952
+   },
+   {
+    "step": 1099,
+    "epochs": 7.0,
+    "validation_nll": 1.2887550506591796
+   },
+   {
+    "step": 1256,
+    "epochs": 8.0,
+    "validation_nll": 1.2863403664901853
+   },
+   {
+    "step": 1413,
+    "epochs": 9.0,
+    "validation_nll": 1.2849372123330831
+   },
+   {
+    "step": 1570,
+    "epochs": 10.0,
+    "validation_nll": 1.2830577901788056
+   },
+   {
+    "step": 1727,
+    "epochs": 11.0,
+    "validation_nll": 1.2826344184242189
+   },
+   {
+    "step": 1884,
+    "epochs": 12.0,
+    "validation_nll": 1.2798061459474266
+   },
+   {
+    "step": 2041,
+    "epochs": 13.0,
+    "validation_nll": 1.2782306511923671
+   },
+   {
+    "step": 2198,
+    "epochs": 14.0,
+    "validation_nll": 1.278190722115338
+   },
+   {
+    "step": 2355,
+    "epochs": 15.0,
+    "validation_nll": 1.2760540673080831
+   },
+   {
+    "step": 2512,
+    "epochs": 16.0,
+    "validation_nll": 1.2752516895271837
+   }
+  ],
+  "final": 1.2752516895271837,
+  "state": "finished",
+  "last": {
+   "step": 2512,
+   "epochs": 16.0,
+   "validation_nll": 1.2752516895271837
+  },
+  "config": {
+   "name": "ft-related-n10k-p16-lr0.003",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 16,
+   "ntrain": 10000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "related",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-related-n1k-p16-lr0.003": {
+  "history": [
+   {
+    "step": 16,
+    "epochs": 1.0,
+    "validation_nll": 1.2475050150752067
+   },
+   {
+    "step": 32,
+    "epochs": 2.0,
+    "validation_nll": 1.2594421833604574
+   },
+   {
+    "step": 48,
+    "epochs": 3.0,
+    "validation_nll": 1.3040112018287182
+   },
+   {
+    "step": 64,
+    "epochs": 4.0,
+    "validation_nll": 1.6269586727619172
+   },
+   {
+    "step": 80,
+    "epochs": 5.0,
+    "validation_nll": 1.3819379348754883
+   },
+   {
+    "step": 96,
+    "epochs": 6.0,
+    "validation_nll": 1.3752523299455643
+   },
+   {
+    "step": 112,
+    "epochs": 7.0,
+    "validation_nll": 1.4282774452641607
+   },
+   {
+    "step": 128,
+    "epochs": 8.0,
+    "validation_nll": 1.466947691142559
+   },
+   {
+    "step": 144,
+    "epochs": 9.0,
+    "validation_nll": 1.6144185025393962
+   },
+   {
+    "step": 160,
+    "epochs": 10.0,
+    "validation_nll": 1.7759061810523271
+   },
+   {
+    "step": 176,
+    "epochs": 11.0,
+    "validation_nll": 2.041593332529068
+   },
+   {
+    "step": 192,
+    "epochs": 12.0,
+    "validation_nll": 2.2355445462837817
+   },
+   {
+    "step": 208,
+    "epochs": 13.0,
+    "validation_nll": 2.4632166467756034
+   },
+   {
+    "step": 224,
+    "epochs": 14.0,
+    "validation_nll": 2.74926324647665
+   },
+   {
+    "step": 240,
+    "epochs": 15.0,
+    "validation_nll": 3.066731498412788
+   },
+   {
+    "step": 256,
+    "epochs": 16.0,
+    "validation_nll": 3.192832630492747
+   }
+  ],
+  "final": 3.192832630492747,
+  "state": "finished",
+  "last": {
+   "step": 256,
+   "epochs": 16.0,
+   "validation_nll": 3.192832630492747
+  },
+  "config": {
+   "name": "ft-related-n1k-p16-lr0.003",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 16,
+   "ntrain": 1000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "related",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-related-n30k-p16-lr0.001": {
+  "history": [
+   {
+    "step": 469,
+    "epochs": 1.0,
+    "validation_nll": 1.2662192375063896
+   },
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.2695859213620424
+   },
+   {
+    "step": 1407,
+    "epochs": 3.0,
+    "validation_nll": 1.2692615578100086
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.2683789552822708
+   },
+   {
+    "step": 2345,
+    "epochs": 5.0,
+    "validation_nll": 1.2663334092907608
+   },
+   {
+    "step": 2814,
+    "epochs": 6.0,
+    "validation_nll": 1.2651639415323734
+   },
+   {
+    "step": 3283,
+    "epochs": 7.0,
+    "validation_nll": 1.265116580646485
+   },
+   {
+    "step": 3752,
+    "epochs": 8.0,
+    "validation_nll": 1.2635489748120308
+   },
+   {
+    "step": 4221,
+    "epochs": 9.0,
+    "validation_nll": 1.261797682374716
+   },
+   {
+    "step": 4690,
+    "epochs": 10.0,
+    "validation_nll": 1.2613384626470505
+   },
+   {
+    "step": 5159,
+    "epochs": 11.0,
+    "validation_nll": 1.2607777546904981
+   },
+   {
+    "step": 5628,
+    "epochs": 12.0,
+    "validation_nll": 1.2608409319110214
+   },
+   {
+    "step": 6097,
+    "epochs": 13.0,
+    "validation_nll": 1.260444032119587
+   },
+   {
+    "step": 6566,
+    "epochs": 14.0,
+    "validation_nll": 1.2615543913394214
+   },
+   {
+    "step": 7035,
+    "epochs": 15.0,
+    "validation_nll": 1.263335233690217
+   },
+   {
+    "step": 7504,
+    "epochs": 16.0,
+    "validation_nll": 1.265203506702557
+   }
+  ],
+  "final": 1.265203506702557,
+  "state": "finished",
+  "last": {
+   "step": 7504,
+   "epochs": 16.0,
+   "validation_nll": 1.265203506702557
+  },
+  "config": {
+   "name": "ft-related-n30k-p16-lr0.001",
+   "architecture": "dense",
+   "lr": 0.001,
+   "wd": 3.2,
+   "epochs": 16,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "related",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-related-n30k-p16-lr0.003-adaptationfrozen_body": {
+  "history": [
+   {
+    "step": 469,
+    "epochs": 1.0,
+    "validation_nll": 1.2445713335424662
+   },
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.2443305358737706
+   },
+   {
+    "step": 1407,
+    "epochs": 3.0,
+    "validation_nll": 1.2440466082394124
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.243946768298745
+   },
+   {
+    "step": 2345,
+    "epochs": 5.0,
+    "validation_nll": 1.2438926774263381
+   },
+   {
+    "step": 2814,
+    "epochs": 6.0,
+    "validation_nll": 1.2438081852793694
+   },
+   {
+    "step": 3283,
+    "epochs": 7.0,
+    "validation_nll": 1.2436873850524426
+   },
+   {
+    "step": 3752,
+    "epochs": 8.0,
+    "validation_nll": 1.2436447044759988
+   },
+   {
+    "step": 4221,
+    "epochs": 9.0,
+    "validation_nll": 1.2435915867388248
+   },
+   {
+    "step": 4690,
+    "epochs": 10.0,
+    "validation_nll": 1.243531900808215
+   },
+   {
+    "step": 5159,
+    "epochs": 11.0,
+    "validation_nll": 1.24348114413023
+   },
+   {
+    "step": 5628,
+    "epochs": 12.0,
+    "validation_nll": 1.243379713088274
+   },
+   {
+    "step": 6097,
+    "epochs": 13.0,
+    "validation_nll": 1.2433163313418627
+   },
+   {
+    "step": 6566,
+    "epochs": 14.0,
+    "validation_nll": 1.2432495312690734
+   },
+   {
+    "step": 7035,
+    "epochs": 15.0,
+    "validation_nll": 1.2431840738803148
+   },
+   {
+    "step": 7504,
+    "epochs": 16.0,
+    "validation_nll": 1.2431444317400455
+   }
+  ],
+  "final": 1.2431444317400455,
+  "state": "finished",
+  "last": {
+   "step": 7504,
+   "epochs": 16.0,
+   "validation_nll": 1.2431444317400455
+  },
+  "config": {
+   "name": "ft-related-n30k-p16-lr0.003-adaptationfrozen_body",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 16,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "related",
+   "adaptation": "frozen_body",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-related-n30k-p16-lr0.003-adaptationfrozen_head": {
+  "history": [
+   {
+    "step": 469,
+    "epochs": 1.0,
+    "validation_nll": 1.2954661260843277
+   },
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.2938901872709394
+   },
+   {
+    "step": 1407,
+    "epochs": 3.0,
+    "validation_nll": 1.2954133404791355
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.2892758913263678
+   },
+   {
+    "step": 2345,
+    "epochs": 5.0,
+    "validation_nll": 1.2873135870099068
+   },
+   {
+    "step": 2814,
+    "epochs": 6.0,
+    "validation_nll": 1.28465379075706
+   },
+   {
+    "step": 3283,
+    "epochs": 7.0,
+    "validation_nll": 1.283788537863642
+   },
+   {
+    "step": 3752,
+    "epochs": 8.0,
+    "validation_nll": 1.2820878480114042
+   },
+   {
+    "step": 4221,
+    "epochs": 9.0,
+    "validation_nll": 1.2809769461229443
+   },
+   {
+    "step": 4690,
+    "epochs": 10.0,
+    "validation_nll": 1.2774441200643778
+   },
+   {
+    "step": 5159,
+    "epochs": 11.0,
+    "validation_nll": 1.2760145916752517
+   },
+   {
+    "step": 5628,
+    "epochs": 12.0,
+    "validation_nll": 1.2741418660245836
+   },
+   {
+    "step": 6097,
+    "epochs": 13.0,
+    "validation_nll": 1.2726449420154096
+   },
+   {
+    "step": 6566,
+    "epochs": 14.0,
+    "validation_nll": 1.269900117026642
+   },
+   {
+    "step": 7035,
+    "epochs": 15.0,
+    "validation_nll": 1.26651927565597
+   },
+   {
+    "step": 7504,
+    "epochs": 16.0,
+    "validation_nll": 1.2623863502293826
+   }
+  ],
+  "final": 1.2623863502293826,
+  "state": "finished",
+  "last": {
+   "step": 7504,
+   "epochs": 16.0,
+   "validation_nll": 1.2623863502293826
+  },
+  "config": {
+   "name": "ft-related-n30k-p16-lr0.003-adaptationfrozen_head",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 16,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "related",
+   "adaptation": "frozen_head",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-related-n30k-p16-lr0.003-adaptationtoward_initialization": {
+  "history": [
+   {
+    "step": 469,
+    "epochs": 1.0,
+    "validation_nll": 1.259545611537993
+   },
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.2612977723330259
+   },
+   {
+    "step": 1407,
+    "epochs": 3.0,
+    "validation_nll": 1.2544417874030769
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.2519193806685507
+   },
+   {
+    "step": 2345,
+    "epochs": 5.0,
+    "validation_nll": 1.251026262398809
+   },
+   {
+    "step": 2814,
+    "epochs": 6.0,
+    "validation_nll": 1.2480233556702733
+   },
+   {
+    "step": 3283,
+    "epochs": 7.0,
+    "validation_nll": 1.2455546039044858
+   },
+   {
+    "step": 3752,
+    "epochs": 8.0,
+    "validation_nll": 1.2436662873923778
+   },
+   {
+    "step": 4221,
+    "epochs": 9.0,
+    "validation_nll": 1.240034398334101
+   },
+   {
+    "step": 4690,
+    "epochs": 10.0,
+    "validation_nll": 1.2386610742472113
+   },
+   {
+    "step": 5159,
+    "epochs": 11.0,
+    "validation_nll": 1.2382497843205929
+   },
+   {
+    "step": 5628,
+    "epochs": 12.0,
+    "validation_nll": 1.242657048225403
+   },
+   {
+    "step": 6097,
+    "epochs": 13.0,
+    "validation_nll": 1.2344499348029494
+   },
+   {
+    "step": 6566,
+    "epochs": 14.0,
+    "validation_nll": 1.2352498765122146
+   },
+   {
+    "step": 7035,
+    "epochs": 15.0,
+    "validation_nll": 1.2368325670650229
+   },
+   {
+    "step": 7504,
+    "epochs": 16.0,
+    "validation_nll": 1.2451938853980973
+   }
+  ],
+  "final": 1.2451938853980973,
+  "state": "finished",
+  "last": {
+   "step": 7504,
+   "epochs": 16.0,
+   "validation_nll": 1.2451938853980973
+  },
+  "config": {
+   "name": "ft-related-n30k-p16-lr0.003-adaptationtoward_initialization",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 16,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "related",
+   "adaptation": "toward_initialization",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-related-n30k-p16-lr0.003-wd0.1": {
+  "history": [
+   {
+    "step": 469,
+    "epochs": 1.0,
+    "validation_nll": 1.2637889296859504
+   },
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.2571466502398252
+   },
+   {
+    "step": 1407,
+    "epochs": 3.0,
+    "validation_nll": 1.254983691287227
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.255814154824242
+   },
+   {
+    "step": 2345,
+    "epochs": 5.0,
+    "validation_nll": 1.2587872441168875
+   },
+   {
+    "step": 2814,
+    "epochs": 6.0,
+    "validation_nll": 1.2630818835217505
+   },
+   {
+    "step": 3283,
+    "epochs": 7.0,
+    "validation_nll": 1.2697178660873323
+   },
+   {
+    "step": 3752,
+    "epochs": 8.0,
+    "validation_nll": 1.2790269452948124
+   },
+   {
+    "step": 4221,
+    "epochs": 9.0,
+    "validation_nll": 1.289257774943486
+   },
+   {
+    "step": 4690,
+    "epochs": 10.0,
+    "validation_nll": 1.2973375084083527
+   },
+   {
+    "step": 5159,
+    "epochs": 11.0,
+    "validation_nll": 1.3143360976614058
+   },
+   {
+    "step": 5628,
+    "epochs": 12.0,
+    "validation_nll": 1.350691359050572
+   },
+   {
+    "step": 6097,
+    "epochs": 13.0,
+    "validation_nll": 1.3694454005397856
+   },
+   {
+    "step": 6566,
+    "epochs": 14.0,
+    "validation_nll": 1.4401406760038808
+   },
+   {
+    "step": 7035,
+    "epochs": 15.0,
+    "validation_nll": 1.4627976639727132
+   },
+   {
+    "step": 7504,
+    "epochs": 16.0,
+    "validation_nll": 1.4431058780094608
+   }
+  ],
+  "final": 1.4431058780094608,
+  "state": "finished",
+  "last": {
+   "step": 7504,
+   "epochs": 16.0,
+   "validation_nll": 1.4431058780094608
+  },
+  "config": {
+   "name": "ft-related-n30k-p16-lr0.003-wd0.1",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 0.1,
+   "epochs": 16,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "related",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-related-n3k-p16-lr0.003": {
+  "history": [
+   {
+    "step": 47,
+    "epochs": 1.0,
+    "validation_nll": 1.2567628537118436
+   },
+   {
+    "step": 94,
+    "epochs": 2.0,
+    "validation_nll": 1.3072298921048642
+   },
+   {
+    "step": 141,
+    "epochs": 3.0,
+    "validation_nll": 1.2973872608989476
+   },
+   {
+    "step": 188,
+    "epochs": 4.0,
+    "validation_nll": 1.2937064768224955
+   },
+   {
+    "step": 235,
+    "epochs": 5.0,
+    "validation_nll": 1.2960833486318588
+   },
+   {
+    "step": 282,
+    "epochs": 6.0,
+    "validation_nll": 1.2919938029125333
+   },
+   {
+    "step": 329,
+    "epochs": 7.0,
+    "validation_nll": 1.2918344523906709
+   },
+   {
+    "step": 376,
+    "epochs": 8.0,
+    "validation_nll": 1.2918280921578407
+   },
+   {
+    "step": 423,
+    "epochs": 9.0,
+    "validation_nll": 1.2933061113655566
+   },
+   {
+    "step": 470,
+    "epochs": 10.0,
+    "validation_nll": 1.2999846091717482
+   },
+   {
+    "step": 517,
+    "epochs": 11.0,
+    "validation_nll": 1.2983280196487903
+   },
+   {
+    "step": 564,
+    "epochs": 12.0,
+    "validation_nll": 1.3004200282916427
+   },
+   {
+    "step": 611,
+    "epochs": 13.0,
+    "validation_nll": 1.312517857082188
+   },
+   {
+    "step": 658,
+    "epochs": 14.0,
+    "validation_nll": 1.3332013035826384
+   },
+   {
+    "step": 705,
+    "epochs": 15.0,
+    "validation_nll": 1.3581321636289359
+   },
+   {
+    "step": 752,
+    "epochs": 16.0,
+    "validation_nll": 1.380618138063699
+   }
+  ],
+  "final": 1.380618138063699,
+  "state": "finished",
+  "last": {
+   "step": 752,
+   "epochs": 16.0,
+   "validation_nll": 1.380618138063699
+  },
+  "config": {
+   "name": "ft-related-n3k-p16-lr0.003",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 16,
+   "ntrain": 3000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "related",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-scratch-n10k-p16-lr0.003": {
+  "history": [
+   {
+    "step": 157,
+    "epochs": 1.0,
+    "validation_nll": 1.3289981154203414
+   },
+   {
+    "step": 314,
+    "epochs": 2.0,
+    "validation_nll": 1.3121505762338639
+   },
+   {
+    "step": 471,
+    "epochs": 3.0,
+    "validation_nll": 1.3023457585275173
+   },
+   {
+    "step": 628,
+    "epochs": 4.0,
+    "validation_nll": 1.2993446758873761
+   },
+   {
+    "step": 785,
+    "epochs": 5.0,
+    "validation_nll": 1.2960915097855032
+   },
+   {
+    "step": 942,
+    "epochs": 6.0,
+    "validation_nll": 1.2955462222024798
+   },
+   {
+    "step": 1099,
+    "epochs": 7.0,
+    "validation_nll": 1.2951783815324307
+   },
+   {
+    "step": 1256,
+    "epochs": 8.0,
+    "validation_nll": 1.2923604915365576
+   },
+   {
+    "step": 1413,
+    "epochs": 9.0,
+    "validation_nll": 1.2922657811790705
+   },
+   {
+    "step": 1570,
+    "epochs": 10.0,
+    "validation_nll": 1.29035443321988
+   },
+   {
+    "step": 1727,
+    "epochs": 11.0,
+    "validation_nll": 1.2900017060115934
+   },
+   {
+    "step": 1884,
+    "epochs": 12.0,
+    "validation_nll": 1.2907156312670558
+   },
+   {
+    "step": 2041,
+    "epochs": 13.0,
+    "validation_nll": 1.288549849126488
+   },
+   {
+    "step": 2198,
+    "epochs": 14.0,
+    "validation_nll": 1.2863475412670522
+   },
+   {
+    "step": 2355,
+    "epochs": 15.0,
+    "validation_nll": 1.2830821133572607
+   },
+   {
+    "step": 2512,
+    "epochs": 16.0,
+    "validation_nll": 1.281491007808596
+   }
+  ],
+  "final": 1.281491007808596,
+  "state": "finished",
+  "last": {
+   "step": 2512,
+   "epochs": 16.0,
+   "validation_nll": 1.281491007808596
+  },
+  "config": {
+   "name": "ft-scratch-n10k-p16-lr0.003",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 16,
+   "ntrain": 10000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "random",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-scratch-n1k-p16-lr0.003": {
+  "history": [
+   {
+    "step": 16,
+    "epochs": 1.0,
+    "validation_nll": 1.4096013138294219
+   },
+   {
+    "step": 32,
+    "epochs": 2.0,
+    "validation_nll": 1.5042714607715606
+   },
+   {
+    "step": 48,
+    "epochs": 3.0,
+    "validation_nll": 1.4085315430164338
+   },
+   {
+    "step": 64,
+    "epochs": 4.0,
+    "validation_nll": 1.380127136826515
+   },
+   {
+    "step": 80,
+    "epochs": 5.0,
+    "validation_nll": 1.362372537970543
+   },
+   {
+    "step": 96,
+    "epochs": 6.0,
+    "validation_nll": 1.3468552057743073
+   },
+   {
+    "step": 112,
+    "epochs": 7.0,
+    "validation_nll": 1.341161776304245
+   },
+   {
+    "step": 128,
+    "epochs": 8.0,
+    "validation_nll": 1.3328670877218247
+   },
+   {
+    "step": 144,
+    "epochs": 9.0,
+    "validation_nll": 1.3301086832284927
+   },
+   {
+    "step": 160,
+    "epochs": 10.0,
+    "validation_nll": 1.3271934926509856
+   },
+   {
+    "step": 176,
+    "epochs": 11.0,
+    "validation_nll": 1.3244512176513672
+   },
+   {
+    "step": 192,
+    "epochs": 12.0,
+    "validation_nll": 1.317196795463562
+   },
+   {
+    "step": 208,
+    "epochs": 13.0,
+    "validation_nll": 1.3162643754482268
+   },
+   {
+    "step": 224,
+    "epochs": 14.0,
+    "validation_nll": 1.312790601953864
+   },
+   {
+    "step": 240,
+    "epochs": 15.0,
+    "validation_nll": 1.3114772690497338
+   },
+   {
+    "step": 256,
+    "epochs": 16.0,
+    "validation_nll": 1.3100268675237894
+   }
+  ],
+  "final": 1.3100268675237894,
+  "state": "finished",
+  "last": {
+   "step": 256,
+   "epochs": 16.0,
+   "validation_nll": 1.3100268675237894
+  },
+  "config": {
+   "name": "ft-scratch-n1k-p16-lr0.003",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 16,
+   "ntrain": 1000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "random",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-scratch-n30k-p16-lr0.001": {
+  "history": [
+   {
+    "step": 469,
+    "epochs": 1.0,
+    "validation_nll": 1.3107868663072586
+   },
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.2925677802488207
+   },
+   {
+    "step": 1407,
+    "epochs": 3.0,
+    "validation_nll": 1.289062801502645
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.2898030580878257
+   },
+   {
+    "step": 2345,
+    "epochs": 5.0,
+    "validation_nll": 1.2812338004857302
+   },
+   {
+    "step": 2814,
+    "epochs": 6.0,
+    "validation_nll": 1.2788351317569613
+   },
+   {
+    "step": 3283,
+    "epochs": 7.0,
+    "validation_nll": 1.276945304522291
+   },
+   {
+    "step": 3752,
+    "epochs": 8.0,
+    "validation_nll": 1.2748302259985358
+   },
+   {
+    "step": 4221,
+    "epochs": 9.0,
+    "validation_nll": 1.272844215735793
+   },
+   {
+    "step": 4690,
+    "epochs": 10.0,
+    "validation_nll": 1.2708106307927518
+   },
+   {
+    "step": 5159,
+    "epochs": 11.0,
+    "validation_nll": 1.268827005200088
+   },
+   {
+    "step": 5628,
+    "epochs": 12.0,
+    "validation_nll": 1.2665696716140955
+   },
+   {
+    "step": 6097,
+    "epochs": 13.0,
+    "validation_nll": 1.2648830575197936
+   },
+   {
+    "step": 6566,
+    "epochs": 14.0,
+    "validation_nll": 1.2635973482783884
+   },
+   {
+    "step": 7035,
+    "epochs": 15.0,
+    "validation_nll": 1.2631095853354781
+   },
+   {
+    "step": 7504,
+    "epochs": 16.0,
+    "validation_nll": 1.2618459153752775
+   }
+  ],
+  "final": 1.2618459153752775,
+  "state": "finished",
+  "last": {
+   "step": 7504,
+   "epochs": 16.0,
+   "validation_nll": 1.2618459153752775
+  },
+  "config": {
+   "name": "ft-scratch-n30k-p16-lr0.001",
+   "architecture": "dense",
+   "lr": 0.001,
+   "wd": 3.2,
+   "epochs": 16,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "random",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-scratch-n3k-p16-lr0.003": {
+  "history": [
+   {
+    "step": 47,
+    "epochs": 1.0,
+    "validation_nll": 1.4373981840610504
+   },
+   {
+    "step": 94,
+    "epochs": 2.0,
+    "validation_nll": 1.3664366550445557
+   },
+   {
+    "step": 141,
+    "epochs": 3.0,
+    "validation_nll": 1.3304047759771347
+   },
+   {
+    "step": 188,
+    "epochs": 4.0,
+    "validation_nll": 1.3194889725279062
+   },
+   {
+    "step": 235,
+    "epochs": 5.0,
+    "validation_nll": 1.3130192891033365
+   },
+   {
+    "step": 282,
+    "epochs": 6.0,
+    "validation_nll": 1.3079732946502045
+   },
+   {
+    "step": 329,
+    "epochs": 7.0,
+    "validation_nll": 1.3057763198893517
+   },
+   {
+    "step": 376,
+    "epochs": 8.0,
+    "validation_nll": 1.304999334678054
+   },
+   {
+    "step": 423,
+    "epochs": 9.0,
+    "validation_nll": 1.3044142100587488
+   },
+   {
+    "step": 470,
+    "epochs": 10.0,
+    "validation_nll": 1.3012280763238668
+   },
+   {
+    "step": 517,
+    "epochs": 11.0,
+    "validation_nll": 1.3006926404275
+   },
+   {
+    "step": 564,
+    "epochs": 12.0,
+    "validation_nll": 1.2997125476561486
+   },
+   {
+    "step": 611,
+    "epochs": 13.0,
+    "validation_nll": 1.2993509031534194
+   },
+   {
+    "step": 658,
+    "epochs": 14.0,
+    "validation_nll": 1.3003496433198451
+   },
+   {
+    "step": 705,
+    "epochs": 15.0,
+    "validation_nll": 1.3012432048097253
+   },
+   {
+    "step": 752,
+    "epochs": 16.0,
+    "validation_nll": 1.302927976500243
+   }
+  ],
+  "final": 1.302927976500243,
+  "state": "finished",
+  "last": {
+   "step": 752,
+   "epochs": 16.0,
+   "validation_nll": 1.302927976500243
+  },
+  "config": {
+   "name": "ft-scratch-n3k-p16-lr0.003",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 16,
+   "ntrain": 3000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "random",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "baseline-seed43": {
+  "history": [
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.3006437138319016
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.2938003162629903
+   },
+   {
+    "step": 2814,
+    "epochs": 6.0,
+    "validation_nll": 1.29506251873821
+   },
+   {
+    "step": 3752,
+    "epochs": 8.0,
+    "validation_nll": 1.2965208040475846
+   },
+   {
+    "step": 4690,
+    "epochs": 10.0,
+    "validation_nll": 1.298362712264061
+   },
+   {
+    "step": 5628,
+    "epochs": 12.0,
+    "validation_nll": 1.3026853456944227
+   },
+   {
+    "step": 6566,
+    "epochs": 14.0,
+    "validation_nll": 1.2883040212988854
+   },
+   {
+    "step": 7504,
+    "epochs": 16.0,
+    "validation_nll": 1.2863999041169882
+   },
+   {
+    "step": 8442,
+    "epochs": 18.0,
+    "validation_nll": 1.2832727776765824
+   },
+   {
+    "step": 9380,
+    "epochs": 20.0,
+    "validation_nll": 1.2825289558321238
+   },
+   {
+    "step": 10318,
+    "epochs": 22.0,
+    "validation_nll": 1.2796769701316952
+   },
+   {
+    "step": 11256,
+    "epochs": 24.0,
+    "validation_nll": 1.2758846796676517
+   },
+   {
+    "step": 12194,
+    "epochs": 26.0,
+    "validation_nll": 1.273887143470347
+   },
+   {
+    "step": 13132,
+    "epochs": 28.0,
+    "validation_nll": 1.2701024384945632
+   },
+   {
+    "step": 14070,
+    "epochs": 30.0,
+    "validation_nll": 1.2658757064118982
+   },
+   {
+    "step": 15008,
+    "epochs": 32.0,
+    "validation_nll": 1.2617824789509178
+   }
+  ],
+  "final": 1.2617824789509178,
+  "state": "finished",
+  "last": {
+   "step": 15008,
+   "epochs": 32.0,
+   "validation_nll": 1.2617824789509178
+  },
+  "config": {
+   "name": "baseline-seed43",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 32,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 43,
+   "data_seed": 43,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "random",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "dropout0.15-seed43": {
+  "history": [
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.2994441711828113
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.296541281938553
+   },
+   {
+    "step": 2814,
+    "epochs": 6.0,
+    "validation_nll": 1.2952606323957443
+   },
+   {
+    "step": 3752,
+    "epochs": 8.0,
+    "validation_nll": 1.2926526060700416
+   },
+   {
+    "step": 4690,
+    "epochs": 10.0,
+    "validation_nll": 1.2940822056531907
+   },
+   {
+    "step": 5628,
+    "epochs": 12.0,
+    "validation_nll": 1.2899330810904504
+   },
+   {
+    "step": 6566,
+    "epochs": 14.0,
+    "validation_nll": 1.2862811417579652
+   },
+   {
+    "step": 7504,
+    "epochs": 16.0,
+    "validation_nll": 1.2847333197146653
+   },
+   {
+    "step": 8442,
+    "epochs": 18.0,
+    "validation_nll": 1.2833581431023777
+   },
+   {
+    "step": 9380,
+    "epochs": 20.0,
+    "validation_nll": 1.281698527753353
+   },
+   {
+    "step": 10318,
+    "epochs": 22.0,
+    "validation_nll": 1.2788498921319842
+   },
+   {
+    "step": 11256,
+    "epochs": 24.0,
+    "validation_nll": 1.2759849161356687
+   },
+   {
+    "step": 12194,
+    "epochs": 26.0,
+    "validation_nll": 1.2737891097404064
+   },
+   {
+    "step": 13132,
+    "epochs": 28.0,
+    "validation_nll": 1.2702470070272684
+   },
+   {
+    "step": 14070,
+    "epochs": 30.0,
+    "validation_nll": 1.2652899452634156
+   },
+   {
+    "step": 15008,
+    "epochs": 32.0,
+    "validation_nll": 1.260021741565317
+   }
+  ],
+  "final": 1.260021741565317,
+  "state": "finished",
+  "last": {
+   "step": 15008,
+   "epochs": 32.0,
+   "validation_nll": 1.260021741565317
+  },
+  "config": {
+   "name": "dropout0.15-seed43",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 32,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 43,
+   "data_seed": 43,
+   "schedule": "linear",
+   "attention_dropout": 0.15,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "random",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "dropout0.15-seed44": {
+  "history": [
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.2982255491539836
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.2961467573344707
+   },
+   {
+    "step": 2814,
+    "epochs": 6.0,
+    "validation_nll": 1.2986756594181061
+   },
+   {
+    "step": 3752,
+    "epochs": 8.0,
+    "validation_nll": 1.2956380571722985
+   },
+   {
+    "step": 4690,
+    "epochs": 10.0,
+    "validation_nll": 1.29146603852883
+   },
+   {
+    "step": 5628,
+    "epochs": 12.0,
+    "validation_nll": 1.2905913571491838
+   },
+   {
+    "step": 6566,
+    "epochs": 14.0,
+    "validation_nll": 1.2896650556921958
+   },
+   {
+    "step": 7504,
+    "epochs": 16.0,
+    "validation_nll": 1.2870258571505546
+   },
+   {
+    "step": 8442,
+    "epochs": 18.0,
+    "validation_nll": 1.2830633079279214
+   },
+   {
+    "step": 9380,
+    "epochs": 20.0,
+    "validation_nll": 1.2818385007381439
+   },
+   {
+    "step": 10318,
+    "epochs": 22.0,
+    "validation_nll": 1.2803325349092483
+   },
+   {
+    "step": 11256,
+    "epochs": 24.0,
+    "validation_nll": 1.276458670258522
+   },
+   {
+    "step": 12194,
+    "epochs": 26.0,
+    "validation_nll": 1.2748633069992066
+   },
+   {
+    "step": 13132,
+    "epochs": 28.0,
+    "validation_nll": 1.271405650176108
+   },
+   {
+    "step": 14070,
+    "epochs": 30.0,
+    "validation_nll": 1.265968495604582
+   },
+   {
+    "step": 15008,
+    "epochs": 32.0,
+    "validation_nll": 1.2602189717516303
+   }
+  ],
+  "final": 1.2602189717516303,
+  "state": "finished",
+  "last": {
+   "step": 15008,
+   "epochs": 32.0,
+   "validation_nll": 1.2602189717516303
+  },
+  "config": {
+   "name": "dropout0.15-seed44",
+   "architecture": "dense",
+   "lr": 0.003,
+   "wd": 3.2,
+   "epochs": 32,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 44,
+   "data_seed": 44,
+   "schedule": "linear",
+   "attention_dropout": 0.15,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "random",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-dclm-n30k-p16-lr0.001": {
+  "history": [
+   {
+    "step": 469,
+    "epochs": 1.0,
+    "validation_nll": 1.3036950688362121
+   },
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.2936580377072096
+   },
+   {
+    "step": 1407,
+    "epochs": 3.0,
+    "validation_nll": 1.2973551411628723
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.2871247648000717
+   },
+   {
+    "step": 2345,
+    "epochs": 5.0,
+    "validation_nll": 1.2815638540945946
+   },
+   {
+    "step": 2814,
+    "epochs": 6.0,
+    "validation_nll": 1.2797579770796002
+   },
+   {
+    "step": 3283,
+    "epochs": 7.0,
+    "validation_nll": 1.2772348923161625
+   },
+   {
+    "step": 3752,
+    "epochs": 8.0,
+    "validation_nll": 1.2760593968629836
+   },
+   {
+    "step": 4221,
+    "epochs": 9.0,
+    "validation_nll": 1.2738152829110623
+   },
+   {
+    "step": 4690,
+    "epochs": 10.0,
+    "validation_nll": 1.2720497420057655
+   },
+   {
+    "step": 5159,
+    "epochs": 11.0,
+    "validation_nll": 1.269850019261241
+   },
+   {
+    "step": 5628,
+    "epochs": 12.0,
+    "validation_nll": 1.2672864897679537
+   },
+   {
+    "step": 6097,
+    "epochs": 13.0,
+    "validation_nll": 1.2660895858705044
+   },
+   {
+    "step": 6566,
+    "epochs": 14.0,
+    "validation_nll": 1.2642966130031272
+   },
+   {
+    "step": 7035,
+    "epochs": 15.0,
+    "validation_nll": 1.2629930913234129
+   },
+   {
+    "step": 7504,
+    "epochs": 16.0,
+    "validation_nll": 1.2628839257638902
+   }
+  ],
+  "final": 1.2628839257638902,
+  "state": "finished",
+  "last": {
+   "step": 7504,
+   "epochs": 16.0,
+   "validation_nll": 1.2628839257638902
+  },
+  "config": {
+   "name": "ft-dclm-n30k-p16-lr0.001",
+   "architecture": "dense",
+   "lr": 0.001,
+   "wd": 3.2,
+   "epochs": 16,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "dclm",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-noise-n30k-p16-lr0.001": {
+  "history": [
+   {
+    "step": 469,
+    "epochs": 1.0,
+    "validation_nll": 1.326496855199337
+   },
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.2976755833998324
+   },
+   {
+    "step": 1407,
+    "epochs": 3.0,
+    "validation_nll": 1.291143548682332
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.2881276647932827
+   },
+   {
+    "step": 2345,
+    "epochs": 5.0,
+    "validation_nll": 1.2868361323382707
+   },
+   {
+    "step": 2814,
+    "epochs": 6.0,
+    "validation_nll": 1.28457260905765
+   },
+   {
+    "step": 3283,
+    "epochs": 7.0,
+    "validation_nll": 1.2817017379961908
+   },
+   {
+    "step": 3752,
+    "epochs": 8.0,
+    "validation_nll": 1.2787440791986884
+   },
+   {
+    "step": 4221,
+    "epochs": 9.0,
+    "validation_nll": 1.2763313534557819
+   },
+   {
+    "step": 4690,
+    "epochs": 10.0,
+    "validation_nll": 1.2748179182820023
+   },
+   {
+    "step": 5159,
+    "epochs": 11.0,
+    "validation_nll": 1.2723306991904975
+   },
+   {
+    "step": 5628,
+    "epochs": 12.0,
+    "validation_nll": 1.270131120443344
+   },
+   {
+    "step": 6097,
+    "epochs": 13.0,
+    "validation_nll": 1.2688945151399822
+   },
+   {
+    "step": 6566,
+    "epochs": 14.0,
+    "validation_nll": 1.2668671856112779
+   },
+   {
+    "step": 7035,
+    "epochs": 15.0,
+    "validation_nll": 1.2648649044502527
+   },
+   {
+    "step": 7504,
+    "epochs": 16.0,
+    "validation_nll": 1.2631097429394722
+   }
+  ],
+  "final": 1.2631097429394722,
+  "state": "finished",
+  "last": {
+   "step": 7504,
+   "epochs": 16.0,
+   "validation_nll": 1.2631097429394722
+  },
+  "config": {
+   "name": "ft-noise-n30k-p16-lr0.001",
+   "architecture": "dense",
+   "lr": 0.001,
+   "wd": 3.2,
+   "epochs": 16,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "noise",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "moe-lr0.001": {
+  "history": [
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.2945011138934641
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.2886615247800945
+   }
+  ],
+  "final": null,
+  "state": "running",
+  "last": {
+   "step": 1876,
+   "epochs": 4.0,
+   "validation_nll": 1.2886615247800945
+  },
+  "config": null
+ },
+ "moe-lr0.01": {
+  "history": [
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.344463851094246
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.325986511349678
+   },
+   {
+    "step": 2814,
+    "epochs": 6.0,
+    "validation_nll": 1.3182308428287506
+   },
+   {
+    "step": 3752,
+    "epochs": 8.0,
+    "validation_nll": 1.3171646375656128
+   },
+   {
+    "step": 4690,
+    "epochs": 10.0,
+    "validation_nll": 1.3145153206586837
+   },
+   {
+    "step": 5628,
+    "epochs": 12.0,
+    "validation_nll": 1.3092832535505294
+   },
+   {
+    "step": 6566,
+    "epochs": 14.0,
+    "validation_nll": 1.3051543772816658
+   },
+   {
+    "step": 7504,
+    "epochs": 16.0,
+    "validation_nll": 1.3022137747704983
+   }
+  ],
+  "final": null,
+  "state": "running",
+  "last": {
+   "step": 7504,
+   "epochs": 16.0,
+   "validation_nll": 1.3022137747704983
+  },
+  "config": null
+ },
+ "ft-dclm-n10k-p16-lr0.0003-wd0.0": {
+  "history": [
+   {
+    "step": 157,
+    "epochs": 1.0,
+    "validation_nll": 1.336178864231333
+   },
+   {
+    "step": 314,
+    "epochs": 2.0,
+    "validation_nll": 1.3085519477576018
+   },
+   {
+    "step": 471,
+    "epochs": 3.0,
+    "validation_nll": 1.3039356526723132
+   },
+   {
+    "step": 628,
+    "epochs": 4.0,
+    "validation_nll": 1.2973726662611589
+   },
+   {
+    "step": 785,
+    "epochs": 5.0,
+    "validation_nll": 1.2952350979801268
+   },
+   {
+    "step": 942,
+    "epochs": 6.0,
+    "validation_nll": 1.2930933906883002
+   },
+   {
+    "step": 1099,
+    "epochs": 7.0,
+    "validation_nll": 1.2923251484204084
+   },
+   {
+    "step": 1256,
+    "epochs": 8.0,
+    "validation_nll": 1.2934414885099976
+   },
+   {
+    "step": 1413,
+    "epochs": 9.0,
+    "validation_nll": 1.2946437630318106
+   },
+   {
+    "step": 1570,
+    "epochs": 10.0,
+    "validation_nll": 1.2983461296074092
+   },
+   {
+    "step": 1727,
+    "epochs": 11.0,
+    "validation_nll": 1.3024140360839664
+   },
+   {
+    "step": 1884,
+    "epochs": 12.0,
+    "validation_nll": 1.303927857518196
+   },
+   {
+    "step": 2041,
+    "epochs": 13.0,
+    "validation_nll": 1.3070421023257077
+   },
+   {
+    "step": 2198,
+    "epochs": 14.0,
+    "validation_nll": 1.3071520592793822
+   },
+   {
+    "step": 2355,
+    "epochs": 15.0,
+    "validation_nll": 1.3089300583489238
+   },
+   {
+    "step": 2512,
+    "epochs": 16.0,
+    "validation_nll": 1.3080984908379614
+   }
+  ],
+  "final": 1.3080984908379614,
+  "state": "finished",
+  "last": {
+   "step": 2512,
+   "epochs": 16.0,
+   "validation_nll": 1.3080984908379614
+  },
+  "config": {
+   "name": "ft-dclm-n10k-p16-lr0.0003-wd0.0",
+   "architecture": "dense",
+   "lr": 0.0003,
+   "wd": 0.0,
+   "epochs": 16,
+   "ntrain": 10000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "dclm",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-dclm-n1k-p16-lr0.0003-wd0.0": {
+  "history": [
+   {
+    "step": 16,
+    "epochs": 1.0,
+    "validation_nll": 1.5500266602039336
+   },
+   {
+    "step": 32,
+    "epochs": 2.0,
+    "validation_nll": 1.4542079572677613
+   },
+   {
+    "step": 48,
+    "epochs": 3.0,
+    "validation_nll": 1.4803705883026124
+   },
+   {
+    "step": 64,
+    "epochs": 4.0,
+    "validation_nll": 1.4180527502298355
+   },
+   {
+    "step": 80,
+    "epochs": 5.0,
+    "validation_nll": 1.4916333375275135
+   },
+   {
+    "step": 96,
+    "epochs": 6.0,
+    "validation_nll": 1.3451694651544095
+   },
+   {
+    "step": 112,
+    "epochs": 7.0,
+    "validation_nll": 1.3508239060640335
+   },
+   {
+    "step": 128,
+    "epochs": 8.0,
+    "validation_nll": 1.34003921174258
+   },
+   {
+    "step": 144,
+    "epochs": 9.0,
+    "validation_nll": 1.3249441824406385
+   },
+   {
+    "step": 160,
+    "epochs": 10.0,
+    "validation_nll": 1.3221750165671111
+   },
+   {
+    "step": 176,
+    "epochs": 11.0,
+    "validation_nll": 1.3154292258359492
+   },
+   {
+    "step": 192,
+    "epochs": 12.0,
+    "validation_nll": 1.310170915171504
+   },
+   {
+    "step": 208,
+    "epochs": 13.0,
+    "validation_nll": 1.3084463245794178
+   },
+   {
+    "step": 224,
+    "epochs": 14.0,
+    "validation_nll": 1.3078773029074073
+   },
+   {
+    "step": 240,
+    "epochs": 15.0,
+    "validation_nll": 1.306902272850275
+   },
+   {
+    "step": 256,
+    "epochs": 16.0,
+    "validation_nll": 1.306831858485937
+   }
+  ],
+  "final": 1.306831858485937,
+  "state": "finished",
+  "last": {
+   "step": 256,
+   "epochs": 16.0,
+   "validation_nll": 1.306831858485937
+  },
+  "config": {
+   "name": "ft-dclm-n1k-p16-lr0.0003-wd0.0",
+   "architecture": "dense",
+   "lr": 0.0003,
+   "wd": 0.0,
+   "epochs": 16,
+   "ntrain": 1000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "dclm",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-dclm-n30k-p1-lr0.0003-wd0.0": {
+  "history": [
+   {
+    "step": 29,
+    "epochs": 0.06183368869936034,
+    "validation_nll": 1.6992483619451524
+   },
+   {
+    "step": 58,
+    "epochs": 0.12366737739872068,
+    "validation_nll": 1.7853773822784424
+   },
+   {
+    "step": 87,
+    "epochs": 0.18550106609808104,
+    "validation_nll": 1.4060891748014837
+   },
+   {
+    "step": 116,
+    "epochs": 0.24733475479744135,
+    "validation_nll": 1.3803865973558276
+   },
+   {
+    "step": 145,
+    "epochs": 0.3091684434968017,
+    "validation_nll": 1.331732678955421
+   },
+   {
+    "step": 174,
+    "epochs": 0.37100213219616207,
+    "validation_nll": 1.314590082131326
+   },
+   {
+    "step": 203,
+    "epochs": 0.43283582089552236,
+    "validation_nll": 1.3120789934657515
+   },
+   {
+    "step": 232,
+    "epochs": 0.4946695095948827,
+    "validation_nll": 1.3086131020765752
+   },
+   {
+    "step": 261,
+    "epochs": 0.5565031982942431,
+    "validation_nll": 1.3054557456821203
+   },
+   {
+    "step": 290,
+    "epochs": 0.6183368869936035,
+    "validation_nll": 1.3045994432922452
+   },
+   {
+    "step": 319,
+    "epochs": 0.6801705756929638,
+    "validation_nll": 1.3041811682218685
+   },
+   {
+    "step": 348,
+    "epochs": 0.7420042643923241,
+    "validation_nll": 1.3025075411833822
+   },
+   {
+    "step": 377,
+    "epochs": 0.8038379530916845,
+    "validation_nll": 1.3016698824111372
+   },
+   {
+    "step": 406,
+    "epochs": 0.8656716417910447,
+    "validation_nll": 1.3012552681295202
+   },
+   {
+    "step": 435,
+    "epochs": 0.9275053304904051,
+    "validation_nll": 1.2997651484962554
+   },
+   {
+    "step": 464,
+    "epochs": 0.9893390191897654,
+    "validation_nll": 1.2992809435483068
+   },
+   {
+    "step": 469,
+    "epochs": 1.0,
+    "validation_nll": 1.29919192095194
+   }
+  ],
+  "final": 1.29919192095194,
+  "state": "finished",
+  "last": {
+   "step": 469,
+   "epochs": 1.0,
+   "validation_nll": 1.29919192095194
+  },
+  "config": {
+   "name": "ft-dclm-n30k-p1-lr0.0003-wd0.0",
+   "architecture": "dense",
+   "lr": 0.0003,
+   "wd": 0.0,
+   "epochs": 1,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "dclm",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-dclm-n30k-p16-lr0.0001-wd0.0": {
+  "history": [
+   {
+    "step": 469,
+    "epochs": 1.0,
+    "validation_nll": 1.3056024828599766
+   },
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.295312072455883
+   },
+   {
+    "step": 1407,
+    "epochs": 3.0,
+    "validation_nll": 1.2902763962345198
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.2865014668777586
+   },
+   {
+    "step": 2345,
+    "epochs": 5.0,
+    "validation_nll": 1.2830926181301474
+   },
+   {
+    "step": 2814,
+    "epochs": 6.0,
+    "validation_nll": 1.2801798163745552
+   },
+   {
+    "step": 3283,
+    "epochs": 7.0,
+    "validation_nll": 1.2778384293615819
+   },
+   {
+    "step": 3752,
+    "epochs": 8.0,
+    "validation_nll": 1.2767122555430979
+   },
+   {
+    "step": 4221,
+    "epochs": 9.0,
+    "validation_nll": 1.2763753045294435
+   },
+   {
+    "step": 4690,
+    "epochs": 10.0,
+    "validation_nll": 1.276453563787043
+   },
+   {
+    "step": 5159,
+    "epochs": 11.0,
+    "validation_nll": 1.2766240597255527
+   },
+   {
+    "step": 5628,
+    "epochs": 12.0,
+    "validation_nll": 1.2778701570816338
+   },
+   {
+    "step": 6097,
+    "epochs": 13.0,
+    "validation_nll": 1.2793935751449317
+   },
+   {
+    "step": 6566,
+    "epochs": 14.0,
+    "validation_nll": 1.2807745765820147
+   },
+   {
+    "step": 7035,
+    "epochs": 15.0,
+    "validation_nll": 1.276954531168565
+   },
+   {
+    "step": 7504,
+    "epochs": 16.0,
+    "validation_nll": 1.2767755490597337
+   }
+  ],
+  "final": 1.2767755490597337,
+  "state": "finished",
+  "last": {
+   "step": 7504,
+   "epochs": 16.0,
+   "validation_nll": 1.2767755490597337
+  },
+  "config": {
+   "name": "ft-dclm-n30k-p16-lr0.0001-wd0.0",
+   "architecture": "dense",
+   "lr": 0.0001,
+   "wd": 0.0,
+   "epochs": 16,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "dclm",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-dclm-n30k-p16-lr0.0003-wd0.0": {
+  "history": [
+   {
+    "step": 469,
+    "epochs": 1.0,
+    "validation_nll": 1.2980992980170996
+   },
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.2887407544301823
+   },
+   {
+    "step": 1407,
+    "epochs": 3.0,
+    "validation_nll": 1.2779762089774012
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.273769730033353
+   },
+   {
+    "step": 2345,
+    "epochs": 5.0,
+    "validation_nll": 1.27284250994958
+   },
+   {
+    "step": 2814,
+    "epochs": 6.0,
+    "validation_nll": 1.2739196638204158
+   },
+   {
+    "step": 3283,
+    "epochs": 7.0,
+    "validation_nll": 1.2764288523960858
+   },
+   {
+    "step": 3752,
+    "epochs": 8.0,
+    "validation_nll": 1.2790007028933614
+   },
+   {
+    "step": 4221,
+    "epochs": 9.0,
+    "validation_nll": 1.2884642793666572
+   },
+   {
+    "step": 4690,
+    "epochs": 10.0,
+    "validation_nll": 1.2920549319367856
+   },
+   {
+    "step": 5159,
+    "epochs": 11.0,
+    "validation_nll": 1.306544351214543
+   },
+   {
+    "step": 5628,
+    "epochs": 12.0,
+    "validation_nll": 1.3241137940455228
+   },
+   {
+    "step": 6097,
+    "epochs": 13.0,
+    "validation_nll": 1.330095479361713
+   },
+   {
+    "step": 6566,
+    "epochs": 14.0,
+    "validation_nll": 1.321176926728338
+   },
+   {
+    "step": 7035,
+    "epochs": 15.0,
+    "validation_nll": 1.330914776969701
+   },
+   {
+    "step": 7504,
+    "epochs": 16.0,
+    "validation_nll": 1.3313994724303484
+   }
+  ],
+  "final": 1.3313994724303484,
+  "state": "finished",
+  "last": {
+   "step": 7504,
+   "epochs": 16.0,
+   "validation_nll": 1.3313994724303484
+  },
+  "config": {
+   "name": "ft-dclm-n30k-p16-lr0.0003-wd0.0",
+   "architecture": "dense",
+   "lr": 0.0003,
+   "wd": 0.0,
+   "epochs": 16,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "dclm",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-dclm-n30k-p4-lr0.0003-wd0.0": {
+  "history": [
+   {
+    "step": 117,
+    "epochs": 0.24946695095948826,
+    "validation_nll": 1.3501216337792576
+   },
+   {
+    "step": 234,
+    "epochs": 0.4989339019189765,
+    "validation_nll": 1.3100201970264316
+   },
+   {
+    "step": 351,
+    "epochs": 0.7484008528784648,
+    "validation_nll": 1.3027274480378255
+   },
+   {
+    "step": 468,
+    "epochs": 0.997867803837953,
+    "validation_nll": 1.2976663015764207
+   },
+   {
+    "step": 585,
+    "epochs": 1.2473347547974414,
+    "validation_nll": 1.2934068956319242
+   },
+   {
+    "step": 702,
+    "epochs": 1.4968017057569296,
+    "validation_nll": 1.2908872051117941
+   },
+   {
+    "step": 819,
+    "epochs": 1.7462686567164178,
+    "validation_nll": 1.2892524492610247
+   },
+   {
+    "step": 936,
+    "epochs": 1.995735607675906,
+    "validation_nll": 1.2868212765799836
+   },
+   {
+    "step": 1053,
+    "epochs": 2.2452025586353943,
+    "validation_nll": 1.2850327451117336
+   },
+   {
+    "step": 1170,
+    "epochs": 2.4946695095948828,
+    "validation_nll": 1.284347908004187
+   },
+   {
+    "step": 1287,
+    "epochs": 2.744136460554371,
+    "validation_nll": 1.281910773685202
+   },
+   {
+    "step": 1404,
+    "epochs": 2.9936034115138592,
+    "validation_nll": 1.2811002272916958
+   },
+   {
+    "step": 1521,
+    "epochs": 3.2430703624733477,
+    "validation_nll": 1.2795556170782074
+   },
+   {
+    "step": 1638,
+    "epochs": 3.4925373134328357,
+    "validation_nll": 1.278976979650557
+   },
+   {
+    "step": 1755,
+    "epochs": 3.742004264392324,
+    "validation_nll": 1.277955100333318
+   },
+   {
+    "step": 1872,
+    "epochs": 3.991471215351812,
+    "validation_nll": 1.2771955643892288
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.2771885047629477
+   }
+  ],
+  "final": 1.2771885047629477,
+  "state": "finished",
+  "last": {
+   "step": 1876,
+   "epochs": 4.0,
+   "validation_nll": 1.2771885047629477
+  },
+  "config": {
+   "name": "ft-dclm-n30k-p4-lr0.0003-wd0.0",
+   "architecture": "dense",
+   "lr": 0.0003,
+   "wd": 0.0,
+   "epochs": 4,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "dclm",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-dclm-n3k-p16-lr0.0003-wd0.0": {
+  "history": [
+   {
+    "step": 47,
+    "epochs": 1.0,
+    "validation_nll": 1.4501150941848755
+   },
+   {
+    "step": 94,
+    "epochs": 2.0,
+    "validation_nll": 1.3572545859478413
+   },
+   {
+    "step": 141,
+    "epochs": 3.0,
+    "validation_nll": 1.3500886685848237
+   },
+   {
+    "step": 188,
+    "epochs": 4.0,
+    "validation_nll": 1.3149957161657513
+   },
+   {
+    "step": 235,
+    "epochs": 5.0,
+    "validation_nll": 1.3107920675240456
+   },
+   {
+    "step": 282,
+    "epochs": 6.0,
+    "validation_nll": 1.3091081015449018
+   },
+   {
+    "step": 329,
+    "epochs": 7.0,
+    "validation_nll": 1.3027639937996864
+   },
+   {
+    "step": 376,
+    "epochs": 8.0,
+    "validation_nll": 1.3014212034381927
+   },
+   {
+    "step": 423,
+    "epochs": 9.0,
+    "validation_nll": 1.3005752166938036
+   },
+   {
+    "step": 470,
+    "epochs": 10.0,
+    "validation_nll": 1.3012122972737998
+   },
+   {
+    "step": 517,
+    "epochs": 11.0,
+    "validation_nll": 1.2991342357676476
+   },
+   {
+    "step": 564,
+    "epochs": 12.0,
+    "validation_nll": 1.2994861498381942
+   },
+   {
+    "step": 611,
+    "epochs": 13.0,
+    "validation_nll": 1.3007922403085976
+   },
+   {
+    "step": 658,
+    "epochs": 14.0,
+    "validation_nll": 1.3029249179195612
+   },
+   {
+    "step": 705,
+    "epochs": 15.0,
+    "validation_nll": 1.3041431862432509
+   },
+   {
+    "step": 752,
+    "epochs": 16.0,
+    "validation_nll": 1.302812964566052
+   }
+  ],
+  "final": 1.302812964566052,
+  "state": "finished",
+  "last": {
+   "step": 752,
+   "epochs": 16.0,
+   "validation_nll": 1.302812964566052
+  },
+  "config": {
+   "name": "ft-dclm-n3k-p16-lr0.0003-wd0.0",
+   "architecture": "dense",
+   "lr": 0.0003,
+   "wd": 0.0,
+   "epochs": 16,
+   "ntrain": 3000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "dclm",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-noise-n10k-p16-lr0.0003-wd0.0": {
+  "history": [
+   {
+    "step": 157,
+    "epochs": 1.0,
+    "validation_nll": 1.3798718361854554
+   },
+   {
+    "step": 314,
+    "epochs": 2.0,
+    "validation_nll": 1.3544034459590912
+   },
+   {
+    "step": 471,
+    "epochs": 3.0,
+    "validation_nll": 1.339424039363861
+   },
+   {
+    "step": 628,
+    "epochs": 4.0,
+    "validation_nll": 1.33473836094141
+   },
+   {
+    "step": 785,
+    "epochs": 5.0,
+    "validation_nll": 1.3290853696167468
+   },
+   {
+    "step": 942,
+    "epochs": 6.0,
+    "validation_nll": 1.3257230891361833
+   },
+   {
+    "step": 1099,
+    "epochs": 7.0,
+    "validation_nll": 1.3203004265278577
+   }
+  ],
+  "final": null,
+  "state": "running",
+  "last": {
+   "step": 1099,
+   "epochs": 7.0,
+   "validation_nll": 1.3203004265278577
+  },
+  "config": null
+ },
+ "ft-noise-n1k-p16-lr0.0003-wd0.0": {
+  "history": [
+   {
+    "step": 16,
+    "epochs": 1.0,
+    "validation_nll": 1.4138239953517915
+   },
+   {
+    "step": 32,
+    "epochs": 2.0,
+    "validation_nll": 1.4135349223613738
+   },
+   {
+    "step": 48,
+    "epochs": 3.0,
+    "validation_nll": 1.4136374061107635
+   },
+   {
+    "step": 64,
+    "epochs": 4.0,
+    "validation_nll": 1.412840138077736
+   },
+   {
+    "step": 80,
+    "epochs": 5.0,
+    "validation_nll": 1.410638661980629
+   },
+   {
+    "step": 96,
+    "epochs": 6.0,
+    "validation_nll": 1.3981809738874436
+   },
+   {
+    "step": 112,
+    "epochs": 7.0,
+    "validation_nll": 1.3879307671785355
+   },
+   {
+    "step": 128,
+    "epochs": 8.0,
+    "validation_nll": 1.37570991230011
+   },
+   {
+    "step": 144,
+    "epochs": 9.0,
+    "validation_nll": 1.3722562166452408
+   },
+   {
+    "step": 160,
+    "epochs": 10.0,
+    "validation_nll": 1.3687546344995498
+   },
+   {
+    "step": 176,
+    "epochs": 11.0,
+    "validation_nll": 1.3651237791776658
+   },
+   {
+    "step": 192,
+    "epochs": 12.0,
+    "validation_nll": 1.3643105609416961
+   },
+   {
+    "step": 208,
+    "epochs": 13.0,
+    "validation_nll": 1.364538383960724
+   },
+   {
+    "step": 224,
+    "epochs": 14.0,
+    "validation_nll": 1.3639147588014602
+   },
+   {
+    "step": 240,
+    "epochs": 15.0,
+    "validation_nll": 1.364325155854225
+   },
+   {
+    "step": 256,
+    "epochs": 16.0,
+    "validation_nll": 1.3643408292531967
+   }
+  ],
+  "final": 1.3643408292531967,
+  "state": "finished",
+  "last": {
+   "step": 256,
+   "epochs": 16.0,
+   "validation_nll": 1.3643408292531967
+  },
+  "config": {
+   "name": "ft-noise-n1k-p16-lr0.0003-wd0.0",
+   "architecture": "dense",
+   "lr": 0.0003,
+   "wd": 0.0,
+   "epochs": 16,
+   "ntrain": 1000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "noise",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-noise-n30k-p1-lr0.0003-wd0.0": {
+  "history": [
+   {
+    "step": 29,
+    "epochs": 0.06183368869936034,
+    "validation_nll": 1.4136587742567062
+   },
+   {
+    "step": 58,
+    "epochs": 0.12366737739872068,
+    "validation_nll": 1.41286532664299
+   },
+   {
+    "step": 87,
+    "epochs": 0.18550106609808104,
+    "validation_nll": 1.4129141445159912
+   },
+   {
+    "step": 116,
+    "epochs": 0.24733475479744135,
+    "validation_nll": 1.4103323385715485
+   },
+   {
+    "step": 145,
+    "epochs": 0.3091684434968017,
+    "validation_nll": 1.4110134969949721
+   },
+   {
+    "step": 174,
+    "epochs": 0.37100213219616207,
+    "validation_nll": 1.407238803625107
+   },
+   {
+    "step": 203,
+    "epochs": 0.43283582089552236,
+    "validation_nll": 1.373500185728073
+   },
+   {
+    "step": 232,
+    "epochs": 0.4946695095948827,
+    "validation_nll": 1.3636633647680283
+   },
+   {
+    "step": 261,
+    "epochs": 0.5565031982942431,
+    "validation_nll": 1.3624433079957963
+   },
+   {
+    "step": 290,
+    "epochs": 0.6183368869936035,
+    "validation_nll": 1.3599090613126754
+   },
+   {
+    "step": 319,
+    "epochs": 0.6801705756929638,
+    "validation_nll": 1.3573655599355698
+   },
+   {
+    "step": 348,
+    "epochs": 0.7420042643923241,
+    "validation_nll": 1.3569223828315735
+   },
+   {
+    "step": 377,
+    "epochs": 0.8038379530916845,
+    "validation_nll": 1.35483813393116
+   },
+   {
+    "step": 406,
+    "epochs": 0.8656716417910447,
+    "validation_nll": 1.3533598897457122
+   },
+   {
+    "step": 435,
+    "epochs": 0.9275053304904051,
+    "validation_nll": 1.353815732717514
+   },
+   {
+    "step": 464,
+    "epochs": 0.9893390191897654,
+    "validation_nll": 1.3533297724723816
+   },
+   {
+    "step": 469,
+    "epochs": 1.0,
+    "validation_nll": 1.3533307737112046
+   }
+  ],
+  "final": 1.3533307737112046,
+  "state": "finished",
+  "last": {
+   "step": 469,
+   "epochs": 1.0,
+   "validation_nll": 1.3533307737112046
+  },
+  "config": {
+   "name": "ft-noise-n30k-p1-lr0.0003-wd0.0",
+   "architecture": "dense",
+   "lr": 0.0003,
+   "wd": 0.0,
+   "epochs": 1,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "noise",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-noise-n30k-p16-lr0.0001-wd0.0": {
+  "history": [
+   {
+    "step": 469,
+    "epochs": 1.0,
+    "validation_nll": 1.3553090858459473
+   },
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.3394485926032067
+   },
+   {
+    "step": 1407,
+    "epochs": 3.0,
+    "validation_nll": 1.3308058907389642
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.3261697859168053
+   },
+   {
+    "step": 2345,
+    "epochs": 5.0,
+    "validation_nll": 1.3215900186784566
+   },
+   {
+    "step": 2814,
+    "epochs": 6.0,
+    "validation_nll": 1.3178571205213665
+   },
+   {
+    "step": 3283,
+    "epochs": 7.0,
+    "validation_nll": 1.315180004965514
+   },
+   {
+    "step": 3752,
+    "epochs": 8.0,
+    "validation_nll": 1.3123495308943094
+   },
+   {
+    "step": 4221,
+    "epochs": 9.0,
+    "validation_nll": 1.3097673536762595
+   },
+   {
+    "step": 4690,
+    "epochs": 10.0,
+    "validation_nll": 1.3076312599852682
+   },
+   {
+    "step": 5159,
+    "epochs": 11.0,
+    "validation_nll": 1.3063724846728146
+   },
+   {
+    "step": 5628,
+    "epochs": 12.0,
+    "validation_nll": 1.3055094097033142
+   },
+   {
+    "step": 6097,
+    "epochs": 13.0,
+    "validation_nll": 1.304827783357352
+   },
+   {
+    "step": 6566,
+    "epochs": 14.0,
+    "validation_nll": 1.304331261118874
+   },
+   {
+    "step": 7035,
+    "epochs": 15.0,
+    "validation_nll": 1.3038735645692796
+   },
+   {
+    "step": 7504,
+    "epochs": 16.0,
+    "validation_nll": 1.3036589358318598
+   }
+  ],
+  "final": 1.3036589358318598,
+  "state": "finished",
+  "last": {
+   "step": 7504,
+   "epochs": 16.0,
+   "validation_nll": 1.3036589358318598
+  },
+  "config": {
+   "name": "ft-noise-n30k-p16-lr0.0001-wd0.0",
+   "architecture": "dense",
+   "lr": 0.0001,
+   "wd": 0.0,
+   "epochs": 16,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "noise",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-noise-n30k-p16-lr0.0003-wd0.0": {
+  "history": [
+   {
+    "step": 469,
+    "epochs": 1.0,
+    "validation_nll": 1.343491721868515
+   },
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.3251206761598586
+   },
+   {
+    "step": 1407,
+    "epochs": 3.0,
+    "validation_nll": 1.3129659459590912
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.3044411430358887
+   },
+   {
+    "step": 2345,
+    "epochs": 5.0,
+    "validation_nll": 1.2994286147281529
+   },
+   {
+    "step": 2814,
+    "epochs": 6.0,
+    "validation_nll": 1.2965433454960584
+   },
+   {
+    "step": 3283,
+    "epochs": 7.0,
+    "validation_nll": 1.294119473591447
+   },
+   {
+    "step": 3752,
+    "epochs": 8.0,
+    "validation_nll": 1.291640117527917
+   },
+   {
+    "step": 4221,
+    "epochs": 9.0,
+    "validation_nll": 1.2893299457095564
+   },
+   {
+    "step": 4690,
+    "epochs": 10.0,
+    "validation_nll": 1.2876201429627836
+   },
+   {
+    "step": 5159,
+    "epochs": 11.0,
+    "validation_nll": 1.2864728859569878
+   },
+   {
+    "step": 5628,
+    "epochs": 12.0,
+    "validation_nll": 1.2858155386187136
+   },
+   {
+    "step": 6097,
+    "epochs": 13.0,
+    "validation_nll": 1.2849388242028654
+   },
+   {
+    "step": 6566,
+    "epochs": 14.0,
+    "validation_nll": 1.2843084715753794
+   },
+   {
+    "step": 7035,
+    "epochs": 15.0,
+    "validation_nll": 1.2837682607062162
+   },
+   {
+    "step": 7504,
+    "epochs": 16.0,
+    "validation_nll": 1.2833967790789902
+   }
+  ],
+  "final": 1.2833967790789902,
+  "state": "finished",
+  "last": {
+   "step": 7504,
+   "epochs": 16.0,
+   "validation_nll": 1.2833967790789902
+  },
+  "config": {
+   "name": "ft-noise-n30k-p16-lr0.0003-wd0.0",
+   "architecture": "dense",
+   "lr": 0.0003,
+   "wd": 0.0,
+   "epochs": 16,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "noise",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-noise-n30k-p4-lr0.0003-wd0.0": {
+  "history": [
+   {
+    "step": 117,
+    "epochs": 0.24946695095948826,
+    "validation_nll": 1.4074284226894378
+   },
+   {
+    "step": 234,
+    "epochs": 0.4989339019189765,
+    "validation_nll": 1.3708360357284546
+   },
+   {
+    "step": 351,
+    "epochs": 0.7484008528784648,
+    "validation_nll": 1.3561349989175797
+   },
+   {
+    "step": 468,
+    "epochs": 0.997867803837953,
+    "validation_nll": 1.3499111466407776
+   },
+   {
+    "step": 585,
+    "epochs": 1.2473347547974414,
+    "validation_nll": 1.3382441675662995
+   },
+   {
+    "step": 702,
+    "epochs": 1.4968017057569296,
+    "validation_nll": 1.3324672681093217
+   },
+   {
+    "step": 819,
+    "epochs": 1.7462686567164178,
+    "validation_nll": 1.3272785077393054
+   },
+   {
+    "step": 936,
+    "epochs": 1.995735607675906,
+    "validation_nll": 1.3222962424010039
+   },
+   {
+    "step": 1053,
+    "epochs": 2.2452025586353943,
+    "validation_nll": 1.3201776691526175
+   },
+   {
+    "step": 1170,
+    "epochs": 2.4946695095948828,
+    "validation_nll": 1.3169561595916748
+   },
+   {
+    "step": 1287,
+    "epochs": 2.744136460554371,
+    "validation_nll": 1.315586254298687
+   },
+   {
+    "step": 1404,
+    "epochs": 2.9936034115138592,
+    "validation_nll": 1.3144217793047428
+   },
+   {
+    "step": 1521,
+    "epochs": 3.2430703624733477,
+    "validation_nll": 1.3133772851079701
+   },
+   {
+    "step": 1638,
+    "epochs": 3.4925373134328357,
+    "validation_nll": 1.3125107402801515
+   },
+   {
+    "step": 1755,
+    "epochs": 3.742004264392324,
+    "validation_nll": 1.3118855520486832
+   },
+   {
+    "step": 1872,
+    "epochs": 3.991471215351812,
+    "validation_nll": 1.311295073091984
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.3112843082845211
+   }
+  ],
+  "final": 1.3112843082845211,
+  "state": "finished",
+  "last": {
+   "step": 1876,
+   "epochs": 4.0,
+   "validation_nll": 1.3112843082845211
+  },
+  "config": {
+   "name": "ft-noise-n30k-p4-lr0.0003-wd0.0",
+   "architecture": "dense",
+   "lr": 0.0003,
+   "wd": 0.0,
+   "epochs": 4,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "noise",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-noise-n3k-p16-lr0.0003-wd0.0": {
+  "history": [
+   {
+    "step": 47,
+    "epochs": 1.0,
+    "validation_nll": 1.412850181698799
+   },
+   {
+    "step": 94,
+    "epochs": 2.0,
+    "validation_nll": 1.4089386669397355
+   },
+   {
+    "step": 141,
+    "epochs": 3.0,
+    "validation_nll": 1.3716165297031402
+   },
+   {
+    "step": 188,
+    "epochs": 4.0,
+    "validation_nll": 1.3660874005556107
+   },
+   {
+    "step": 235,
+    "epochs": 5.0,
+    "validation_nll": 1.361505980372429
+   },
+   {
+    "step": 282,
+    "epochs": 6.0,
+    "validation_nll": 1.3578696274757385
+   },
+   {
+    "step": 329,
+    "epochs": 7.0,
+    "validation_nll": 1.359711242556572
+   },
+   {
+    "step": 376,
+    "epochs": 8.0,
+    "validation_nll": 1.356379382133484
+   },
+   {
+    "step": 423,
+    "epochs": 9.0,
+    "validation_nll": 1.3506964656114577
+   },
+   {
+    "step": 470,
+    "epochs": 10.0,
+    "validation_nll": 1.3448113849163055
+   },
+   {
+    "step": 517,
+    "epochs": 11.0,
+    "validation_nll": 1.343847004532814
+   },
+   {
+    "step": 564,
+    "epochs": 12.0,
+    "validation_nll": 1.3421880838871003
+   },
+   {
+    "step": 611,
+    "epochs": 13.0,
+    "validation_nll": 1.341345455288887
+   },
+   {
+    "step": 658,
+    "epochs": 14.0,
+    "validation_nll": 1.3408248093128203
+   },
+   {
+    "step": 705,
+    "epochs": 15.0,
+    "validation_nll": 1.3404614441394807
+   },
+   {
+    "step": 752,
+    "epochs": 16.0,
+    "validation_nll": 1.3402812412977219
+   }
+  ],
+  "final": 1.3402812412977219,
+  "state": "finished",
+  "last": {
+   "step": 752,
+   "epochs": 16.0,
+   "validation_nll": 1.3402812412977219
+  },
+  "config": {
+   "name": "ft-noise-n3k-p16-lr0.0003-wd0.0",
+   "architecture": "dense",
+   "lr": 0.0003,
+   "wd": 0.0,
+   "epochs": 16,
+   "ntrain": 3000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "noise",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-related-n10k-p16-lr0.0003-wd0.0": {
+  "history": [
+   {
+    "step": 157,
+    "epochs": 1.0,
+    "validation_nll": 1.2328422133624555
+   },
+   {
+    "step": 314,
+    "epochs": 2.0,
+    "validation_nll": 1.234250692743808
+   },
+   {
+    "step": 471,
+    "epochs": 3.0,
+    "validation_nll": 1.2442803907338529
+   },
+   {
+    "step": 628,
+    "epochs": 4.0,
+    "validation_nll": 1.2679473372772336
+   },
+   {
+    "step": 785,
+    "epochs": 5.0,
+    "validation_nll": 1.3015018568430097
+   },
+   {
+    "step": 942,
+    "epochs": 6.0,
+    "validation_nll": 1.3159410555996
+   },
+   {
+    "step": 1099,
+    "epochs": 7.0,
+    "validation_nll": 1.3775465623028575
+   },
+   {
+    "step": 1256,
+    "epochs": 8.0,
+    "validation_nll": 1.4187501309998334
+   },
+   {
+    "step": 1413,
+    "epochs": 9.0,
+    "validation_nll": 1.421195943787694
+   },
+   {
+    "step": 1570,
+    "epochs": 10.0,
+    "validation_nll": 1.441557682543993
+   },
+   {
+    "step": 1727,
+    "epochs": 11.0,
+    "validation_nll": 1.4779664523750544
+   },
+   {
+    "step": 1884,
+    "epochs": 12.0,
+    "validation_nll": 1.5417366537135095
+   },
+   {
+    "step": 2041,
+    "epochs": 13.0,
+    "validation_nll": 1.6152952365390956
+   },
+   {
+    "step": 2198,
+    "epochs": 14.0,
+    "validation_nll": 1.7313999842070043
+   },
+   {
+    "step": 2355,
+    "epochs": 15.0,
+    "validation_nll": 1.804752139089629
+   },
+   {
+    "step": 2512,
+    "epochs": 16.0,
+    "validation_nll": 1.9866728966478258
+   }
+  ],
+  "final": 1.9866728966478258,
+  "state": "finished",
+  "last": {
+   "step": 2512,
+   "epochs": 16.0,
+   "validation_nll": 1.9866728966478258
+  },
+  "config": {
+   "name": "ft-related-n10k-p16-lr0.0003-wd0.0",
+   "architecture": "dense",
+   "lr": 0.0003,
+   "wd": 0.0,
+   "epochs": 16,
+   "ntrain": 10000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "related",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-related-n1k-p16-lr0.0003-wd0.0": {
+  "history": [
+   {
+    "step": 16,
+    "epochs": 1.0,
+    "validation_nll": 1.2506871194392444
+   },
+   {
+    "step": 32,
+    "epochs": 2.0,
+    "validation_nll": 1.2471777000278235
+   },
+   {
+    "step": 48,
+    "epochs": 3.0,
+    "validation_nll": 1.2472699968516827
+   },
+   {
+    "step": 64,
+    "epochs": 4.0,
+    "validation_nll": 1.2565720042437314
+   },
+   {
+    "step": 80,
+    "epochs": 5.0,
+    "validation_nll": 1.2986431328505277
+   },
+   {
+    "step": 96,
+    "epochs": 6.0,
+    "validation_nll": 1.2913069810718298
+   },
+   {
+    "step": 112,
+    "epochs": 7.0,
+    "validation_nll": 1.3849931512773037
+   },
+   {
+    "step": 128,
+    "epochs": 8.0,
+    "validation_nll": 1.3986302319765092
+   },
+   {
+    "step": 144,
+    "epochs": 9.0,
+    "validation_nll": 1.4478718580901622
+   },
+   {
+    "step": 160,
+    "epochs": 10.0,
+    "validation_nll": 1.5411811181306838
+   },
+   {
+    "step": 176,
+    "epochs": 11.0,
+    "validation_nll": 1.6099138729274274
+   },
+   {
+    "step": 192,
+    "epochs": 12.0,
+    "validation_nll": 1.645642731666565
+   },
+   {
+    "step": 208,
+    "epochs": 13.0,
+    "validation_nll": 1.830976051300764
+   },
+   {
+    "step": 224,
+    "epochs": 14.0,
+    "validation_nll": 1.9133846885561943
+   },
+   {
+    "step": 240,
+    "epochs": 15.0,
+    "validation_nll": 1.8659065529108048
+   },
+   {
+    "step": 256,
+    "epochs": 16.0,
+    "validation_nll": 1.9428158588707447
+   }
+  ],
+  "final": 1.9428158588707447,
+  "state": "finished",
+  "last": {
+   "step": 256,
+   "epochs": 16.0,
+   "validation_nll": 1.9428158588707447
+  },
+  "config": {
+   "name": "ft-related-n1k-p16-lr0.0003-wd0.0",
+   "architecture": "dense",
+   "lr": 0.0003,
+   "wd": 0.0,
+   "epochs": 16,
+   "ntrain": 1000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "related",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-related-n30k-p1-lr0.0003-wd0.0": {
+  "history": [
+   {
+    "step": 29,
+    "epochs": 0.06183368869936034,
+    "validation_nll": 1.2474798416942359
+   },
+   {
+    "step": 58,
+    "epochs": 0.12366737739872068,
+    "validation_nll": 1.242462767764926
+   },
+   {
+    "step": 87,
+    "epochs": 0.18550106609808104,
+    "validation_nll": 1.2363990389704704
+   },
+   {
+    "step": 116,
+    "epochs": 0.24733475479744135,
+    "validation_nll": 1.2330861604511738
+   },
+   {
+    "step": 145,
+    "epochs": 0.3091684434968017,
+    "validation_nll": 1.2370842301994562
+   },
+   {
+    "step": 174,
+    "epochs": 0.37100213219616207,
+    "validation_nll": 1.2351970451325178
+   },
+   {
+    "step": 203,
+    "epochs": 0.43283582089552236,
+    "validation_nll": 1.234286996886134
+   },
+   {
+    "step": 232,
+    "epochs": 0.4946695095948827,
+    "validation_nll": 1.2342339365184307
+   },
+   {
+    "step": 261,
+    "epochs": 0.5565031982942431,
+    "validation_nll": 1.2330553377568723
+   },
+   {
+    "step": 290,
+    "epochs": 0.6183368869936035,
+    "validation_nll": 1.23218129748106
+   },
+   {
+    "step": 319,
+    "epochs": 0.6801705756929638,
+    "validation_nll": 1.2299387911409139
+   },
+   {
+    "step": 348,
+    "epochs": 0.7420042643923241,
+    "validation_nll": 1.2297804855853318
+   },
+   {
+    "step": 377,
+    "epochs": 0.8038379530916845,
+    "validation_nll": 1.229559914112091
+   },
+   {
+    "step": 406,
+    "epochs": 0.8656716417910447,
+    "validation_nll": 1.2286934986412525
+   },
+   {
+    "step": 435,
+    "epochs": 0.9275053304904051,
+    "validation_nll": 1.2282927201837301
+   },
+   {
+    "step": 464,
+    "epochs": 0.9893390191897654,
+    "validation_nll": 1.2281251794099808
+   },
+   {
+    "step": 469,
+    "epochs": 1.0,
+    "validation_nll": 1.2281169125884772
+   }
+  ],
+  "final": 1.2281169125884772,
+  "state": "finished",
+  "last": {
+   "step": 469,
+   "epochs": 1.0,
+   "validation_nll": 1.2281169125884772
+  },
+  "config": {
+   "name": "ft-related-n30k-p1-lr0.0003-wd0.0",
+   "architecture": "dense",
+   "lr": 0.0003,
+   "wd": 0.0,
+   "epochs": 1,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "related",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-related-n30k-p16-lr0.0001-wd0.0": {
+  "history": [
+   {
+    "step": 469,
+    "epochs": 1.0,
+    "validation_nll": 1.2299331103414297
+   },
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.2275943827070295
+   },
+   {
+    "step": 1407,
+    "epochs": 3.0,
+    "validation_nll": 1.2288649618662895
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.2330709035862237
+   },
+   {
+    "step": 2345,
+    "epochs": 5.0,
+    "validation_nll": 1.241638801453635
+   },
+   {
+    "step": 2814,
+    "epochs": 6.0,
+    "validation_nll": 1.257035444226116
+   },
+   {
+    "step": 3283,
+    "epochs": 7.0,
+    "validation_nll": 1.2746662512421607
+   },
+   {
+    "step": 3752,
+    "epochs": 8.0,
+    "validation_nll": 1.2743375862399116
+   },
+   {
+    "step": 4221,
+    "epochs": 9.0,
+    "validation_nll": 1.2768429718362166
+   },
+   {
+    "step": 4690,
+    "epochs": 10.0,
+    "validation_nll": 1.2986161895915866
+   },
+   {
+    "step": 5159,
+    "epochs": 11.0,
+    "validation_nll": 1.3367420148793607
+   },
+   {
+    "step": 5628,
+    "epochs": 12.0,
+    "validation_nll": 1.3517324493266643
+   },
+   {
+    "step": 6097,
+    "epochs": 13.0,
+    "validation_nll": 1.3547443230040372
+   },
+   {
+    "step": 6566,
+    "epochs": 14.0,
+    "validation_nll": 1.3478335140962154
+   },
+   {
+    "step": 7035,
+    "epochs": 15.0,
+    "validation_nll": 1.3582532232180238
+   },
+   {
+    "step": 7504,
+    "epochs": 16.0,
+    "validation_nll": 1.3835637469515205
+   }
+  ],
+  "final": 1.3835637469515205,
+  "state": "finished",
+  "last": {
+   "step": 7504,
+   "epochs": 16.0,
+   "validation_nll": 1.3835637469515205
+  },
+  "config": {
+   "name": "ft-related-n30k-p16-lr0.0001-wd0.0",
+   "architecture": "dense",
+   "lr": 0.0001,
+   "wd": 0.0,
+   "epochs": 16,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "related",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-related-n30k-p16-lr0.0003-wd0.0": {
+  "history": [
+   {
+    "step": 469,
+    "epochs": 1.0,
+    "validation_nll": 1.2294553737230598
+   },
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.2309447413850576
+   },
+   {
+    "step": 1407,
+    "epochs": 3.0,
+    "validation_nll": 1.2389049001093955
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.2453556985873728
+   },
+   {
+    "step": 2345,
+    "epochs": 5.0,
+    "validation_nll": 1.255508559742011
+   },
+   {
+    "step": 2814,
+    "epochs": 6.0,
+    "validation_nll": 1.2852965633021667
+   },
+   {
+    "step": 3283,
+    "epochs": 7.0,
+    "validation_nll": 1.3224731785627082
+   },
+   {
+    "step": 3752,
+    "epochs": 8.0,
+    "validation_nll": 1.3648011100599542
+   },
+   {
+    "step": 4221,
+    "epochs": 9.0,
+    "validation_nll": 1.4404881935818121
+   },
+   {
+    "step": 4690,
+    "epochs": 10.0,
+    "validation_nll": 1.4556027576737105
+   },
+   {
+    "step": 5159,
+    "epochs": 11.0,
+    "validation_nll": 1.4863713478762657
+   },
+   {
+    "step": 5628,
+    "epochs": 12.0,
+    "validation_nll": 1.5116689739143476
+   },
+   {
+    "step": 6097,
+    "epochs": 13.0,
+    "validation_nll": 1.4916956223612652
+   },
+   {
+    "step": 6566,
+    "epochs": 14.0,
+    "validation_nll": 1.5136381884943695
+   },
+   {
+    "step": 7035,
+    "epochs": 15.0,
+    "validation_nll": 1.577835001701489
+   },
+   {
+    "step": 7504,
+    "epochs": 16.0,
+    "validation_nll": 1.642424020856619
+   }
+  ],
+  "final": 1.642424020856619,
+  "state": "finished",
+  "last": {
+   "step": 7504,
+   "epochs": 16.0,
+   "validation_nll": 1.642424020856619
+  },
+  "config": {
+   "name": "ft-related-n30k-p16-lr0.0003-wd0.0",
+   "architecture": "dense",
+   "lr": 0.0003,
+   "wd": 0.0,
+   "epochs": 16,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "related",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-related-n30k-p16-lr0.0003-wd0.0-adaptationtoward_initialization": {
+  "history": [
+   {
+    "step": 469,
+    "epochs": 1.0,
+    "validation_nll": 1.2294708163253962
+   },
+   {
+    "step": 938,
+    "epochs": 2.0,
+    "validation_nll": 1.23094154907763
+   }
+  ],
+  "final": null,
+  "state": "running",
+  "last": {
+   "step": 938,
+   "epochs": 2.0,
+   "validation_nll": 1.23094154907763
+  },
+  "config": null
+ },
+ "ft-related-n30k-p4-lr0.0003-wd0.0": {
+  "history": [
+   {
+    "step": 117,
+    "epochs": 0.24946695095948826,
+    "validation_nll": 1.2337971228063107
+   },
+   {
+    "step": 234,
+    "epochs": 0.4989339019189765,
+    "validation_nll": 1.2346536819189786
+   },
+   {
+    "step": 351,
+    "epochs": 0.7484008528784648,
+    "validation_nll": 1.2302142990231515
+   },
+   {
+    "step": 468,
+    "epochs": 0.997867803837953,
+    "validation_nll": 1.2290852760374547
+   },
+   {
+    "step": 585,
+    "epochs": 1.2473347547974414,
+    "validation_nll": 1.2292146542817355
+   },
+   {
+    "step": 702,
+    "epochs": 1.4968017057569296,
+    "validation_nll": 1.2301260549612343
+   },
+   {
+    "step": 819,
+    "epochs": 1.7462686567164178,
+    "validation_nll": 1.2291083355732262
+   },
+   {
+    "step": 936,
+    "epochs": 1.995735607675906,
+    "validation_nll": 1.2289731594417244
+   },
+   {
+    "step": 1053,
+    "epochs": 2.2452025586353943,
+    "validation_nll": 1.2340347609501332
+   },
+   {
+    "step": 1170,
+    "epochs": 2.4946695095948828,
+    "validation_nll": 1.2347403433788569
+   },
+   {
+    "step": 1287,
+    "epochs": 2.744136460554371,
+    "validation_nll": 1.234784854227677
+   },
+   {
+    "step": 1404,
+    "epochs": 2.9936034115138592,
+    "validation_nll": 1.2337748367153107
+   },
+   {
+    "step": 1521,
+    "epochs": 3.2430703624733477,
+    "validation_nll": 1.2396092116981745
+   },
+   {
+    "step": 1638,
+    "epochs": 3.4925373134328357,
+    "validation_nll": 1.2426511567011476
+   },
+   {
+    "step": 1755,
+    "epochs": 3.742004264392324,
+    "validation_nll": 1.2427832362651825
+   },
+   {
+    "step": 1872,
+    "epochs": 3.991471215351812,
+    "validation_nll": 1.241202148137614
+   },
+   {
+    "step": 1876,
+    "epochs": 4.0,
+    "validation_nll": 1.2412014844976365
+   }
+  ],
+  "final": 1.2412014844976365,
+  "state": "finished",
+  "last": {
+   "step": 1876,
+   "epochs": 4.0,
+   "validation_nll": 1.2412014844976365
+  },
+  "config": {
+   "name": "ft-related-n30k-p4-lr0.0003-wd0.0",
+   "architecture": "dense",
+   "lr": 0.0003,
+   "wd": 0.0,
+   "epochs": 4,
+   "ntrain": 30000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "related",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ },
+ "ft-related-n3k-p16-lr0.0003-wd0.0": {
+  "history": [
+   {
+    "step": 47,
+    "epochs": 1.0,
+    "validation_nll": 1.2438661043047905
+   },
+   {
+    "step": 94,
+    "epochs": 2.0,
+    "validation_nll": 1.2411642576158046
+   },
+   {
+    "step": 141,
+    "epochs": 3.0,
+    "validation_nll": 1.2456475465297698
+   },
+   {
+    "step": 188,
+    "epochs": 4.0,
+    "validation_nll": 1.2590388835221529
+   },
+   {
+    "step": 235,
+    "epochs": 5.0,
+    "validation_nll": 1.2954219453036786
+   },
+   {
+    "step": 282,
+    "epochs": 6.0,
+    "validation_nll": 1.335681898355484
+   },
+   {
+    "step": 329,
+    "epochs": 7.0,
+    "validation_nll": 1.399616802468896
+   },
+   {
+    "step": 376,
+    "epochs": 8.0,
+    "validation_nll": 1.4651612202748656
+   },
+   {
+    "step": 423,
+    "epochs": 9.0,
+    "validation_nll": 1.5166807242259384
+   },
+   {
+    "step": 470,
+    "epochs": 10.0,
+    "validation_nll": 1.6100449153855443
+   },
+   {
+    "step": 517,
+    "epochs": 11.0,
+    "validation_nll": 1.745742541231215
+   },
+   {
+    "step": 564,
+    "epochs": 12.0,
+    "validation_nll": 1.860723395049572
+   },
+   {
+    "step": 611,
+    "epochs": 13.0,
+    "validation_nll": 1.9563798540085555
+   },
+   {
+    "step": 658,
+    "epochs": 14.0,
+    "validation_nll": 1.9903113612085581
+   },
+   {
+    "step": 705,
+    "epochs": 15.0,
+    "validation_nll": 2.0266613858900966
+   },
+   {
+    "step": 752,
+    "epochs": 16.0,
+    "validation_nll": 2.1308293303139507
+   }
+  ],
+  "final": 2.1308293303139507,
+  "state": "finished",
+  "last": {
+   "step": 752,
+   "epochs": 16.0,
+   "validation_nll": 2.1308293303139507
+  },
+  "config": {
+   "name": "ft-related-n3k-p16-lr0.0003-wd0.0",
+   "architecture": "dense",
+   "lr": 0.0003,
+   "wd": 0.0,
+   "epochs": 16,
+   "ntrain": 3000,
+   "batch": 64,
+   "micro_batch": 8,
+   "seed": 42,
+   "data_seed": 42,
+   "schedule": "linear",
+   "attention_dropout": 0.0,
+   "optimizer": "adamw",
+   "rho": 0.05,
+   "initialization": "related",
+   "adaptation": "full",
+   "depth": 8,
+   "width": 512,
+   "context": 1024
+  }
+ }
+}
