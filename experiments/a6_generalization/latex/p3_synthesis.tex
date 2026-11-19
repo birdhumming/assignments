@@ -1,1 +1,3 @@
-% generated
+\lead{Synthesis.} Optimization choices matter through how much they regularize. Constant LR beats linear decay at long horizons because the decay phase lets the model fit the repeated data too well; small batches generalize better and sit in flatter regions, and large batches with the linear LR scaling do neither; SAM, which targets flatness directly, adds nothing once WD is tuned. Warmup plus linear decay remains the right default for 16 to 32 passes.
+
+\lead{Rules of thumb.} At 64 or more passes over the same pool, prefer a constant LR after warmup (or decay to a floor); for 32 or fewer, decay to zero. Keep the batch at 64 sequences or below for a 30k-chunk pool; above 256 the linear LR and WD scaling no longer holds and sharpness rises with the loss. Do not pay for SAM when WD is tuned; sharpness-aware methods matter when the regularizer is weak.

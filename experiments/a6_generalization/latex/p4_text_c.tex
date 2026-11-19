@@ -1,1 +1,9 @@
-% written by hand
+\subsection*{Part (c). Keeping the pretrained features}
+
+\lead{Setup.} All runs start from the related-DNA checkpoint and train 16 passes on 30k chunks (Table~\ref{tab:p4c}). Variants: full fine-tuning at the scratch LR with WD 3.2 or .1; WD toward the initialization instead of toward zero (AdamW decay replaced by a pull to the pretrained weights); frozen head (train the body, keep embeddings and output layer); frozen body (train only embeddings, output layer and norms); and the same variants at LR $3\times10^{-4}$, WD 0, queued second and marked where unfinished.
+\begin{itemize}
+\item The pretrained body is the asset. Freezing it and training only the head reaches 1.2431, 0.02 below the best scratch model (1.2627) and below the supplied five-member ensemble (1.2543). Decaying toward the initialization is nearly as good (1.2452). Full fine-tuning at the same LR gives 1.2653, so the recipe that is right for scratch costs 0.02 nats when applied to a good start.
+\item Frozen head (1.2624) is no better than full fine-tuning: the damage is done in the body, not the output layer, and training the body freely at LR .003 is what forgets.
+\item Weak decay is worse still: WD .1 ends at 1.4431, the same memorization failure as from scratch. Pretraining does not protect against overfitting a repeated 30k-chunk pool.
+\item The paired low-LR run at 16 passes (LR .001, full fine-tuning) was at 1.2618 at pass 8 when this table was built, already below every LR .003 run, consistent with forgetting being an LR problem; its final value appears in the run list if it finished.
+\end{itemize}

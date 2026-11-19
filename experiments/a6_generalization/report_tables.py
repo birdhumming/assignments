@@ -89,7 +89,8 @@ def p4():
     brows = []
     for init in INITS:
         cells = [fmt(best_ft(init, 16, n)[0]) for n in (1, 3, 10, 30)]
-        f = fits.get(init); brows.append(f"{LABEL[init]} & " + ' & '.join(cells) + (f" & {f['offset']:.3f} & {f['exponent']:.2f}" if f else ' & -- & --'))
+        a, b = best_ft(init, 16, 10)[0], best_ft(init, 16, 30)[0]
+        brows.append(f"{LABEL[init]} & " + ' & '.join(cells) + (f" & {a - b:.4f}" if a is not None and b is not None else ' & --'))
     # (c) adaptation on related
     crows = []
     for lab, lr, wd, adapt in (('full, LR 3e-4, WD 0', 3e-4, None, None), ('full, LR .003, WD 3.2', .003, None, None), ('full, LR 3e-4, WD 3.2', 3e-4, 3.2, None), ('full, LR .003, WD .1', .003, .1, None),
@@ -99,7 +100,7 @@ def p4():
         v = ft('related', 16, lr, 30, wd, adapt); crows.append(f"{lab} & {fmt(v)}")
     (T / 'p4.tex').write_text(r'\input{p4_text_a}' + '\n' + r'\begin{figure}[H]\centering\includegraphics[width=.95\linewidth]{p4}\caption{Left: 4(a), best validation NLL per initialization against passes over the 30k pool. Right: 4(b), 16 passes against fine-tuning pool size, log axis.}\label{fig:p4}\end{figure}' + '\n'
         + table('Problem 4(a): best validation NLL per initialization and pass count on 30k chunks; parentheses give the selected LR (and WD 0 where used). LRs tried: .003/WD 3.2 and .001/WD 3.2 for all, plus 3e-4, 1e-4 (and 1e-5 at 16 passes) with WD 0 for the pretrained starts.', 'tab:p4a', r'Initialization & 1 pass & 4 passes & 16 passes', rows, 'lrrr')
-        + r'\input{p4_text_b}' + '\n' + table('Problem 4(b): 16 passes, best LR per point, with the power-law fit $L(n)=L_\\infty+An^{-\\alpha}$ where three or more points exist.', 'tab:p4b', r'Initialization & 1k & 3k & 10k & 30k & $L_\infty$ & $\alpha$', brows, 'lrrrrrr')
+        + r'\input{p4_text_b}' + '\n' + table('Problem 4(b): 16 passes over pools of 1k to 30k chunks, best LR per point; last column is the gain from tripling the pool from 10k to 30k.', 'tab:p4b', r'Initialization & 1k & 3k & 10k & 30k & gain 10k$\to$30k', brows, 'lrrrrr')
         + r'\input{p4_text_c}' + '\n' + table('Problem 4(c): adapting the related-DNA initialization, 16 passes on 30k chunks.', 'tab:p4c', r'Variant & $L$', crows, 'lr') + r'\input{p4_text_d}' + '\n')
     for f in ('p4_text_a', 'p4_text_b', 'p4_text_c', 'p4_text_d'):
         if not (T / f'{f}.tex').exists(): (T / f'{f}.tex').write_text('% written by hand\n')

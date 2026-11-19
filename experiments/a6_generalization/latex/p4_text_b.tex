@@ -1,1 +1,8 @@
-% written by hand
+\subsection*{Part (b). Fine-tuning pool size}
+
+\lead{Setup.} 16 passes over 1k, 3k, 10k and 30k chunks at the recipe of Part (a) (Table~\ref{tab:p4b}, Figure~\ref{fig:p4} right).
+\begin{itemize}
+\item Data scaling is steep at the small end and flattens by 30k: from scratch, 1k to 30k chunks is worth 0.046 nats, two thirds of it between 3k and 30k, and the 10k to 30k gain (0.018) is still three times the gain the supplied suite gets from d6 to d9.
+\item A pretrained start does not substitute for data at the scratch LR. The related start is worst at 1k and 3k (3.19 and 1.38: at LR .003 with WD 3.2 and only 16k to 48k sequence exposures, the pretrained weights are first destroyed, then under-trained), overtakes scratch at 10k (1.275 against 1.281) and ties at 30k. Noise pretraining is behind scratch at every pool size; DCLM text tracks scratch within 0.004 everywhere.
+\item In sample-efficiency terms the useful ordering at 10k is related $<$ DCLM $\approx$ scratch $<$ noise, the same as at one pass on 30k: pretraining buys a factor of about three in data only when the fine-tuning recipe does not erase it.
+\end{itemize}

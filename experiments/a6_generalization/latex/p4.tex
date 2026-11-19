@@ -3,30 +3,30 @@
 \begin{table}[H]\centering\small\caption{Problem 4(a): best validation NLL per initialization and pass count on 30k chunks; parentheses give the selected LR (and WD 0 where used). LRs tried: .003/WD 3.2 and .001/WD 3.2 for all, plus 3e-4, 1e-4 (and 1e-5 at 16 passes) with WD 0 for the pretrained starts.}\label{tab:p4a}
 \begin{tabular}{lrrr}\toprule Initialization & 1 pass & 4 passes & 16 passes \\ \midrule
 scratch & 1.2991 (0.003) & 1.2764 (0.003) & 1.2638 (0.003) \\
-related DNA & 1.2691 (0.003) & 1.2699 (0.003) & -- \\
-DCLM text & 1.2936 (0.003) & 1.2752 (0.003) & -- \\
-nucleotide noise & 1.3121 (0.003) & 1.2829 (0.003) & -- \\
+related DNA & 1.2691 (0.003) & 1.2699 (0.003) & 1.2653 (0.003) \\
+DCLM text & 1.2936 (0.003) & 1.2752 (0.003) & 1.2637 (0.003) \\
+nucleotide noise & 1.3121 (0.003) & 1.2829 (0.003) & 1.2676 (0.003) \\
 \bottomrule\end{tabular}\end{table}
 \input{p4_text_b}
-\begin{table}[H]\centering\small\caption{Problem 4(b): 16 passes, best LR per point, with the power-law fit $L(n)=L_\infty+An^{-\alpha}$ where three or more points exist.}\label{tab:p4b}
-\begin{tabular}{lrrrrrr}\toprule Initialization & 1k & 3k & 10k & 30k & $L_\infty$ & $\alpha$ \\ \midrule
-scratch & -- & -- & -- & 1.2638 & -- & -- \\
-related DNA & -- & -- & -- & -- & -- & -- \\
-DCLM text & -- & -- & -- & -- & -- & -- \\
-nucleotide noise & -- & -- & -- & -- & -- & -- \\
+\begin{table}[H]\centering\small\caption{Problem 4(b): 16 passes over pools of 1k to 30k chunks, best LR per point; last column is the gain from tripling the pool from 10k to 30k.}\label{tab:p4b}
+\begin{tabular}{lrrrrr}\toprule Initialization & 1k & 3k & 10k & 30k & gain 10k$\to$30k \\ \midrule
+scratch & 1.3100 & 1.3029 & 1.2815 & 1.2638 & 0.0177 \\
+related DNA & 3.1928 & 1.3806 & 1.2753 & 1.2653 & 0.0100 \\
+DCLM text & 1.3103 & 1.3005 & 1.2777 & 1.2637 & 0.0140 \\
+nucleotide noise & 1.3952 & 1.3336 & 1.2816 & 1.2676 & 0.0141 \\
 \bottomrule\end{tabular}\end{table}
 \input{p4_text_c}
 \begin{table}[H]\centering\small\caption{Problem 4(c): adapting the related-DNA initialization, 16 passes on 30k chunks.}\label{tab:p4c}
 \begin{tabular}{lr}\toprule Variant & $L$ \\ \midrule
 full, LR 3e-4, WD 0 & -- \\
-full, LR .003, WD 3.2 & -- \\
+full, LR .003, WD 3.2 & 1.2653 \\
 full, LR 3e-4, WD 3.2 & -- \\
-full, LR .003, WD .1 & -- \\
+full, LR .003, WD .1 & 1.4431 \\
 decay toward init, LR 3e-4 & -- \\
-decay toward init, LR .003 & -- \\
+decay toward init, LR .003 & 1.2452 \\
 frozen head, LR 3e-4 & -- \\
-frozen head, LR .003 & -- \\
+frozen head, LR .003 & 1.2624 \\
 frozen body, LR 3e-4 & -- \\
-frozen body, LR .003 & -- \\
+frozen body, LR .003 & 1.2431 \\
 \bottomrule\end{tabular}\end{table}
 \input{p4_text_d}
