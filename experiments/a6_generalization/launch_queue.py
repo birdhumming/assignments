@@ -31,10 +31,12 @@ QUEUE = (
 if __name__ == '__main__':
     containers = int(sys.argv[1]) if sys.argv[1:] else 4
     names = sys.argv[2:]
-    todo = [c for c in QUEUE if not names or c.name in names]
-    assert len({c.name for c in QUEUE}) == len(QUEUE), 'duplicate names'
+    pool = QUEUE_FT if names[:1] == ['ft'] else QUEUE
+    names = names[1:] if names[:1] == ['ft'] else names
+    todo = [c for c in pool if not names or c.name in names]
+    assert len({c.name for c in QUEUE + QUEUE_FT}) == len(QUEUE + QUEUE_FT), 'duplicate names'
     if names == ['dry']:
-        todo = QUEUE
+        todo = pool
     for c in todo: print(c.name)
     if names == ['dry']: sys.exit()
     remote = app.function(image=build_image(), volumes=VOLUME_MOUNTS, gpu=['H100', 'H200', 'A100-80GB'], cpu=4, memory=32768,
@@ -42,3 +44,14 @@ if __name__ == '__main__':
     with modal.enable_output(), app.run(name=timestamped_modal_app_name('a6-queue'), environment_name=MODAL_ENVIRONMENT, detach=True):
         for c in todo:
             print(time.strftime('%H:%M'), remote.spawn(c).object_id, c.name, flush=True)
+
+# Fine-tuning LR grid below the scratch recipe (the starter default is LR 1e-5, WD 0): pretrained inits only.
+PRETRAINED = ('related', 'dclm', 'noise')
+QUEUE_FT = (
+    [ft(i, p, lr=3e-4, wd=0.) for p in (1, 4, 16) for i in PRETRAINED]
+    + [ft(i, 16, lr=1e-4, wd=0.) for i in PRETRAINED]
+    + [ft(i, 16, lr=3e-4, wd=0., ntrain=n) for n in (1000, 3000, 10000) for i in PRETRAINED]
+    + [ft('related', 16, lr=3e-4, wd=0., adaptation=a) for a in ('toward_initialization', 'frozen_head', 'frozen_body')]
+    + [ft('related', 16, lr=3e-4, wd=3.2)]
+    + [ft(i, 16, lr=1e-5, wd=0.) for i in PRETRAINED]
+)
